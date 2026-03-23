@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;family=Noto+Serif:ital,wght@0,400;0,700;1,400&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "secondary-container": "#383c40",
+                        "on-tertiary": "#5c5f64",
+                        "on-error": "#490106",
+                        "on-tertiary-fixed-variant": "#64666b",
+                        "surface-container-high": "#1d2024",
+                        "outline-variant": "#45484e",
+                        "on-secondary-fixed-variant": "#585c60",
+                        "tertiary-dim": "#e4e5ea",
+                        "on-tertiary-container": "#54575b",
+                        "surface-tint": "#c6c6c6",
+                        "surface-bright": "#282c33",
+                        "on-secondary-container": "#bdbfc5",
+                        "inverse-primary": "#5e5f5f",
+                        "secondary-fixed": "#e0e2e8",
+                        "outline": "#73757c",
+                        "primary-dim": "#b8b9b9",
+                        "on-primary": "#3f4041",
+                        "on-secondary-fixed": "#3c4044",
+                        "error-dim": "#bb5551",
+                        "primary-fixed": "#e2e2e2",
+                        "surface-dim": "#0d0e10",
+                        "on-primary-fixed-variant": "#5a5c5c",
+                        "surface-variant": "#23262b",
+                        "secondary-fixed-dim": "#d2d4da",
+                        "primary-fixed-dim": "#d4d4d4",
+                        "tertiary-fixed": "#f2f3f9",
+                        "surface-container-highest": "#23262b",
+                        "on-primary-container": "#d0d0d0",
+                        "on-tertiary-fixed": "#474a4e",
+                        "background": "#0d0e10",
+                        "on-background": "#e3e5ed",
+                        "on-secondary": "#1d2024",
+                        "primary-container": "#454747",
+                        "on-surface-variant": "#a9abb2",
+                        "tertiary-fixed-dim": "#e4e5ea",
+                        "error-container": "#7f2927",
+                        "primary": "#c6c6c6",
+                        "on-surface": "#e3e5ed",
+                        "inverse-on-surface": "#555557",
+                        "surface-container-low": "#121316",
+                        "secondary": "#9b9ea3",
+                        "secondary-dim": "#9b9ea3",
+                        "surface-container": "#181a1d",
+                        "error": "#ee7d77",
+                        "tertiary": "#f8f9fe",
+                        "on-error-container": "#ff9993",
+                        "on-primary-fixed": "#3e4040",
+                        "inverse-surface": "#faf9fb",
+                        "surface-container-lowest": "#000000",
+                        "tertiary-container": "#e9ebf0",
+                        "surface": "#0d0e10"
+                    },
+                    fontFamily: {
+                        "headline": ["Noto Serif"],
+                        "body": ["Inter"],
+                        "label": ["Inter"]
+                    },
+                    borderRadius: {"DEFAULT": "0px", "lg": "0px", "xl": "0px", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 200, 'GRAD' 0, 'opsz' 24;
+            font-size: 20px;
+        }
+        body {
+            background-color: #0d0e10;
+            color: #e3e5ed;
+            font-family: 'Inter', sans-serif;
+        }
+        .serif-display {
+            font-family: 'Noto Serif', serif;
+        }
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-track { background: #0d0e10; }
+        ::-webkit-scrollbar-thumb { background: #23262b; }
+        
+        .brand-giant {
+            font-size: clamp(2rem, 18vw, 24rem);
+            line-height: 0.8;
+            letter-spacing: -0.05em;
+        }
+    
+        @keyframes shimmer {
+            100% { transform: translateX(100%); }
+        }
+    </style>
+</head>
+<body class="bg-surface text-on-surface min-h-screen flex flex-col">
+<!-- TopAppBar -->
+<nav class="bg-[#0d0e10] flex justify-center items-center w-full py-8 px-12 fixed top-0 z-50 border-none">
+<div class="text-xl font-serif tracking-tighter text-[#c6c6c6] uppercase">FORGE</div>
+</nav>
+<main class="flex-grow pt-32 pb-12 px-6 md:px-12 flex flex-col items-center">
+<!-- Hero Section -->
+<header class="w-full max-w-6xl mb-24 mt-12 text-center md:text-left">
+<h1 class="serif-display text-5xl md:text-7xl lg:text-8xl tracking-[-0.02em] text-on-surface leading-tight">
+                Elevate your <br/>
+<span class="text-secondary opacity-50">Vision</span>
+</h1>
+</header>
+<!-- Prompt Engine -->
+<section class="w-full max-w-6xl grid grid-cols-1 lg:grid-cols-12 gap-16 lg:gap-24 mb-32">
+<!-- Input Area -->
+<div class="lg:col-span-7 flex flex-col gap-8">
+<div class="relative group">
+<label class="font-label uppercase tracking-[0.1em] text-[0.65rem] text-outline mb-4 block">Raw Input</label>
+<textarea class="w-full bg-transparent border-none border-b border-outline focus:border-primary focus:ring-0 text-2xl md:text-3xl font-light leading-relaxed p-0 min-h-[300px] resize-none transition-colors duration-500 placeholder:text-surface-variant" placeholder="Enter the skeletal prompt here..."></textarea>
+</div>
+<div class="flex justify-start">
+<button class="bg-transparent text-white border border-white/10 px-16 py-4 font-label tracking-[0.3em] text-[0.65rem] font-light transition-all duration-1000 ease-out hover:border-white/40 hover:shadow-[0_0_30px_rgba(255,255,255,0.08)] flex items-center gap-6 group relative overflow-hidden">
+<span class="opacity-70 group-hover:opacity-100 transition-opacity duration-1000" style="font-variant: small-caps;">enhance protocol</span>
+<span class="material-symbols-outlined text-[16px] opacity-40 group-hover:opacity-90 transition-all duration-1000 group-hover:scale-110 font-extralight">auto_awesome</span>
+</button>
+</div>
+</div>
+<!-- Output Side / Architected Version -->
+<div class="lg:col-span-5 relative">
+<div class="sticky top-40 bg-surface-container-low p-12 border-none ring-1 ring-white/5">
+<div class="mb-12">
+<label class="font-label uppercase tracking-[0.1em] text-[0.65rem] text-outline block mb-6">Architected Output</label>
+<div class="serif-display text-lg md:text-xl leading-relaxed italic min-h-[150px]" style="color: #6b7280;">
+                            The output will materialize here, stripped of noise and rendered with structural clarity.
+                        </div>
+</div>
+<button class="mt-4 text-outline hover:text-on-surface transition-colors duration-300 font-label uppercase tracking-[0.1em] text-[0.65rem] flex items-center gap-2">
+<span class="material-symbols-outlined text-xs">content_copy</span> Copy Protocol
+                    </button>
+</div>
+</div>
+</section>
+<!-- Massive Brand Display -->
+<section class="w-full overflow-hidden flex justify-center items-end mt-24 mb-[-4vw]" style="background-color: #0d0e10;">
+<h2 class="brand-giant serif-display font-bold select-none" style="color: #FFFFFF; opacity: 1;">FORGE</h2>
+</section>
+</main>
+<!-- Footer -->
+<footer class="bg-transparent flex flex-col md:flex-row justify-between items-center w-full px-12 py-16 gap-8">
+<div class="flex flex-col gap-2">
+<div class="text-sm font-bold uppercase tracking-[0.15em]" style="color: #FFFFFF;">FORGE</div>
+<div class="text-[#9b9ea3] font-label text-[0.75rem] uppercase tracking-widest" style="color: #FFFFFF; opacity: 1;">© 2024 THE SILENT MONOLITH. ALL RIGHTS RESERVED.</div>
+</div>
+<div class="flex gap-12">
+<!-- Navigation links removed per request -->
+</div>
+</footer>
+</body></html>

@@ -103,40 +103,43 @@
     </style>
 </head>
 <script>
-document.querySelector("button").addEventListener("click", async () => {
+document.addEventListener("DOMContentLoaded", () => {
+    const button = document.querySelector("button");
     const textarea = document.querySelector("textarea");
-    const outputDiv = document.querySelector(".serif-display");
+    const outputDiv = document.getElementById("output");
 
-    const prompt = textarea.value;
+    button.addEventListener("click", async () => {
+        const prompt = textarea.value;
 
-    if (!prompt.trim()) {
-        alert("Enter a prompt first");
-        return;
-    }
-
-    outputDiv.innerText = "Processing...";
-
-    try {
-        const response = await fetch("/enhance", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({ prompt: prompt })
-        });
-
-        const data = await response.json();
-
-        if (data.result) {
-            outputDiv.innerText = data.result;
-        } else {
-            outputDiv.innerText = "Error: " + (data.error || "Unknown error");
+        if (!prompt.trim()) {
+            alert("Enter a prompt first");
+            return;
         }
 
-    } catch (error) {
-        outputDiv.innerText = "Request failed";
-        console.error(error);
-    }
+        outputDiv.innerText = "Processing...";
+
+        try {
+            const response = await fetch("/enhance", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ prompt: prompt })
+            });
+
+            const data = await response.json();
+
+            if (data.result) {
+                outputDiv.innerText = data.result;
+            } else {
+                outputDiv.innerText = "Error: " + (data.error || "Unknown error");
+            }
+
+        } catch (error) {
+            outputDiv.innerText = "Request failed";
+            console.error(error);
+        }
+    });
 });
 </script>
 <body class="bg-surface text-on-surface min-h-screen flex flex-col">

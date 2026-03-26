@@ -5,7 +5,7 @@ from flask import render_template
 app = Flask(__name__)
 
 client = Groq(
-        api_key="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"
+        api_key="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"
     )
 # paste your system_prompt here
 system_prompt = system_prompt = """

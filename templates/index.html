@@ -49,8 +49,34 @@
   ::-webkit-scrollbar{width:4px}
   ::-webkit-scrollbar-track{background:#0d0e10}
   ::-webkit-scrollbar-thumb{background:#23262b}
-  .brand-giant{font-size:clamp(2rem,18vw,24rem);line-height:0.8;letter-spacing:-0.05em}
+  .brand-giant{font-size:clamp(2rem,18vw,24rem);line-height:0.8;letter-spacing:0}
   #fluid-canvas{position:fixed;top:0;left:0;width:100vw;height:100vh;display:block;pointer-events:none;z-index:50}
+  .output-shell{position:sticky;top:7rem;display:flex;min-height:560px;max-height:calc(100vh - 8rem);flex-direction:column;border:1px solid rgba(255,255,255,.08);border-radius:8px;background:linear-gradient(180deg,rgba(24,26,29,.96),rgba(14,15,17,.96));box-shadow:0 24px 80px rgba(0,0,0,.34);overflow:hidden}
+  .output-head{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;padding:1.5rem 1.5rem 1.1rem;border-bottom:1px solid rgba(255,255,255,.06)}
+  .output-meta{display:flex;flex-wrap:wrap;gap:.5rem;padding:0 1.5rem 1rem;border-bottom:1px solid rgba(255,255,255,.05)}
+  .meta-pill{border:1px solid rgba(255,255,255,.08);border-radius:999px;padding:.35rem .65rem;color:#c6c6c6;background:rgba(255,255,255,.035);font-size:.68rem;letter-spacing:.08em;text-transform:uppercase}
+  .output-body{flex:1;overflow:auto;padding:1.5rem;scrollbar-gutter:stable;color:#d7dae2}
+  .output-empty{display:grid;place-items:center;text-align:center;color:#7f848d}
+  .empty-state{max-width:22rem}
+  .output-brief-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.75rem;margin-bottom:1rem}
+  .output-brief{border:1px solid rgba(255,255,255,.07);border-radius:8px;background:rgba(255,255,255,.035);padding:1rem}
+  .output-brief dt{margin-bottom:.45rem;color:#8c919b;font-size:.66rem;letter-spacing:.13em;text-transform:uppercase}
+  .output-brief dd{color:#eef0f5;font-size:.95rem;line-height:1.6}
+  .output-section{border:1px solid rgba(255,255,255,.07);border-radius:8px;background:rgba(255,255,255,.03);padding:1.15rem 1.2rem;margin-bottom:.9rem}
+  .output-section h3{margin:0 0:.85rem;color:#f5f6fa;font-family:'Noto Serif',serif;font-size:1.08rem;font-weight:700;line-height:1.3}
+  .output-section p{margin:.65rem 0 0;color:#c9cdd6;font-size:.95rem;line-height:1.75}
+  .output-section ul,.output-section ol{margin:.7rem 0 0 1.1rem;padding:0;color:#c9cdd6;font-size:.94rem;line-height:1.65}
+  .output-section li{padding-left:.25rem;margin:.35rem 0}
+  .output-section .definition-row{display:grid;grid-template-columns:minmax(7rem,.4fr) 1fr;gap:1rem;border-top:1px solid rgba(255,255,255,.06);padding-top:.75rem;margin-top:.75rem}
+  .definition-row strong{color:#8c919b;font-size:.68rem;letter-spacing:.12em;text-transform:uppercase}
+  .definition-row span{color:#d9dce5;line-height:1.65}
+  .skeleton-line{height:.85rem;border-radius:999px;background:linear-gradient(90deg,rgba(255,255,255,.06),rgba(255,255,255,.14),rgba(255,255,255,.06));background-size:200% 100%;animation:shimmer 1.4s infinite}
+  @keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+  @media (max-width:1023px){
+    .output-shell{position:relative;top:auto;min-height:430px;max-height:none}
+    .output-body{max-height:70vh}
+    .output-brief-grid{grid-template-columns:1fr}
+  }
 </style>
 </head>
 <body class="bg-surface text-on-surface min-h-screen flex flex-col">
@@ -60,26 +86,26 @@
 
 <!-- TopAppBar -->
 <nav class="bg-[#0d0e10] flex justify-center items-center w-full py-8 px-12 fixed top-0 z-50 border-none">
-  <div class="text-xl font-serif tracking-tighter text-[#c6c6c6] uppercase">FORGE</div>
+  <div class="text-xl font-serif tracking-normal text-[#c6c6c6] uppercase">FORGE</div>
 </nav>
 
 <main class="flex-grow pt-32 pb-12 px-6 md:px-12 flex flex-col items-center">
 
   <!-- Hero -->
   <header class="w-full max-w-6xl mb-24 mt-12 text-center md:text-left">
-    <h1 class="serif-display text-5xl md:text-7xl lg:text-8xl tracking-[-0.02em] text-on-surface leading-tight">
+    <h1 class="serif-display text-5xl md:text-7xl lg:text-8xl tracking-normal text-on-surface leading-tight">
       Elevate your <br/>
       <span class="text-secondary opacity-50">Vision</span>
     </h1>
   </header>
 
   <!-- Prompt Engine -->
-  <section class="w-full max-w-6xl grid grid-cols-1 lg:grid-cols-12 gap-16 lg:gap-24 mb-32">
+  <section class="w-full max-w-6xl grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 mb-24">
 
-    <div class="lg:col-span-7 flex flex-col gap-8">
+    <div class="lg:col-span-5 flex flex-col gap-8">
       <div class="relative group">
         <label class="font-label uppercase tracking-[0.1em] text-[0.65rem] text-outline mb-4 block">Raw Input</label>
-        <textarea class="w-full bg-transparent border-none border-b border-outline focus:border-primary focus:ring-0 text-2xl md:text-3xl font-light leading-relaxed p-0 min-h-[300px] resize-none transition-colors duration-500 placeholder:text-surface-variant" placeholder="Enter the skeletal prompt here..."></textarea>
+        <textarea class="w-full bg-transparent border-none border-b border-outline focus:border-primary focus:ring-0 text-2xl md:text-3xl font-light leading-relaxed p-0 min-h-[240px] resize-none transition-colors duration-500 placeholder:text-surface-variant" placeholder="Enter the skeletal prompt here..."></textarea>
       </div>
       <div class="flex justify-start">
         <button class="enhance-btn bg-transparent text-white border border-white/10 px-16 py-4 font-label tracking-[0.3em] text-[0.65rem] font-light transition-all duration-1000 ease-out hover:border-white/40 hover:shadow-[0_0_30px_rgba(255,255,255,0.08)] flex items-center gap-6 group relative overflow-hidden">
@@ -89,17 +115,29 @@
       </div>
     </div>
 
-    <div class="lg:col-span-5 relative">
-      <div class="sticky top-40 bg-surface-container-low p-12 border-none ring-1 ring-white/5">
-        <div class="mb-12">
-          <label class="font-label uppercase tracking-[0.1em] text-[0.65rem] text-outline block mb-6">Architected Output</label>
-          <div id="output" class="serif-display text-lg md:text-xl leading-relaxed italic min-h-[150px]" style="color:#6b7280;">
-            The output will materialize here, stripped of noise and rendered with structural clarity.
+    <div class="lg:col-span-7 relative">
+      <div class="output-shell">
+        <div class="output-head">
+          <div>
+            <label class="font-label uppercase tracking-[0.1em] text-[0.65rem] text-outline block mb-3">Architected Output</label>
+            <p class="text-sm leading-relaxed text-on-surface-variant">A structured preview for long prompts, grouped into readable sections.</p>
+          </div>
+          <button class="copy-btn text-outline hover:text-on-surface transition-colors duration-300 font-label uppercase tracking-[0.1em] text-[0.65rem] flex items-center gap-2 border border-white/10 rounded-full px-4 py-2">
+            <span class="material-symbols-outlined text-xs">content_copy</span>
+            <span class="copy-label">Copy</span>
+          </button>
+        </div>
+        <div id="output-meta" class="output-meta hidden">
+          <span id="template-chip" class="meta-pill">Template pending</span>
+          <span id="domain-chip" class="meta-pill">Domain pending</span>
+          <span id="confidence-chip" class="meta-pill">Confidence pending</span>
+        </div>
+        <div id="output" class="output-body output-empty">
+          <div class="empty-state">
+            <div class="material-symbols-outlined mb-4 text-[28px] opacity-50">auto_awesome</div>
+            <p class="serif-display text-xl leading-relaxed text-[#9ba0aa]">The enhanced prompt will appear here as a clean document preview.</p>
           </div>
         </div>
-        <button class="copy-btn mt-4 text-outline hover:text-on-surface transition-colors duration-300 font-label uppercase tracking-[0.1em] text-[0.65rem] flex items-center gap-2">
-          <span class="material-symbols-outlined text-xs">content_copy</span> Copy Protocol
-        </button>
       </div>
     </div>
 
@@ -127,19 +165,262 @@
   const ta   = document.querySelector("textarea");
   const out  = document.getElementById("output");
   const copy = document.querySelector(".copy-btn");
+  const copyLabel = document.querySelector(".copy-label");
+  const metaBar = document.getElementById("output-meta");
+  const templateChip = document.getElementById("template-chip");
+  const domainChip = document.getElementById("domain-chip");
+  const confidenceChip = document.getElementById("confidence-chip");
+  let latestOutput = "";
+
+  function setEnhancing(isEnhancing) {
+    btn.disabled = isEnhancing;
+    btn.classList.toggle("opacity-60", isEnhancing);
+    btn.classList.toggle("cursor-wait", isEnhancing);
+    btn.querySelector("span").textContent = isEnhancing ? "forging prompt" : "enhance protocol";
+  }
+
+  function setMeta(data) {
+    templateChip.textContent = data.template || data.template_id || "Template selected";
+    domainChip.textContent = data.domain ? `Domain ${data.domain}` : "Domain selected";
+    confidenceChip.textContent = data.confidence ? `Confidence ${data.confidence}` : "Confidence ready";
+    metaBar.classList.remove("hidden");
+  }
+
+  function renderLoading() {
+    latestOutput = "";
+    metaBar.classList.add("hidden");
+    out.className = "output-body";
+    out.replaceChildren();
+
+    const section = document.createElement("article");
+    section.className = "output-section";
+
+    const heading = document.createElement("div");
+    heading.className = "skeleton-line";
+    heading.style.width = "38%";
+    heading.style.marginBottom = "1.3rem";
+    section.appendChild(heading);
+
+    [92, 78, 86, 64, 72].forEach((width) => {
+      const line = document.createElement("div");
+      line.className = "skeleton-line";
+      line.style.width = `${width}%`;
+      line.style.marginTop = ".8rem";
+      section.appendChild(line);
+    });
+
+    out.appendChild(section);
+  }
+
+  function renderMessage(title, message) {
+    latestOutput = "";
+    metaBar.classList.add("hidden");
+    out.className = "output-body output-empty";
+    out.replaceChildren();
+
+    const empty = document.createElement("div");
+    empty.className = "empty-state";
+    const h = document.createElement("p");
+    h.className = "serif-display text-xl leading-relaxed text-[#f0f1f5]";
+    h.textContent = title;
+    const p = document.createElement("p");
+    p.className = "text-sm leading-relaxed mt-3 text-[#8f949e]";
+    p.textContent = message;
+    empty.append(h, p);
+    out.appendChild(empty);
+  }
+
+  function titleCase(value) {
+    return value
+      .toLowerCase()
+      .replace(/\b[a-z]/g, (char) => char.toUpperCase())
+      .replace(/\bAi\b/g, "AI")
+      .replace(/\bApi\b/g, "API")
+      .replace(/\bPrd\b/g, "PRD");
+  }
+
+  function extractHeading(line) {
+    const markdown = line.match(/^#{1,6}\s+(.+)$/);
+    if (markdown) return markdown[1].replace(/:$/, "").trim();
+
+    const numbered = line.match(/^(\d+(?:\.\d+)*[.)]?)\s+(.+)$/);
+    if (numbered) {
+      const label = numbered[1].replace(/[.)]$/, ".");
+      const text = numbered[2].replace(/:$/, "").trim();
+      const letters = text.replace(/[^A-Za-z]/g, "");
+      if (letters && letters === letters.toUpperCase()) return `${label} ${titleCase(text)}`;
+      return null;
+    }
+
+    const clean = line.replace(/:$/, "").trim();
+    const letters = clean.replace(/[^A-Za-z]/g, "");
+    if (line.endsWith(":") && clean.length <= 72) return clean;
+    if (clean.length <= 72 && letters.length > 3 && letters === letters.toUpperCase()) return titleCase(clean);
+    return null;
+  }
+
+  function appendParagraph(section, text) {
+    const p = document.createElement("p");
+    p.textContent = text;
+    section.appendChild(p);
+  }
+
+  function appendDefinition(section, key, value) {
+    const row = document.createElement("div");
+    row.className = "definition-row";
+    const strong = document.createElement("strong");
+    strong.textContent = key;
+    const span = document.createElement("span");
+    span.textContent = value;
+    row.append(strong, span);
+    section.appendChild(row);
+  }
+
+  function createSection(fragment, title) {
+    const section = document.createElement("article");
+    section.className = "output-section";
+    const h = document.createElement("h3");
+    h.textContent = title;
+    section.appendChild(h);
+    fragment.appendChild(section);
+    return section;
+  }
+
+  function createBriefGrid(fragment) {
+    let grid = fragment.querySelector?.(".output-brief-grid");
+    if (grid) return grid;
+    grid = document.createElement("dl");
+    grid.className = "output-brief-grid";
+    fragment.appendChild(grid);
+    return grid;
+  }
+
+  function appendBrief(fragment, key, value) {
+    const grid = createBriefGrid(fragment);
+    const item = document.createElement("div");
+    item.className = "output-brief";
+    const dt = document.createElement("dt");
+    dt.textContent = key;
+    const dd = document.createElement("dd");
+    dd.textContent = value;
+    item.append(dt, dd);
+    grid.appendChild(item);
+  }
+
+  function renderOutput(text) {
+    latestOutput = text;
+    out.className = "output-body";
+    out.replaceChildren();
+
+    const fragment = document.createDocumentFragment();
+    const lines = text.replace(/\r\n/g, "\n").split("\n");
+    let section = null;
+    let list = null;
+    let paragraph = [];
+
+    function ensureSection() {
+      if (!section) section = createSection(fragment, "Prompt Blueprint");
+      return section;
+    }
+
+    function flushParagraph() {
+      if (!paragraph.length) return;
+      appendParagraph(ensureSection(), paragraph.join(" "));
+      paragraph = [];
+    }
+
+    function clearList() {
+      list = null;
+    }
+
+    lines.forEach((rawLine) => {
+      const line = rawLine.trim();
+      if (!line) {
+        flushParagraph();
+        clearList();
+        return;
+      }
+
+      const heading = extractHeading(line);
+      if (heading) {
+        flushParagraph();
+        clearList();
+        section = createSection(fragment, heading);
+        return;
+      }
+
+      const keyValue = line.match(/^([A-Za-z][A-Za-z /_-]{1,28}):\s+(.+)$/);
+      if (keyValue) {
+        flushParagraph();
+        clearList();
+        const key = keyValue[1].trim();
+        const value = keyValue[2].trim();
+        if (!section && /^(role|task|objective|context|audience)$/i.test(key)) {
+          appendBrief(fragment, key, value);
+        } else {
+          appendDefinition(ensureSection(), key, value);
+        }
+        return;
+      }
+
+      const bullet = line.match(/^[-*\u2022]\s+(.+)$/);
+      const numbered = line.match(/^\d+[\.)]\s+(.+)$/);
+      if (bullet || numbered) {
+        flushParagraph();
+        const ordered = Boolean(numbered);
+        if (!list || (ordered && list.tagName !== "OL") || (!ordered && list.tagName !== "UL")) {
+          list = document.createElement(ordered ? "ol" : "ul");
+          ensureSection().appendChild(list);
+        }
+        const li = document.createElement("li");
+        li.textContent = (bullet || numbered)[1].trim();
+        list.appendChild(li);
+        return;
+      }
+
+      clearList();
+      paragraph.push(line);
+    });
+
+    flushParagraph();
+    if (!fragment.childNodes.length) renderMessage("No output returned", "Try a more specific raw prompt.");
+    else out.appendChild(fragment);
+  }
 
   btn.addEventListener("click", async () => {
     const p = ta.value;
     if (!p.trim()) { alert("Enter a prompt first"); return; }
-    out.innerText = "Processing...";
+    setEnhancing(true);
+    renderLoading();
     try {
       const r = await fetch("/enhance", { method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({prompt:p}) });
       const d = await r.json();
-      out.innerText = d.result || "Error: " + (d.error || "Unknown");
-    } catch(e) { out.innerText = "Request failed"; console.error(e); }
+      if (!r.ok || d.error) throw new Error(d.error || `Request failed with status ${r.status}`);
+      setMeta(d);
+      renderOutput(d.result || d.enhanced_prompt || "");
+    } catch(e) {
+      renderMessage("Request failed", e.message || "The enhancement service did not respond.");
+      console.error(e);
+    } finally {
+      setEnhancing(false);
+    }
   });
 
-  copy.addEventListener("click", () => navigator.clipboard.writeText(out.innerText));
+  copy.addEventListener("click", async () => {
+    if (!latestOutput.trim()) return;
+    try {
+      await navigator.clipboard.writeText(latestOutput);
+      copyLabel.textContent = "Copied";
+      copy.querySelector(".material-symbols-outlined").textContent = "check";
+      setTimeout(() => {
+        copyLabel.textContent = "Copy";
+        copy.querySelector(".material-symbols-outlined").textContent = "content_copy";
+      }, 1400);
+    } catch (e) {
+      console.error(e);
+      alert("Copy failed");
+    }
+  });
 </script>
 
 <!-- ═══════════════════════════════════════════════

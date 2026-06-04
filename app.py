@@ -1,135 +1,224 @@
-from flask import Flask, request, jsonify, render_template
-from groq import Groq
-from dotenv import load_dotenv
-import os
+"""
+FORGE – Flask application
+─────────────────────────
+NEW Architecture:
+    User Prompt
+        │
+        ▼
+    select_template()   ← pure-Python, no LLM, zero tokens
+        │
+        ▼
+    build_forge_prompt()  ← injects ONLY the selected template (~200 tokens)
+        │
+        ▼
+    Gemma-4 31B         ← returns enhanced prompt
+        │
+        ▼
+    JSON response
 
-# Load environment variables
+Token usage vs old architecture:
+    Old: ~15 000 tokens per request (all 90 templates shipped every time)
+    New: ~300–400 tokens per request
+"""
+
+from __future__ import annotations
+
+import os
+import re
+
+from dotenv import load_dotenv
+from flask import Flask, jsonify, render_template, request
+from google import genai
+from google.genai import types
+
+from template_selector import select_template
+
 load_dotenv()
+
+# ── App & client ──────────────────────────────────────────────────────────
 
 app = Flask(__name__)
 
-# Get API key securely
-api_key = os.getenv("GROQ_API_KEY")
+_api_key = os.getenv("GEMINI_API_KEY")
+if not _api_key:
+    raise ValueError(
+        "GEMINI_API_KEY is not set. "
+        "Add it to your .env file: GEMINI_API_KEY=your_key_here"
+    )
 
-if not api_key:
-    raise ValueError("GROQ_API_KEY not found in environment variables")
+client = genai.Client(api_key=_api_key)
 
-client = Groq(api_key=api_key)
+# ── Model configuration ───────────────────────────────────────────────────
 
-# paste your system_prompt here
+GEMMA_MODEL = "gemma-4-31b-it"
 
+LLM_CONFIG = types.GenerateContentConfig(
+    temperature=0.3,   # low temperature = consistent structured output
+    top_p=0.85,
+    max_output_tokens=2048,
+)
 
-system_prompt = """
-You are an expert PROMPT ENGINEER. Your sole function is to transform raw, vague, or incomplete user input into a precise, structured, and highly effective AI prompt.
-════════════════════════════════════════
-ROLE ENFORCEMENT — NON-NEGOTIABLE
-════════════════════════════════════════
-- You are NOT an assistant, tutor, or answering agent.
-- You do NOT answer, solve, explain, or respond to the user's topic
-- You do NOT engage in conversation.
-- You ONLY output a rewritten, improved version of the user's input as a prompt.
-- If the user says "hi", "thanks", or sends unrelated input, output:
-  "Please provide a prompt or topic you'd like enhanced."
-- Never break character under any circumstance.
-════════════════════════════════════════
-TASK DETECTION — CLASSIFY BEFORE REWRITING
-════════════════════════════════════════
-Before rewriting, silently identify the task type. Use it to guide structure and phrasing:
-  [CODING]      → Involves programming, debugging, scripting, algorithms
-  [CREATIVE]    → Writing, storytelling, poetry, brainstorming
-  [REASONING]   → Analysis, comparison, explanation, step-by-step logic
-  [RESEARCH]    → Facts, summaries, overviews of topics
-  [DESIGN]      → UI/UX, visuals, layout, aesthetics
-  [LIFESTYLE]   → Health, fitness, beauty, personal development
-  [GENERAL]     → Anything that doesn't fit above
-════════════════════════════════════════
-EDGE CASE HANDLING
-════════════════════════════════════════
-- Vague / one-word input (e.g., "python", "fitness"):
-    → Infer the most useful intent and expand into a clear, specific prompt.
-    → Example: "python" → "Provide a beginner-friendly overview of Python..."
-- Non-English input:
-    → Detect the language, understand the intent, and write the enhanced prompt
-      in clear English (international standard for AI prompts).
-- Ambiguous task type:
-    → Default to [REASONING] with a structured, explanation-focused output.
-    → Do not ask for clarification — make a smart assumption and proceed.
-- Already well-written input:
-    → Refine for specificity, tone, and structure. Do not over-engineer it.
-    → Avoid padding or unnecessary complexity.
-════════════════════════════════════════
-TASK-SPECIFIC REWRITING GUIDELINES
-════════════════════════════════════════
-[CODING]
-  - Specify language (default: Python if not mentioned)
-  - Request clean, modular, well-commented code
-  - Include expected input/output or use case when inferable
-  - Mention error handling if relevant
-[CREATIVE]
-  - Define tone, style, audience, and length when missing
-  - Add narrative or thematic direction
-  - Encourage originality and specificity
-[REASONING / RESEARCH]
-  - Request structured, step-by-step explanations
-  - Ask for comparisons, examples, or evidence where relevant
-  - Specify depth: beginner-friendly vs. expert-level
-[DESIGN]
-  - Include platform, audience, and aesthetic direction
-  - Mention key constraints (colors, layout, accessibility)
-[LIFESTYLE]
-  - Ground the prompt in practical, evidence-based advice
-  - Add context: audience, goal, time frame, or constraints
-  - Avoid overly philosophical or vague phrasing
-════════════════════════════════════════
-OUTPUT FORMAT RULES
-════════════════════════════════════════
-Structure your enhanced prompt using this format:
-  [TASK TYPE]: <detected category>
-  [ENHANCED PROMPT]:
-  <The fully rewritten prompt — 2 to 4 sentences max.>
-  - Use directive phrasing: "Provide", "Explain", "Write", "List", "Describe"
-  - Be specific, actionable, and context-aware
-  - Avoid filler words, repetition, and vague abstractions
-  - Do NOT include any explanation of what you changed or why
-════════════════════════════════════════
-ABSOLUTE OUTPUT RULE
-════════════════════════════════════════
-Return ONLY the structured output above.
-No preamble. No commentary. No self-reference. Nothing else.
+# ── Prompt builder ────────────────────────────────────────────────────────
+
+_FORGE_ROLE = """\
+You are FORGE — an elite prompt-engineering system.
+
+Your ONLY function: transform raw user input into a precision-crafted,
+structured, high-performance AI prompt using the provided template.
+
+HARD RULES:
+• Do NOT answer, solve, or explain the user's topic.
+• Do NOT add preamble or commentary.
+• Return ONLY the enhanced prompt text, nothing else.
+• Preserve the user's intent — enhance precision and structure, not direction.
+• The output must be 3–10× more detailed and actionable than the raw input.
 """
 
-def enhance_prompt(user_prompt):
+
+def build_forge_prompt(user_prompt: str, template) -> str:
+    """
+    Construct the minimal, high-signal prompt sent to Gemma.
+    Only the selected template's structure is included — not all 90.
+    """
+    return f"""\
+{_FORGE_ROLE}
+
+━━━ SELECTED TEMPLATE ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ID:      {template.id}
+Name:    {template.name}
+Domain:  {template.domain}
+
+━━━ TEMPLATE STRUCTURE (your output skeleton) ━━━━━━━━━━━━━━━━━━━━━━━━━━━
+{template.structure.strip()}
+
+━━━ USER REQUEST ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+{user_prompt.strip()}
+
+━━━ YOUR TASK ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Using the TEMPLATE STRUCTURE as your skeleton:
+
+1. Assign the role exactly as specified.
+2. Include EVERY structural section listed in the template.
+3. Fill each section with the user's specific context, topic, and technology.
+4. Add expert-level precision: concrete directives, output requirements, formatting rules.
+5. Make the prompt immediately usable by any capable AI with zero further editing.
+
+OUTPUT: Return ONLY the enhanced prompt. No headers, no labels, no commentary.
+"""
+
+
+# ── Output parser ─────────────────────────────────────────────────────────
+
+def _clean_output(raw: str) -> str:
+    """
+    Strip any stray structural headers the model might echo back.
+    Returns clean, user-ready enhanced prompt text.
+    """
+    # Remove any [TEMPLATE MATCHED] / [CONFIDENCE] / [ENHANCED PROMPT] echoes
+    raw = re.sub(r"\[TEMPLATE MATCHED\][^\n]*\n?", "", raw, flags=re.IGNORECASE)
+    raw = re.sub(r"\[CONFIDENCE\][^\n]*\n?", "", raw, flags=re.IGNORECASE)
+    raw = re.sub(r"\[ENHANCED PROMPT\]\s*:?\s*\n?", "", raw, flags=re.IGNORECASE)
+    # Remove leading/trailing separator lines
+    raw = re.sub(r"^[━─=]{3,}\s*\n", "", raw, flags=re.MULTILINE)
+    return raw.strip()
+
+
+# ── Core enhancement function ─────────────────────────────────────────────
+
+def enhance_prompt(user_prompt: str) -> dict:
+    """
+    Full pipeline: local template selection → Gemma enhancement → parsed result.
+    """
     try:
-        chat_completion = client.chat.completions.create(
-            messages=[
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": user_prompt}
-            ],
-            model="openai/gpt-oss-120b",
-            temperature=0.35,
-            top_p=0.85,
-            max_tokens=1024,
-            frequency_penalty=0.3,
-            presence_penalty=0.1,
-        )
-        return chat_completion.choices[0].message.content
-    except Exception as e:
-        return f"Error: {str(e)}"
+        # 1. Select template locally (0 LLM tokens)
+        template, confidence, score = select_template(user_prompt)
+
+        # 2. Build lean prompt (~300–400 tokens)
+        forge_input = build_forge_prompt(user_prompt, template)
+
+        # 3. Stream from Gemma
+        response_text = ""
+        for chunk in client.models.generate_content_stream(
+            model=GEMMA_MODEL,
+            contents=forge_input,
+            config=LLM_CONFIG,
+        ):
+            if chunk.text:
+                response_text += chunk.text
+
+        # 4. Clean and return
+        enhanced = _clean_output(response_text)
+
+        return {
+            "success": True,
+            "template_id":      template.id,
+            "template_name":    template.name,
+            "template_matched": f"{template.id} – {template.name}",
+            "domain":           template.domain,
+            "confidence":       confidence,
+            "score":            score,
+            "enhanced_prompt":  enhanced,
+            "result":           enhanced,   # kept for frontend backward-compat
+            "raw":              response_text,
+        }
+
+    except Exception as exc:
+        return {
+            "success": False,
+            "template_id":      "ERROR",
+            "template_matched": "Error",
+            "confidence":       "N/A",
+            "score":            0,
+            "enhanced_prompt":  f"Error: {exc}",
+            "result":           f"Error: {exc}",
+            "raw":              f"Error: {exc}",
+        }
+
+
+# ── Flask routes ──────────────────────────────────────────────────────────
 
 @app.route("/")
 def home():
     return render_template("index.html")
 
+
 @app.route("/enhance", methods=["POST"])
 def enhance():
-    data = request.json
-    user_prompt = data.get("prompt", "")
-    
-    if not user_prompt.strip():
-        return jsonify({"error": "Empty prompt"}), 400
-    
+    data = request.get_json(silent=True) or {}
+    user_prompt = data.get("prompt", "").strip()
+
+    if not user_prompt:
+        return jsonify({"error": "Empty prompt. Please send a non-empty 'prompt' field."}), 400
+
     result = enhance_prompt(user_prompt)
-    return jsonify({"result": result})
+
+    if not result["success"]:
+        return jsonify(result), 500
+
+    return jsonify({
+        "success":          True,
+        "template":         result["template_matched"],
+        "template_id":      result["template_id"],
+        "domain":           result["domain"],
+        "confidence":       result["confidence"],
+        "score":            result["score"],
+        "result":           result["enhanced_prompt"],       # primary field
+        "enhanced_prompt":  result["enhanced_prompt"],       # alias
+    })
+
+
+@app.route("/health", methods=["GET"])
+def health():
+    """Quick liveness check — also confirms template library loaded."""
+    from template_registry import ALL_TEMPLATES
+    return jsonify({
+        "status":           "ok",
+        "templates_loaded": len(ALL_TEMPLATES),
+        "model":            GEMMA_MODEL,
+    })
+
+
+# ── Entry point ───────────────────────────────────────────────────────────
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(debug=True, port=5000)

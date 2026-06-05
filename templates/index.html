@@ -1,677 +1,1421 @@
 <!DOCTYPE html>
 <html class="dark" lang="en">
+
 <head>
-<meta charset="utf-8"/>
-<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
-<script id="tailwind-config">
-  tailwind.config = {
-    darkMode: "class",
-    theme: {
-      extend: {
-        colors: {
-          surface: "#060608",
-          card: "#0d0d10",
-          elevated: "#131317",
-          border: "#1b1b20",
-          "border-strong": "#2d2d34",
-          gold: "#c5a880",
-          "gold-dim": "#9d8058",
-          platinum: "#e5e7eb",
-          "on-surface": "#f4f4f5",
-          "on-surface-muted": "#71717a",
-        },
-        fontFamily: {
-          headline: ["Playfair Display", "serif"],
-          display: ["Outfit", "sans-serif"],
-          body: ["Inter", "sans-serif"],
-          label: ["Outfit", "sans-serif"],
-        },
-        borderRadius: {
-          DEFAULT: "8px",
-          md: "8px",
-          lg: "12px",
-          xl: "16px",
-          full: "9999px",
+  <meta charset="utf-8" />
+  <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap"
+    rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+    rel="stylesheet" />
+  <script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            surface: "#060608",
+            card: "#0d0d10",
+            elevated: "#131317",
+            border: "#1b1b20",
+            "border-strong": "#2d2d34",
+            gold: "#c5a880",
+            "gold-dim": "#9d8058",
+            platinum: "#e5e7eb",
+            "on-surface": "#f4f4f5",
+            "on-surface-muted": "#71717a",
+          },
+          fontFamily: {
+            headline: ["Playfair Display", "serif"],
+            display: ["Outfit", "sans-serif"],
+            body: ["Inter", "sans-serif"],
+            label: ["Outfit", "sans-serif"],
+          },
+          borderRadius: {
+            DEFAULT: "8px",
+            md: "8px",
+            lg: "12px",
+            xl: "16px",
+            full: "9999px",
+          },
         },
       },
-    },
-  }
-</script>
-<style>
-  .material-symbols-outlined{font-variation-settings:'FILL' 0,'wght' 200,'GRAD' 0,'opsz' 24;font-size:20px}
-  html{color-scheme:dark}
-  body{background-color:#060608;color:#f4f4f5;font-family:'Inter',sans-serif;min-height:100dvh}
-  .serif-display{font-family:'Playfair Display',serif}
-  ::-webkit-scrollbar{width:6px;height:6px}
-  ::-webkit-scrollbar-track{background:transparent}
-  ::-webkit-scrollbar-thumb{background:#2d2d34;border-radius:3px}
-  ::-webkit-scrollbar-thumb:hover{background:#c5a880}
-  *{scrollbar-width:thin;scrollbar-color:#2d2d34 transparent}
-  .brand-giant{font-size:clamp(2rem,18vw,24rem);line-height:0.8;letter-spacing:-0.03em}
-  #fluid-canvas{position:fixed;top:0;left:0;width:100vw;height:100vh;display:block;pointer-events:none;z-index:var(--z-base)}
-  
-  :root{
-    /* ── Surface & Hairline ── */
-    --surface-page:#060608;
-    --surface-card:#0d0d10;
-    --surface-elevated:#131317;
-    --hairline:#1b1b20;
-    --hairline-strong:#2d2d34;
+    }
+  </script>
+  <style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 200, 'GRAD' 0, 'opsz' 24;
+      font-size: 20px
+    }
 
-    /* ── Luxury accents ── */
-    --accent:#c5a880; /* Champagne Gold */
-    --accent-dim:#9d8058;
-    --accent-secondary:#ffffff; /* Platinum White */
-    --accent-success:#10b981;
-    --accent-warning:#f59e0b;
-    --accent-error:#ef4444;
-    --focus-ring:rgba(197, 168, 128, 0.25);
+    html {
+      color-scheme: dark
+    }
 
-    /* ── Text ── */
-    --label:#71717a;
-    --label-strong:#f4f4f5;
+    ::selection {
+      background: rgba(197, 168, 128, 0.25);
+      color: #ffffff
+    }
 
-    /* ── Typography scale ── */
-    --text-xs:0.75rem;--text-sm:0.875rem;--text-base:1rem;
-    --text-lg:1.125rem;--text-xl:1.25rem;--text-2xl:1.5rem;--text-3xl:1.875rem;
+    body {
+      background-color: #060608;
+      color: #f4f4f5;
+      font-family: 'Inter', sans-serif;
+      min-height: 100dvh;
+      opacity: 0;
+      transition: opacity 0.8s ease
+    }
 
-    /* ── Spacing scale ── */
-    --space-1:0.25rem;--space-2:0.5rem;--space-3:0.75rem;
-    --space-4:1rem;--space-5:1.25rem;--space-6:1.5rem;
-    --space-8:2rem;--space-10:2.5rem;--space-12:3rem;
+    body.loaded {
+      opacity: 1
+    }
 
-    /* ── Layout constants ── */
-    --header-height:7rem;--output-min-height:560px;
-    --radius-sm:4px;--radius-md:8px;--radius-lg:12px;--radius-xl:16px;
+    .serif-display {
+      font-family: 'Playfair Display', serif
+    }
 
-    /* ── Z-index scale ── */
-    --z-base:0;--z-dropdown:10;--z-sticky:20;--z-fixed:30;
-    --z-modal-backdrop:40;--z-modal:50;--z-toast:60;--z-tooltip:70;
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px
+    }
 
-    /* ── Transitions ── */
-    --ease-default:cubic-bezier(.16,1,.3,1);
-    --ease-out:cubic-bezier(0,0,.2,1);
-    --transition-fast:150ms var(--ease-default);
-    --transition-base:250ms var(--ease-default);
-    --transition-slow:400ms var(--ease-default);
-  }
+    ::-webkit-scrollbar-track {
+      background: rgba(255, 255, 255, 0.01)
+    }
 
-  .surface-page{
-    background:var(--surface-page);
-    border-bottom:1px solid var(--hairline);
-  }
-  .surface-card{
-    background:var(--surface-card);
-    border:1px solid var(--hairline);
-    border-radius:var(--radius-lg);
-    box-shadow:0 12px 30px rgba(0, 0, 0, 0.4);
-    transition:border-color var(--transition-base), box-shadow var(--transition-base), transform var(--transition-base);
-  }
-  .surface-card:hover{
-    border-color:var(--accent);
-    box-shadow:0 16px 40px rgba(197, 168, 128, 0.04), 0 8px 20px rgba(0, 0, 0, 0.6);
-  }
-  .surface-elevated{
-    background:var(--surface-elevated);
-    border:1px solid var(--hairline);
-    border-radius:var(--radius-lg);
-    box-shadow:0 8px 24px rgba(0, 0, 0, 0.5);
-  }
-  .field-label{font-family:'Outfit',sans-serif;font-size:var(--text-xs);font-weight:600;letter-spacing:.15em;text-transform:uppercase;color:var(--label)}
-  .field-label-strong{color:var(--label-strong)}
-  
-  .output-shell{
-    position:sticky;
-    top:var(--header-height);
-    display:flex;
-    min-height:var(--output-min-height);
-    max-height:calc(100dvh - 8rem);
-    flex-direction:column;
-    background:#0d0d10;
-    box-shadow:0 16px 40px rgba(0, 0, 0, 0.6);
-    overflow:hidden;
-    border:1px solid var(--hairline-strong);
-    border-radius:var(--radius-lg);
-    transition:border-color var(--transition-base), box-shadow var(--transition-base);
-  }
-  .output-shell:hover{
-    border-color:var(--accent);
-  }
-  .output-head{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;padding:1.5rem 1.5rem 1.1rem;border-bottom:1px solid var(--hairline)}
-  .output-meta{display:flex;flex-wrap:wrap;gap:.5rem;padding:0 1.5rem 1rem;border-bottom:1px solid var(--hairline)}
-  .meta-pill{border:1px solid var(--hairline-strong);border-radius:var(--radius-sm);padding:.4rem .75rem;color:#e2e8f0;background:#131317;font-family:'Outfit',sans-serif;font-size:var(--text-xs);letter-spacing:.08em;text-transform:uppercase;transition:all var(--transition-fast)}
-  .meta-pill:hover{background:#1c1c24;border-color:var(--accent)}
-  .output-body{flex:1;overflow:auto;padding:1.5rem;scrollbar-gutter:stable;color:#e2e2e5}
-  .output-empty{display:grid;place-items:center;text-align:center;color:var(--label)}
-  .empty-state{max-width:22rem}
-  
-  .output-brief-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1rem;margin-bottom:1.25rem}
-  .output-brief{border:1px solid var(--hairline);border-radius:var(--radius-sm);background:#131317;padding:1.15rem;transition:border-color var(--transition-base)}
-  .output-brief:hover{border-color:var(--accent)}
-  .output-brief dt{margin-bottom:.45rem;color:var(--accent);font-family:'Outfit',sans-serif;font-size:var(--text-xs);letter-spacing:.15em;text-transform:uppercase;font-weight:500}
-  .output-brief dd{color:#ffffff;font-size:1rem;line-height:1.6}
-  
-  .output-section{border:1px solid var(--hairline);border-left:3px solid var(--accent);border-radius:var(--radius-sm);background:#0d0d10;padding:1.25rem 1.5rem;margin-bottom:1.2rem;transition:border-color var(--transition-base)}
-  .output-section:hover{border-color:var(--accent-secondary)}
-  .output-section h3{margin:0 0 1rem;color:#ffffff;font-family:'Playfair Display',serif;font-size:1.25rem;font-weight:500;line-height:1.3}
-  .output-section p{margin:.65rem 0 0;color:#a1a1aa;font-size:.95rem;line-height:1.75;font-weight:300}
-  .output-section ul,.output-section ol{margin:.8rem 0 0 1.2rem;padding:0;color:#d4d4d8;font-size:.95rem;line-height:1.7;font-weight:300}
-  .output-section li{padding-left:.25rem;margin:.35rem 0}
-  .output-section .definition-row{display:grid;grid-template-columns:minmax(7rem,.4fr) 1fr;gap:1rem;border-top:1px solid var(--hairline);padding-top:.75rem;margin-top:.75rem}
-  .definition-row strong{color:#a1a1aa;font-family:'Outfit',sans-serif;font-size:var(--text-xs);letter-spacing:.12em;text-transform:uppercase;font-weight:500}
-  .definition-row span{color:#ffffff;line-height:1.65;font-weight:300}
-  
-  .skeleton-line{height:.85rem;border-radius:999px;background:linear-gradient(90deg,#131317,#27272a,#131317);background-size:200% 100%;animation:shimmer 1.4s infinite}
-  @keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
-  
-  .example-chip{font-family:'Outfit',sans-serif;font-size:var(--text-xs);font-weight:400;letter-spacing:.08em;text-transform:uppercase;color:var(--label);background:#0d0d10;border:1px solid var(--hairline);border-radius:var(--radius-sm);padding:.5rem .9rem;cursor:pointer;transition:all var(--transition-base)}
-  .example-chip:hover{color:var(--accent-secondary);background:#131317;border-color:var(--accent);transform:translateY(-1px);box-shadow:0 4px 10px rgba(0,0,0,0.4)}
-  .example-chip:active{transform:translateY(0) scale(.96)}
+    ::-webkit-scrollbar-thumb {
+      background: rgba(197, 168, 128, 0.15);
+      border-radius: 6px;
+      transition: background 0.3s ease
+    }
 
-  /* ── Entrance Animations ── */
-  @keyframes fade-in-up{
-    from{opacity:0;transform:translateY(12px)}
-    to{opacity:1;transform:translateY(0)}
-  }
-  .animate-entrance{animation:fade-in-up var(--transition-slow) forwards;opacity:0}
-  .animate-entrance.in{opacity:1}
-  .stagger-1{animation-delay:60ms}
-  .stagger-2{animation-delay:120ms}
-  .stagger-3{animation-delay:180ms}
-  .stagger-4{animation-delay:240ms}
-  .stagger-5{animation-delay:300ms}
-  
-  /* ── Keyboard Shortcut elements ── */
-  .shortcut-key{
-    font-family:'Outfit',sans-serif;
-    font-size:var(--text-xs);
-    font-weight:500;
-    color:var(--accent);
-    background:#131317;
-    border:1px solid var(--hairline-strong);
-    border-radius:var(--radius-sm);
-    padding:.15rem .45rem;
-  }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #c5a880
+    }
 
-  /* Focus and buttons */
-  *:focus-visible{outline:1px solid var(--accent);outline-offset:2px}
-  .btn-ghost{transition:all var(--transition-fast)}
-  .btn-ghost:hover{background:rgba(255,255,255,.04);color:#ffffff}
-  .btn-ghost:active{transform:scale(.98)}
+    * {
+      scrollbar-width: thin;
+      scrollbar-color: #2d2d34 transparent
+    }
 
-  /* Input focus */
-  textarea:focus-visible{outline:none}
-  textarea:focus-visible + .focus-ring,
-  .input-wrapper:focus-within .focus-ring{opacity:1;transform:scaleX(1)}
-  .focus-ring{height:1px;background:linear-gradient(90deg,var(--accent),#ffffff);transform:scaleX(0);transform-origin:left;transition:transform var(--transition-base);opacity:.9}
+    .brand-giant {
+      font-size: clamp(2rem, 18vw, 24rem);
+      line-height: 1.0;
+      padding-bottom: 0.05em;
+      letter-spacing: -0.03em;
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0.95) 45%, rgba(197, 168, 128, 1) 50%, rgba(255, 255, 255, 0.95) 55%, rgba(255, 255, 255, 0.95) 100%);
+      background-size: 200% auto;
+      background-position: 100% 0;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      opacity: 0.9;
+      transition: letter-spacing 1.5s var(--ease-default), filter 1.5s var(--ease-default), background-position 1.5s var(--ease-default), opacity 1.5s var(--ease-default)
+    }
 
-  /* Toast System */
-  .toast-container{position:fixed;bottom:2rem;right:2rem;z-index:var(--z-toast);display:flex;flex-direction:column;gap:.75rem;pointer-events:none}
-  .toast{
-    pointer-events:auto;
-    display:flex;
-    align-items:center;
-    gap:.75rem;
-    padding:.75rem 1.25rem;
-    background:#0d0d10;
-    border:1px solid var(--hairline-strong);
-    border-radius:var(--radius-sm);
-    box-shadow:0 12px 32px rgba(0,0,0,.5);
-    animation:toast-in var(--transition-base) forwards;
-    opacity:0;
-    transform:translateX(120%);
-  }
-  .toast.removing{animation:toast-out var(--transition-fast) forwards}
-  @keyframes toast-in{to{opacity:1;transform:translateX(0)}}
-  @keyframes toast-out{to{opacity:0;transform:translateX(120%)}}
-  .toast-icon{font-size:18px;flex-shrink:0}
-  .toast-message{font-size:var(--text-sm);color:#ffffff;font-weight:400}
-  .toast-success{border-left:3px solid var(--accent);border-color:var(--hairline-strong);background:#0d0d10}
-  .toast-success .toast-icon{color:var(--accent) !important}
-  .toast-error{border-left:3px solid var(--accent-error);border-color:var(--hairline-strong);background:#1a0f0f}
-  .toast-error .toast-icon{color:var(--accent-error) !important}
+    .brand-giant:hover {
+      letter-spacing: 0.06em;
+      background-position: 0% 0;
+      filter: drop-shadow(0 0 45px rgba(197, 168, 128, 0.25));
+      opacity: 1
+    }
 
-  /* Shortcuts Modal */
-  .shortcuts-modal{
-    position:fixed;inset:0;z-index:var(--z-modal);
-    display:flex;align-items:center;justify-content:center;
-    background:rgba(0,0,0,0.85);opacity:0;pointer-events:none;
-    transition:opacity var(--transition-base);
-  }
-  .shortcuts-modal.open{opacity:1;pointer-events:auto}
-  .shortcuts-panel{
-    background:#0d0d10;
-    border:1px solid var(--hairline-strong);
-    border-radius:var(--radius-lg);
-    padding:var(--space-8);
-    max-width:430px;
-    width:90%;
-    box-shadow:0 24px 64px rgba(0,0,0,0.8);
-    transform:scale(.94);
-    transition:transform var(--transition-base);
-  }
-  .shortcuts-modal.open .shortcuts-panel{transform:scale(1)}
-  .shortcuts-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem}
-  .shortcuts-title{font-family:'Playfair Display',serif;font-size:1.5rem;font-weight:500;color:#ffffff}
-  .shortcuts-close{background:none;border:none;color:var(--label);cursor:pointer;padding:.25rem}
-  .shortcuts-close:hover{color:#ffffff}
-  .shortcuts-list{display:grid;gap:.75rem}
-  .shortcut-row{display:flex;justify-content:space-between;align-items:center;padding:.6rem .8rem;background:#131317;border-radius:var(--radius-sm);border:1px solid var(--hairline)}
-  .shortcut-desc{font-size:var(--text-sm);color:var(--label);font-weight:300}
+    #fluid-canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      display: block;
+      pointer-events: none;
+      z-index: var(--z-base)
+    }
 
-  /* Empty State */
-  .empty-state-icon{animation:float 4s ease-in-out infinite}
-  @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
-  .empty-state-title{font-family:'Playfair Display',serif;font-size:1.5rem;font-weight:500;margin-bottom:.5rem;color:#ffffff}
-  .empty-state-desc{font-size:.9rem;line-height:1.6;color:var(--label);font-weight:300}
+    :root {
+      /* ── Surface & Hairline ── */
+      --surface-page: #060608;
+      --surface-card: #0d0d10;
+      --surface-elevated: #131317;
+      --hairline: #1b1b20;
+      --hairline-strong: #2d2d34;
 
-  /* Copy Format Dropdown */
-  .copy-dropdown{position:relative}
-  .copy-dropdown-menu{
-    position:absolute;top:100%;right:0;margin-top:.5rem;
-    background:#0d0d10;border:1px solid var(--hairline-strong);
-    border-radius:var(--radius-sm);box-shadow:0 12px 32px rgba(0,0,0,.7);
-    min-width:160px;opacity:0;visibility:hidden;
-    transform:translateY(-12px);transition:all var(--transition-fast);
-    z-index:var(--z-dropdown);
-  }
-  .copy-dropdown.open .copy-dropdown-menu{opacity:1;visibility:visible;transform:translateY(0)}
-  .copy-dropdown-item{display:flex;align-items:center;gap:.75rem;width:100%;padding:.65rem 1rem;background:none;border:none;color:#e5e7eb;font-family:'Outfit',sans-serif;font-size:var(--text-sm);text-align:left;cursor:pointer;transition:all var(--transition-fast)}
-  .copy-dropdown-item:hover{background:#131317;color:var(--accent)}
-  
-  /* Auto-save Indicator */
-  .autosave-indicator{display:flex;align-items:center;gap:.4rem;font-family:'Outfit',sans-serif;font-size:var(--text-xs);letter-spacing:.08em;text-transform:uppercase;color:var(--label)}
-  .autosave-dot{width:4px;height:4px;border-radius:50%;background:currentColor;animation:pulse-glow 2s infinite}
-  @keyframes pulse-glow{0%,100%{opacity:1}50%{opacity:.3}}
+      /* ── Luxury accents ── */
+      --accent: #c5a880;
+      /* Champagne Gold */
+      --accent-dim: #9d8058;
+      --accent-secondary: #ffffff;
+      /* Platinum White */
+      --accent-success: #10b981;
+      --accent-warning: #f59e0b;
+      --accent-error: #ef4444;
+      --focus-ring: rgba(197, 168, 128, 0.25);
 
-  /* Premium Enhance Button Styles */
-  .enhance-btn{
-    background:#060608 !important;
-    border:1px solid #c5a880 !important;
-    color:#c5a880 !important;
-    font-weight:600 !important;
-    letter-spacing:.2em !important;
-    box-shadow:0 4px 12px rgba(0, 0, 0, 0.5) !important;
-    transition:all var(--transition-base) !important;
-  }
-  .enhance-btn .btn-spinner {
-    border-top-color:#c5a880 !important;
-  }
-  .enhance-btn span, .enhance-btn span.material-symbols-outlined {
-    color:#c5a880 !important;
-  }
-  .enhance-btn:hover{
-    background:#131317 !important;
-    border-color:#ffffff !important;
-    color:#ffffff !important;
-    box-shadow:0 6px 20px rgba(197, 168, 128, 0.15), 0 4px 10px rgba(0, 0, 0, 0.7) !important;
-    transform:translateY(-2px);
-  }
-  .enhance-btn:hover span, .enhance-btn:hover span.material-symbols-outlined {
-    color:#ffffff !important;
-  }
-  .enhance-btn:active{
-    transform:translateY(0) scale(.97);
-    box-shadow:0 2px 6px rgba(0,0,0,0.5) !important;
-  }
+      /* ── Text ── */
+      --label: #71717a;
+      --label-strong: #f4f4f5;
 
-  /* Confidence colors */
-  #confidence-chip.confidence-high {
-    color: #ffffff !important;
-    border-color: var(--accent) !important;
-    background: rgba(197, 168, 128, 0.1) !important;
-  }
-  #confidence-chip.confidence-medium {
-    color: #ffffff !important;
-    border-color: #f59e0b !important;
-    background: rgba(245, 158, 11, 0.1) !important;
-  }
-  #confidence-chip.confidence-low {
-    color: #ffffff !important;
-    border-color: #ef4444 !important;
-    background: rgba(239, 68, 68, 0.1) !important;
-  }
+      /* ── Typography scale ── */
+      --text-xs: 0.75rem;
+      --text-sm: 0.875rem;
+      --text-base: 1rem;
+      --text-lg: 1.125rem;
+      --text-xl: 1.25rem;
+      --text-2xl: 1.5rem;
+      --text-3xl: 1.875rem;
 
-  @media (max-width:1023px){
-    .output-shell{position:relative;top:auto;min-height:430px;max-height:none}
-    .output-brief-grid{grid-template-columns:1fr}
-  }
-</style>
+      /* ── Spacing scale ── */
+      --space-1: 0.25rem;
+      --space-2: 0.5rem;
+      --space-3: 0.75rem;
+      --space-4: 1rem;
+      --space-5: 1.25rem;
+      --space-6: 1.5rem;
+      --space-8: 2rem;
+      --space-10: 2.5rem;
+      --space-12: 3rem;
+
+      /* ── Layout constants ── */
+      --header-height: 7rem;
+      --output-min-height: 560px;
+      --radius-sm: 4px;
+      --radius-md: 8px;
+      --radius-lg: 12px;
+      --radius-xl: 16px;
+
+      /* ── Z-index scale ── */
+      --z-base: 0;
+      --z-dropdown: 10;
+      --z-sticky: 20;
+      --z-fixed: 30;
+      --z-modal-backdrop: 40;
+      --z-modal: 50;
+      --z-toast: 60;
+      --z-tooltip: 70;
+
+      /* ── Transitions ── */
+      --ease-default: cubic-bezier(.16, 1, .3, 1);
+      --ease-out: cubic-bezier(0, 0, .2, 1);
+      --transition-fast: 150ms var(--ease-default);
+      --transition-base: 250ms var(--ease-default);
+      --transition-slow: 400ms var(--ease-default);
+    }
+
+    .surface-page {
+      background: rgba(6, 6, 8, 0.75);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--hairline);
+    }
+
+    .surface-card {
+      background: var(--surface-card);
+      border: 1px solid var(--hairline);
+      border-radius: var(--radius-lg);
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.4);
+      transition: border-color var(--transition-base), box-shadow var(--transition-base), transform var(--transition-base);
+    }
+
+    .surface-card:hover {
+      border-color: var(--accent);
+      box-shadow: 0 16px 40px rgba(197, 168, 128, 0.04), 0 8px 20px rgba(0, 0, 0, 0.6);
+    }
+
+    .surface-elevated {
+      background: var(--surface-elevated);
+      border: 1px solid var(--hairline);
+      border-radius: var(--radius-lg);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+    }
+
+    .field-label {
+      font-family: 'Outfit', sans-serif;
+      font-size: var(--text-xs);
+      font-weight: 600;
+      letter-spacing: .15em;
+      text-transform: uppercase;
+      color: var(--label)
+    }
+
+    .field-label-strong {
+      color: var(--label-strong)
+    }
+
+    .output-shell {
+      display: flex;
+      min-height: var(--output-min-height);
+      max-height: calc(100dvh - 8rem);
+      flex-direction: column;
+      background: #0d0d10;
+      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6);
+      overflow: hidden;
+      border: 1px solid var(--hairline-strong);
+      border-radius: var(--radius-lg);
+      transition: border-color var(--transition-base), box-shadow var(--transition-base);
+    }
+
+    .output-shell:hover {
+      border-color: var(--accent);
+    }
+
+    .output-head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 1rem;
+      padding: 1.5rem 1.5rem 1.1rem;
+      border-bottom: 1px solid var(--hairline)
+    }
+
+    .output-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: .5rem;
+      padding: 0 1.5rem 1rem;
+      border-bottom: 1px solid var(--hairline)
+    }
+
+    .meta-pill {
+      border: 1px solid var(--hairline-strong);
+      border-radius: var(--radius-sm);
+      padding: .4rem .75rem;
+      color: #e2e8f0;
+      background: #131317;
+      font-family: 'Outfit', sans-serif;
+      font-size: var(--text-xs);
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      transition: all var(--transition-fast)
+    }
+
+    .meta-pill:hover {
+      background: #1c1c24;
+      border-color: var(--accent)
+    }
+
+    .output-body {
+      flex: 1;
+      overflow: auto;
+      padding: 1.5rem;
+      scrollbar-gutter: stable;
+      color: #e2e2e5
+    }
+
+    .output-empty {
+      display: grid;
+      place-items: center;
+      text-align: center;
+      color: var(--label)
+    }
+
+    .empty-state {
+      max-width: 22rem
+    }
+
+    .output-brief-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 1rem;
+      margin-bottom: 1.25rem
+    }
+
+    .output-brief {
+      border: 1px solid var(--hairline);
+      border-radius: var(--radius-sm);
+      background: #131317;
+      padding: 1.15rem;
+      transition: border-color var(--transition-base)
+    }
+
+    .output-brief:hover {
+      border-color: var(--accent)
+    }
+
+    .output-brief dt {
+      margin-bottom: .45rem;
+      color: var(--accent);
+      font-family: 'Outfit', sans-serif;
+      font-size: var(--text-xs);
+      letter-spacing: .15em;
+      text-transform: uppercase;
+      font-weight: 500
+    }
+
+    .output-brief dd {
+      color: #ffffff;
+      font-size: 1rem;
+      line-height: 1.6
+    }
+
+    .output-section {
+      border: 1px solid var(--hairline);
+      border-left: 3px solid var(--accent);
+      border-radius: var(--radius-sm);
+      background: #0d0d10;
+      padding: 1.25rem 1.5rem;
+      margin-bottom: 1.2rem;
+      transition: border-color var(--transition-base)
+    }
+
+    .output-section:hover {
+      border-color: var(--accent-secondary)
+    }
+
+    .output-section h3 {
+      margin: 0 0 1rem;
+      color: #ffffff;
+      font-family: 'Playfair Display', serif;
+      font-size: 1.25rem;
+      font-weight: 500;
+      line-height: 1.3
+    }
+
+    .output-section p {
+      margin: .65rem 0 0;
+      color: #a1a1aa;
+      font-size: .95rem;
+      line-height: 1.75;
+      font-weight: 300
+    }
+
+    .output-section ul,
+    .output-section ol {
+      margin: .8rem 0 0 1.2rem;
+      padding: 0;
+      color: #d4d4d8;
+      font-size: .95rem;
+      line-height: 1.7;
+      font-weight: 300
+    }
+
+    .output-section li {
+      padding-left: .25rem;
+      margin: .35rem 0
+    }
+
+    .output-section .definition-row {
+      display: grid;
+      grid-template-columns: minmax(7rem, .4fr) 1fr;
+      gap: 1rem;
+      border-top: 1px solid var(--hairline);
+      padding-top: .75rem;
+      margin-top: .75rem
+    }
+
+    .definition-row strong {
+      color: #a1a1aa;
+      font-family: 'Outfit', sans-serif;
+      font-size: var(--text-xs);
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      font-weight: 500
+    }
+
+    .definition-row span {
+      color: #ffffff;
+      line-height: 1.65;
+      font-weight: 300
+    }
+
+    .skeleton-line {
+      height: .85rem;
+      border-radius: 999px;
+      background: linear-gradient(90deg, #131317, #27272a, #131317);
+      background-size: 200% 100%;
+      animation: shimmer 1.4s infinite
+    }
+
+    @keyframes shimmer {
+      0% {
+        background-position: 200% 0
+      }
+
+      100% {
+        background-position: -200% 0
+      }
+    }
+
+    .example-chip {
+      font-family: 'Outfit', sans-serif;
+      font-size: var(--text-xs);
+      font-weight: 400;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: var(--label);
+      background: #0d0d10;
+      border: 1px solid var(--hairline);
+      border-radius: var(--radius-sm);
+      padding: .5rem .9rem;
+      cursor: pointer;
+      transition: all var(--transition-base)
+    }
+
+    .example-chip:hover {
+      color: var(--accent-secondary);
+      background: rgba(19, 19, 23, 0.8);
+      border-color: var(--accent);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 15px rgba(197, 168, 128, 0.08), 0 4px 8px rgba(0, 0, 0, 0.5);
+    }
+
+    .example-chip:active {
+      transform: translateY(0) scale(.96)
+    }
+
+    /* ── Entrance Animations ── */
+    @keyframes fade-in-up {
+      from {
+        opacity: 0;
+        transform: translateY(12px)
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0)
+      }
+    }
+
+    @keyframes fade-in-only {
+      from {
+        opacity: 0
+      }
+
+      to {
+        opacity: 1
+      }
+    }
+
+    .animate-entrance {
+      animation: fade-in-up var(--transition-slow) forwards;
+      opacity: 0
+    }
+
+    .animate-entrance.in {
+      opacity: 1
+    }
+
+    .animate-fade {
+      animation: fade-in-only var(--transition-slow) forwards;
+      opacity: 0
+    }
+
+    .stagger-1 {
+      animation-delay: 60ms
+    }
+
+    .stagger-2 {
+      animation-delay: 120ms
+    }
+
+    .stagger-3 {
+      animation-delay: 180ms
+    }
+
+    .stagger-4 {
+      animation-delay: 240ms
+    }
+
+    .stagger-5 {
+      animation-delay: 300ms
+    }
+
+    /* ── Keyboard Shortcut elements ── */
+    .shortcut-key {
+      font-family: 'Outfit', sans-serif;
+      font-size: var(--text-xs);
+      font-weight: 500;
+      color: var(--accent);
+      background: #131317;
+      border: 1px solid var(--hairline-strong);
+      border-radius: var(--radius-sm);
+      padding: .15rem .45rem;
+    }
+
+    /* Focus and buttons */
+    *:focus-visible {
+      outline: 1px solid var(--accent);
+      outline-offset: 2px
+    }
+
+    .btn-ghost {
+      transition: all var(--transition-fast)
+    }
+
+    .btn-ghost:hover {
+      background: rgba(255, 255, 255, .04);
+      color: #ffffff
+    }
+
+    .btn-ghost:active {
+      transform: scale(.98)
+    }
+
+    /* Input focus */
+    textarea:focus-visible {
+      outline: none
+    }
+
+    textarea:focus-visible+.focus-ring,
+    .input-wrapper:focus-within .focus-ring {
+      opacity: 1;
+      transform: scaleX(1)
+    }
+
+    .focus-ring {
+      height: 2px;
+      background: linear-gradient(90deg, var(--accent) 0%, #ffffff 50%, var(--accent) 100%);
+      background-size: 200% auto;
+      animation: shimmer-gold 4s linear infinite;
+      transform: scaleX(0);
+      transform-origin: left;
+      transition: transform var(--transition-slow);
+      opacity: .9;
+      box-shadow: 0 1px 6px rgba(197, 168, 128, 0.3)
+    }
+
+    @keyframes shimmer-gold {
+      0% {
+        background-position: 0% 50%
+      }
+
+      50% {
+        background-position: 100% 50%
+      }
+
+      100% {
+        background-position: 0% 50%
+      }
+    }
+
+    /* Toast System */
+    .toast-container {
+      position: fixed;
+      bottom: 2rem;
+      right: 2rem;
+      z-index: var(--z-toast);
+      display: flex;
+      flex-direction: column;
+      gap: .75rem;
+      pointer-events: none
+    }
+
+    .toast {
+      pointer-events: auto;
+      display: flex;
+      align-items: center;
+      gap: .75rem;
+      padding: .85rem 1.4rem;
+      background: rgba(13, 13, 16, 0.85);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(197, 168, 128, 0.25);
+      border-radius: var(--radius-md);
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6), 0 0 20px rgba(197, 168, 128, 0.03);
+      animation: toast-in var(--transition-base) forwards;
+      opacity: 0;
+      transform: translateX(120%);
+    }
+
+    .toast.removing {
+      animation: toast-out var(--transition-fast) forwards
+    }
+
+    @keyframes toast-in {
+      to {
+        opacity: 1;
+        transform: translateX(0)
+      }
+    }
+
+    @keyframes toast-out {
+      to {
+        opacity: 0;
+        transform: translateX(120%)
+      }
+    }
+
+    .toast-icon {
+      font-size: 18px;
+      flex-shrink: 0
+    }
+
+    .toast-message {
+      font-size: var(--text-sm);
+      color: #ffffff;
+      font-weight: 400
+    }
+
+    .toast-success {
+      border-left: 3px solid var(--accent);
+      border-color: rgba(197, 168, 128, 0.2);
+      background: rgba(13, 13, 16, 0.85)
+    }
+
+    .toast-success .toast-icon {
+      color: var(--accent) !important
+    }
+
+    .toast-error {
+      border-left: 3px solid var(--accent-error);
+      border-color: rgba(239, 68, 68, 0.25);
+      background: rgba(26, 15, 15, 0.85)
+    }
+
+    .toast-error .toast-icon {
+      color: var(--accent-error) !important
+    }
+
+    /* Shortcuts Modal */
+    .shortcuts-modal {
+      position: fixed;
+      inset: 0;
+      z-index: var(--z-modal);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(6, 6, 8, 0.85);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity var(--transition-slow);
+    }
+
+    .shortcuts-modal.open {
+      opacity: 1;
+      pointer-events: auto
+    }
+
+    .shortcuts-panel {
+      background: rgba(19, 19, 23, 0.85);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      border: 1px solid rgba(197, 168, 128, 0.2);
+      border-radius: var(--radius-xl);
+      padding: var(--space-8);
+      max-width: 430px;
+      width: 90%;
+      box-shadow: 0 30px 70px rgba(0, 0, 0, 0.9), 0 0 40px rgba(197, 168, 128, 0.05);
+      transform: scale(.95) translateY(10px);
+      transition: transform var(--transition-slow);
+    }
+
+    .shortcuts-modal.open .shortcuts-panel {
+      transform: scale(1) translateY(0)
+    }
+
+    .shortcuts-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.5rem
+    }
+
+    .shortcuts-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.5rem;
+      font-weight: 500;
+      color: #ffffff
+    }
+
+    .shortcuts-close {
+      background: none;
+      border: none;
+      color: var(--label);
+      cursor: pointer;
+      padding: .25rem
+    }
+
+    .shortcuts-close:hover {
+      color: #ffffff
+    }
+
+    .shortcuts-list {
+      display: grid;
+      gap: .75rem
+    }
+
+    .shortcut-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: .6rem .8rem;
+      background: #131317;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--hairline)
+    }
+
+    .shortcut-desc {
+      font-size: var(--text-sm);
+      color: var(--label);
+      font-weight: 300
+    }
+
+    /* Empty State */
+    .empty-state-icon {
+      animation: float 4s ease-in-out infinite
+    }
+
+    @keyframes float {
+
+      0%,
+      100% {
+        transform: translateY(0)
+      }
+
+      50% {
+        transform: translateY(-8px)
+      }
+    }
+
+    .empty-state-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.5rem;
+      font-weight: 500;
+      margin-bottom: .5rem;
+      color: #ffffff
+    }
+
+    .empty-state-desc {
+      font-size: .9rem;
+      line-height: 1.6;
+      color: var(--label);
+      font-weight: 300
+    }
+
+    /* Copy Format Dropdown */
+    .copy-dropdown {
+      position: relative
+    }
+
+    .copy-dropdown-menu {
+      position: absolute;
+      top: 100%;
+      right: 0;
+      margin-top: .5rem;
+      background: rgba(13, 13, 16, 0.95);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(197, 168, 128, 0.2);
+      border-radius: var(--radius-sm);
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.8);
+      min-width: 160px;
+      opacity: 0;
+      visibility: hidden;
+      transform: translateY(-8px) scale(0.98);
+      transform-origin: top right;
+      transition: opacity 0.25s var(--ease-default), transform 0.25s var(--ease-default), visibility 0.25s;
+      z-index: var(--z-dropdown);
+    }
+
+    .copy-dropdown.open .copy-dropdown-menu {
+      opacity: 1;
+      visibility: visible;
+      transform: translateY(0) scale(1)
+    }
+
+    .copy-dropdown-item {
+      display: flex;
+      align-items: center;
+      gap: .75rem;
+      width: 100%;
+      padding: .65rem 1rem;
+      background: none;
+      border: none;
+      color: #e5e7eb;
+      font-family: 'Outfit', sans-serif;
+      font-size: var(--text-sm);
+      text-align: left;
+      cursor: pointer;
+      transition: all var(--transition-fast)
+    }
+
+    .copy-dropdown-item:hover {
+      background: #131317;
+      color: var(--accent)
+    }
+
+    /* Auto-save Indicator */
+    .autosave-indicator {
+      display: flex;
+      align-items: center;
+      gap: .4rem;
+      font-family: 'Outfit', sans-serif;
+      font-size: var(--text-xs);
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: var(--label)
+    }
+
+    .autosave-dot {
+      width: 4px;
+      height: 4px;
+      border-radius: 50%;
+      background: currentColor;
+      animation: pulse-glow 2s infinite
+    }
+
+    @keyframes pulse-glow {
+
+      0%,
+      100% {
+        opacity: 1
+      }
+
+      50% {
+        opacity: .3
+      }
+    }
+
+    /* Premium Enhance Button Styles */
+    .enhance-btn {
+      background: #060608 !important;
+      border: 1px solid #c5a880 !important;
+      color: #c5a880 !important;
+      font-weight: 600 !important;
+      letter-spacing: .2em !important;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5) !important;
+      transition: all var(--transition-base) !important;
+    }
+
+    .enhance-btn .btn-spinner {
+      border-top-color: #c5a880 !important;
+    }
+
+    .enhance-btn span,
+    .enhance-btn span.material-symbols-outlined {
+      color: #c5a880 !important;
+    }
+
+    .enhance-btn span.material-symbols-outlined {
+      transition: transform var(--transition-base);
+    }
+
+    .enhance-btn:hover {
+      background: #131317 !important;
+      border-color: #ffffff !important;
+      color: #ffffff !important;
+      box-shadow: 0 6px 20px rgba(197, 168, 128, 0.15), 0 4px 10px rgba(0, 0, 0, 0.7) !important;
+      transform: translateY(-2px);
+    }
+
+    .enhance-btn:hover span,
+    .enhance-btn:hover span.material-symbols-outlined {
+      color: #ffffff !important;
+    }
+
+    .enhance-btn:hover span.material-symbols-outlined {
+      transform: translateX(4px);
+    }
+
+    .enhance-btn:active {
+      transform: translateY(0) scale(.97);
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.5) !important;
+    }
+
+    /* Confidence colors */
+    #confidence-chip.confidence-high {
+      color: #ffffff !important;
+      border-color: var(--accent) !important;
+      background: rgba(197, 168, 128, 0.1) !important;
+    }
+
+    #confidence-chip.confidence-medium {
+      color: #ffffff !important;
+      border-color: #f59e0b !important;
+      background: rgba(245, 158, 11, 0.1) !important;
+    }
+
+    #confidence-chip.confidence-low {
+      color: #ffffff !important;
+      border-color: #ef4444 !important;
+      background: rgba(239, 68, 68, 0.1) !important;
+    }
+
+    /* Card hover lighting & cursor tracking elements */
+    .surface-card,
+    .output-shell {
+      position: relative;
+      overflow: hidden;
+    }
+
+    .surface-card::before,
+    .output-shell::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(350px circle at var(--mouse-x, 50%) var(--mouse-y, 50%),
+          rgba(197, 168, 128, 0.045),
+          transparent 100%);
+      opacity: 0;
+      transition: opacity 0.4s ease;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .surface-card:hover::before,
+    .output-shell:hover::before {
+      opacity: 1;
+    }
+
+    #scroll-progress {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 0%;
+      height: 2px;
+      background: linear-gradient(90deg, var(--accent) 0%, #ffffff 100%);
+      z-index: 10001;
+      transition: width 0.1s ease-out;
+      box-shadow: 0 0 8px rgba(197, 168, 128, 0.5);
+    }
+
+    @media (pointer: fine) {
+
+      html,
+      body,
+      a,
+      button,
+      input,
+      textarea,
+      select,
+      [role="button"],
+      .example-chip,
+      .copy-dropdown-item,
+      .shortcuts-close,
+      kbd {
+        cursor: none !important;
+      }
+
+      #custom-cursor-dot {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 6px;
+        height: 6px;
+        background-color: var(--accent);
+        border-radius: 50%;
+        pointer-events: none;
+        z-index: 10000;
+        transition: width 0.2s var(--ease-default), height 0.2s var(--ease-default), background-color 0.2s var(--ease-default), opacity 0.2s var(--ease-default);
+        opacity: 0;
+      }
+
+      #custom-cursor-ring {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 26px;
+        height: 26px;
+        border: 1px solid rgba(197, 168, 128, 0.35);
+        border-radius: 50%;
+        pointer-events: none;
+        z-index: 9999;
+        transition: width 0.3s var(--ease-default), height 0.3s var(--ease-default), border-color 0.3s var(--ease-default), background-color 0.3s var(--ease-default), opacity 0.3s var(--ease-default);
+        opacity: 0;
+      }
+
+      body.cursor-hovering #custom-cursor-ring {
+        width: 44px;
+        height: 44px;
+        border-color: rgba(197, 168, 128, 0.7);
+        background-color: rgba(197, 168, 128, 0.05);
+      }
+
+      body.cursor-hovering #custom-cursor-dot {
+        width: 8px;
+        height: 8px;
+        background-color: #ffffff;
+        box-shadow: 0 0 10px rgba(255, 255, 255, 0.8);
+      }
+
+      body.cursor-clicking #custom-cursor-ring {
+        width: 20px;
+        height: 20px;
+        border-color: #ffffff;
+        background-color: rgba(255, 255, 255, 0.15);
+      }
+
+      body.cursor-clicking #custom-cursor-dot {
+        width: 4px;
+        height: 4px;
+        background-color: var(--accent);
+      }
+    }
+
+    @media (max-width:767px) {
+      .output-shell {
+        position: relative;
+        top: auto;
+        min-height: 430px;
+        max-height: none
+      }
+
+      .output-brief-grid {
+        grid-template-columns: 1fr
+      }
+    }
+  </style>
 </head>
+
 <body class="bg-surface text-on-surface min-h-screen flex flex-col font-body">
 
-<!-- Fluid canvas — fixed, viewport-wide background -->
-<canvas id="fluid-canvas"></canvas>
+  <!-- Fluid canvas — fixed, viewport-wide background -->
+  <canvas id="fluid-canvas"></canvas>
 
-<!-- TopAppBar -->
-<nav class="surface-page flex justify-center items-center w-full py-6 px-6 md:px-12 fixed top-0 left-0 border-b border-border animate-entrance stagger-1" style="z-index:var(--z-fixed)">
-  <div class="flex items-center gap-3">
-    <span class="font-display text-[0.75rem] font-semibold tracking-[0.32em] text-gold">FORGE</span>
-    <span class="h-3 w-px bg-border-strong"></span>
-    <span class="font-display text-[0.75rem] tracking-[0.2em] uppercase text-on-surface-muted">Prompt Engine</span>
-    <span class="h-3 w-px bg-border-strong hidden sm:inline"></span>
-    <kbd class="shortcut-key hidden sm:inline-flex" style="opacity:.6">?</kbd>
-    <span class="font-display text-[0.75rem] tracking-[0.1em] uppercase text-on-surface-muted hidden sm:inline" style="opacity:.6">Shortcuts</span>
-  </div>
-</nav>
-
-<main class="flex-grow pt-48 pb-12 px-6 md:px-12 flex flex-col items-center">
-
-  <!-- Hero Redesigned -->
-  <header class="w-full max-w-6xl mb-20 mt-12 text-left animate-entrance stagger-2">
-    <div class="flex flex-col gap-2">
-      <span class="font-display text-[0.75rem] font-semibold tracking-[0.4em] text-gold uppercase mb-2">Architectural Prompting</span>
-      <h1 class="font-headline text-5xl md:text-7xl lg:text-8xl font-light text-platinum leading-[1.05] tracking-tight">
-        Elevate your <span class="italic text-gold font-normal font-headline">Vision</span>
-      </h1>
-      <p class="font-body text-sm md:text-base text-on-surface-muted max-w-lg mt-4 leading-relaxed font-light">
-        A precision-engineered dashboard designed to refine and structure raw prompts into high-performance AI directions.
-      </p>
+  <!-- TopAppBar -->
+  <nav
+    class="surface-page flex justify-center items-center w-full py-6 px-6 md:px-12 fixed top-0 left-0 border-b border-border animate-entrance stagger-1"
+    style="z-index:var(--z-fixed)">
+    <div class="flex items-center gap-3">
+      <span class="font-display text-[0.75rem] font-semibold tracking-[0.32em] text-gold">FORGE</span>
+      <span class="h-3 w-px bg-border-strong"></span>
+      <span class="font-display text-[0.75rem] tracking-[0.2em] uppercase text-on-surface-muted">Prompt Engine</span>
+      <span class="h-3 w-px bg-border-strong hidden sm:inline"></span>
+      <kbd class="shortcut-key hidden sm:inline-flex" style="opacity:.6">?</kbd>
+      <span class="font-display text-[0.75rem] tracking-[0.1em] uppercase text-on-surface-muted hidden sm:inline"
+        style="opacity:.6">Shortcuts</span>
     </div>
-  </header>
+  </nav>
 
-  <!-- Prompt Engine Grid -->
-  <section class="w-full max-w-6xl grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 mb-24">
+  <main class="flex-grow pt-48 pb-12 px-6 md:px-12 flex flex-col items-center">
 
-    <!-- Input Section -->
-    <div class="lg:col-span-5 flex flex-col gap-6 animate-entrance stagger-3">
-      <article class="surface-card p-5 md:p-6 flex flex-col gap-4">
-        <div class="flex items-baseline justify-between">
-          <label for="raw-input" class="field-label">Raw Input</label>
-          <div class="flex items-center gap-3">
-            <span id="char-counter" class="font-display text-[0.7rem] tracking-[0.18em] uppercase text-on-surface-muted">0 chars</span>
-            <span id="autosave-indicator" class="autosave-indicator" aria-live="polite"><span class="autosave-dot"></span><span>Saved</span></span>
-            <button type="button" id="clear-input" class="btn-ghost font-display text-[0.7rem] tracking-[0.18em] uppercase text-on-surface-muted hover:text-gold">Clear</button>
-          </div>
-        </div>
-        <div class="input-wrapper relative">
-          <textarea id="raw-input" class="w-full bg-transparent border-0 outline-none ring-0 text-xl md:text-2xl font-light leading-relaxed p-0 min-h-[220px] resize-none placeholder:text-white/20 text-white focus:outline-none focus:ring-0" placeholder="Enter the skeletal prompt here..." aria-label="Raw prompt input"></textarea>
-          <div class="focus-ring absolute bottom-0 left-0 right-0"></div>
-        </div>
-        <div class="flex flex-wrap gap-2 -mx-1">
-          <button type="button" data-example="Write a launch announcement for a developer tool that turns meeting transcripts into structured Jira tickets." class="example-chip">Launch announcement</button>
-          <button type="button" data-example="Summarize the attached research paper and extract the three most actionable findings for a product team." class="example-chip">Research summary</button>
-          <button type="button" data-example="Refactor this Python function to be async, type-safe, and covered by pytest cases." class="example-chip">Code refactor</button>
-        </div>
-      </article>
-      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <p id="enhance-status" class="font-display text-[0.7rem] tracking-[0.15em] uppercase text-on-surface-muted">Press <kbd class="shortcut-key inline-block ml-1 mr-1" id="mod-key-label">⌘</kbd><kbd class="shortcut-key inline-block">Enter</kbd> or click to enhance</p>
-        <button class="enhance-btn inline-flex items-center gap-3 px-6 md:px-8 py-3.5 rounded font-display tracking-[0.22em] text-[0.72rem] font-semibold uppercase">
-          <span>Enhance Prompt</span>
-          <span class="btn-spinner" style="display:none"></span>
-          <span class="material-symbols-outlined text-[18px] opacity-80 font-light">arrow_forward</span>
-        </button>
+    <!-- Hero Redesigned -->
+    <header class="w-full max-w-6xl mb-20 mt-12 text-left animate-entrance stagger-2">
+      <div class="flex flex-col gap-2">
+        <span class="font-display text-[0.75rem] font-semibold tracking-[0.4em] text-gold uppercase mb-2">Architectural
+          Prompting</span>
+        <h1
+          class="font-headline text-5xl md:text-7xl lg:text-8xl font-light text-platinum leading-[1.05] tracking-tight">
+          Elevate your <span class="italic text-gold font-normal font-headline">Vision</span>
+        </h1>
+        <p class="font-body text-sm md:text-base text-on-surface-muted max-w-lg mt-4 leading-relaxed font-light">
+          A precision-engineered dashboard designed to refine and structure raw prompts into high-performance AI
+          directions.
+        </p>
       </div>
-    </div>
+    </header>
 
-    <!-- Output Section -->
-    <div class="lg:col-span-7 relative animate-entrance stagger-4">
-      <div class="output-shell">
-        <div class="output-head">
-          <div class="flex flex-col gap-2">
+    <!-- Prompt Engine Grid -->
+    <section class="w-full max-w-6xl grid grid-cols-1 md:grid-cols-12 items-start gap-6 md:gap-8 lg:gap-12 mb-24">
+
+      <!-- Input Section -->
+      <div class="md:col-span-5 flex flex-col gap-6 animate-entrance stagger-3">
+        <article class="surface-card p-5 md:p-6 flex flex-col gap-4">
+          <div class="flex items-baseline justify-between">
+            <label for="raw-input" class="field-label">Raw Input</label>
             <div class="flex items-center gap-3">
-              <span class="field-label">Architected Output</span>
-              <span class="h-px flex-1 bg-border"></span>
-            </div>
-            <p class="text-[0.875rem] leading-relaxed text-on-surface-muted font-light">A structured preview for long prompts, grouped into readable sections.</p>
-          </div>
-          <div class="copy-dropdown">
-            <button class="copy-btn btn-ghost text-on-surface-muted hover:text-gold font-display text-[0.7rem] tracking-[0.18em] uppercase flex items-center gap-2 border border-border hover:border-gold rounded px-4 py-2">
-              <span class="material-symbols-outlined text-[14px]">content_copy</span>
-              <span class="copy-label">Copy</span>
-              <span class="material-symbols-outlined text-[14px] opacity-60">expand_more</span>
-            </button>
-            <div class="copy-dropdown-menu" role="menu">
-              <button class="copy-dropdown-item" data-format="text" role="menuitem">
-                <span class="material-symbols-outlined text-[16px]">description</span>
-                <span>Plain Text</span>
-              </button>
-              <button class="copy-dropdown-item" data-format="markdown" role="menuitem">
-                <span class="material-symbols-outlined text-[16px]">code</span>
-                <span>Markdown</span>
-              </button>
-              <button class="copy-dropdown-item" data-format="json" role="menuitem">
-                <span class="material-symbols-outlined text-[16px]">data_object</span>
-                <span>JSON</span>
-              </button>
+              <span id="char-counter"
+                class="font-display text-[0.7rem] tracking-[0.18em] uppercase text-on-surface-muted">0 chars</span>
+              <span id="autosave-indicator" class="autosave-indicator" aria-live="polite"><span
+                  class="autosave-dot"></span><span>Saved</span></span>
+              <button type="button" id="clear-input"
+                class="btn-ghost font-display text-[0.7rem] tracking-[0.18em] uppercase text-on-surface-muted hover:text-gold">Clear</button>
             </div>
           </div>
+          <div class="input-wrapper relative">
+            <textarea id="raw-input"
+              class="w-full bg-transparent border-0 outline-none ring-0 text-xl md:text-2xl font-light leading-relaxed p-0 min-h-[220px] resize-none placeholder:text-white/20 text-white focus:outline-none focus:ring-0"
+              placeholder="Enter the skeletal prompt here..." aria-label="Raw prompt input"></textarea>
+            <div class="focus-ring absolute bottom-0 left-0 right-0"></div>
+          </div>
+          <div class="flex flex-wrap gap-2 -mx-1">
+            <button type="button"
+              data-example="Write a launch announcement for a developer tool that turns meeting transcripts into structured Jira tickets."
+              class="example-chip">Launch announcement</button>
+            <button type="button"
+              data-example="Summarize the attached research paper and extract the three most actionable findings for a product team."
+              class="example-chip">Research summary</button>
+            <button type="button"
+              data-example="Refactor this Python function to be async, type-safe, and covered by pytest cases."
+              class="example-chip">Code refactor</button>
+          </div>
+        </article>
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <p id="enhance-status" class="font-display text-[0.7rem] tracking-[0.15em] uppercase text-on-surface-muted">
+            Press <kbd class="shortcut-key inline-block ml-1 mr-1" id="mod-key-label">⌘</kbd><kbd
+              class="shortcut-key inline-block">Enter</kbd> or click to enhance</p>
+          <button
+            class="enhance-btn inline-flex items-center gap-3 px-6 md:px-8 py-3.5 rounded font-display tracking-[0.22em] text-[0.72rem] font-semibold uppercase">
+            <span>Enhance Prompt</span>
+            <span class="btn-spinner" style="display:none"></span>
+            <span class="material-symbols-outlined text-[18px] opacity-80 font-light">arrow_forward</span>
+          </button>
         </div>
-        <div id="output-meta" class="output-meta hidden animate-entrance stagger-5">
-          <span id="template-chip" class="meta-pill">Template pending</span>
-          <span id="domain-chip" class="meta-pill">Domain pending</span>
-          <span id="confidence-chip" class="meta-pill">Confidence pending</span>
-        </div>
-        <div id="output" class="output-body output-empty">
-          <div class="empty-state">
-            <div class="empty-state-icon material-symbols-outlined mb-4 text-[32px] opacity-50 text-gold">auto_awesome</div>
-            <p class="empty-state-title">Ready to Forge</p>
-            <p class="empty-state-desc">Enter a raw prompt and press Enhance to generate a structured, architectured prompt blueprint.</p>
+      </div>
+
+      <!-- Output Section -->
+      <div class="md:col-span-7 relative">
+        <div class="output-shell animate-fade stagger-4">
+          <div class="output-head">
+            <div class="flex flex-col gap-2">
+              <div class="flex items-center gap-3">
+                <span class="field-label">Architected Output</span>
+                <span class="h-px flex-1 bg-border"></span>
+              </div>
+              <p class="text-[0.875rem] leading-relaxed text-on-surface-muted font-light">A structured preview for long
+                prompts, grouped into readable sections.</p>
+            </div>
+            <div class="copy-dropdown">
+              <button
+                class="copy-btn btn-ghost text-on-surface-muted hover:text-gold font-display text-[0.7rem] tracking-[0.18em] uppercase flex items-center gap-2 border border-border hover:border-gold rounded px-4 py-2">
+                <span class="material-symbols-outlined text-[14px]">content_copy</span>
+                <span class="copy-label">Copy</span>
+                <span class="material-symbols-outlined text-[14px] opacity-60">expand_more</span>
+              </button>
+              <div class="copy-dropdown-menu" role="menu">
+                <button class="copy-dropdown-item" data-format="text" role="menuitem">
+                  <span class="material-symbols-outlined text-[16px]">description</span>
+                  <span>Plain Text</span>
+                </button>
+                <button class="copy-dropdown-item" data-format="markdown" role="menuitem">
+                  <span class="material-symbols-outlined text-[16px]">code</span>
+                  <span>Markdown</span>
+                </button>
+                <button class="copy-dropdown-item" data-format="json" role="menuitem">
+                  <span class="material-symbols-outlined text-[16px]">data_object</span>
+                  <span>JSON</span>
+                </button>
+              </div>
+            </div>
+          </div>
+          <div id="output-meta" class="output-meta hidden animate-entrance stagger-5">
+            <span id="template-chip" class="meta-pill">Template pending</span>
+            <span id="domain-chip" class="meta-pill">Domain pending</span>
+            <span id="confidence-chip" class="meta-pill">Confidence pending</span>
+          </div>
+          <div id="output" class="output-body output-empty">
+            <div class="empty-state">
+              <div class="empty-state-icon material-symbols-outlined mb-4 text-[32px] opacity-50 text-gold">auto_awesome
+              </div>
+              <p class="empty-state-title">Ready to Forge</p>
+              <p class="empty-state-desc">Enter a raw prompt and press Enhance to generate a structured, architectured
+                prompt blueprint.</p>
+            </div>
           </div>
         </div>
       </div>
+
+    </section>
+
+    <!-- Brand display -->
+    <section class="w-full overflow-hidden flex justify-center items-end mt-24 pb-8">
+      <h2 class="brand-giant serif-display font-bold select-none">FORGE</h2>
+    </section>
+
+  </main>
+
+  <footer
+    class="bg-transparent flex flex-col md:flex-row justify-between items-center w-full px-12 py-16 gap-8 border-t border-border">
+    <div class="flex flex-col gap-2">
+      <div class="text-sm font-semibold uppercase tracking-[0.15em] text-gold">FORGE</div>
+      <div class="font-display text-[0.7rem] uppercase tracking-widest text-on-surface-muted">© 2024 THE SILENT
+        MONOLITH. ALL RIGHTS RESERVED.</div>
     </div>
+  </footer>
 
-  </section>
-
-  <!-- Brand display -->
-  <section class="w-full overflow-hidden flex justify-center items-end mt-24 pb-8">
-    <h2 class="brand-giant serif-display font-bold select-none bg-clip-text text-transparent bg-gradient-to-b from-white via-white/80 to-white/10 opacity-90">FORGE</h2>
-  </section>
-
-</main>
-
-<footer class="bg-transparent flex flex-col md:flex-row justify-between items-center w-full px-12 py-16 gap-8 border-t border-border">
-  <div class="flex flex-col gap-2">
-    <div class="text-sm font-semibold uppercase tracking-[0.15em] text-gold">FORGE</div>
-    <div class="font-display text-[0.7rem] uppercase tracking-widest text-on-surface-muted">© 2024 THE SILENT MONOLITH. ALL RIGHTS RESERVED.</div>
-  </div>
-</footer>
-
-<!-- ═══════════════════════════════════════════
+  <!-- ═══════════════════════════════════════════
      Enhance / Copy logic  (moved to end of body)
 ═══════════════════════════════════════════ -->
-<script>
-  const btn  = document.querySelector(".enhance-btn");
-  const ta   = document.getElementById("raw-input");
-  const out  = document.getElementById("output");
-  const copy = document.querySelector(".copy-btn");
-  const copyLabel = document.querySelector(".copy-label");
-  const metaBar = document.getElementById("output-meta");
-  const templateChip = document.getElementById("template-chip");
-  const domainChip = document.getElementById("domain-chip");
-  const confidenceChip = document.getElementById("confidence-chip");
-  const charCounter = document.getElementById("char-counter");
-  const clearBtn = document.getElementById("clear-input");
-  const enhanceStatus = document.getElementById("enhance-status");
-  const exampleChips = document.querySelectorAll(".example-chip");
-  const outputShell = document.querySelector(".output-shell");
-  const btnSpinner = btn.querySelector(".btn-spinner");
-  const btnArrow = btn.querySelector(".material-symbols-outlined");
-  const MIN_CHARS = 10;
-  const MAX_CHARS = 2000;
-  let latestOutput = "";
-  let latestOutputData = null;
+  <script>
+    const btn = document.querySelector(".enhance-btn");
+    const ta = document.getElementById("raw-input");
+    const out = document.getElementById("output");
+    const copy = document.querySelector(".copy-btn");
+    const copyLabel = document.querySelector(".copy-label");
+    const metaBar = document.getElementById("output-meta");
+    const templateChip = document.getElementById("template-chip");
+    const domainChip = document.getElementById("domain-chip");
+    const confidenceChip = document.getElementById("confidence-chip");
+    const charCounter = document.getElementById("char-counter");
+    const clearBtn = document.getElementById("clear-input");
+    const enhanceStatus = document.getElementById("enhance-status");
+    const exampleChips = document.querySelectorAll(".example-chip");
+    const outputShell = document.querySelector(".output-shell");
+    const btnSpinner = btn.querySelector(".btn-spinner");
+    const btnArrow = btn.querySelector(".material-symbols-outlined");
+    const MIN_CHARS = 10;
+    const MAX_CHARS = 2000;
+    let latestOutput = "";
+    let latestOutputData = null;
 
-  /* ── Platform-aware shortcut labels ── */
-  const isMac = /Mac|iPod|iPhone|iPad/.test(navigator.platform);
-  const modLabel = isMac ? "\u2318" : "Ctrl";
-  const modKeyEl = document.getElementById("mod-key-label");
-  const modalModEl = document.getElementById("modal-mod-key");
-  const modalCopyModEl = document.getElementById("modal-copy-mod-key");
-  if (modKeyEl) modKeyEl.textContent = modLabel;
-  if (modalModEl) modalModEl.textContent = modLabel;
-  if (modalCopyModEl) modalCopyModEl.textContent = modLabel;
+    /* ── Platform-aware shortcut labels ── */
+    const isMac = /Mac|iPod|iPhone|iPad/.test(navigator.platform);
+    const modLabel = isMac ? "\u2318" : "Ctrl";
+    const modKeyEl = document.getElementById("mod-key-label");
+    const modalModEl = document.getElementById("modal-mod-key");
+    const modalCopyModEl = document.getElementById("modal-copy-mod-key");
+    if (modKeyEl) modKeyEl.textContent = modLabel;
+    if (modalModEl) modalModEl.textContent = modLabel;
+    if (modalCopyModEl) modalCopyModEl.textContent = modLabel;
 
-  /* ── Toast System ── */
-  function showToast(message, type = "info") {
-    const container = document.getElementById("toast-container");
-    const icons = { success: "check_circle", error: "error", warning: "warning", info: "info" };
-    const toast = document.createElement("div");
-    toast.className = `toast toast-${type}`;
-    
-    const iconSpan = document.createElement("span");
-    iconSpan.className = "material-symbols-outlined toast-icon";
-    iconSpan.textContent = icons[type] || icons.info;
-    
-    const msgSpan = document.createElement("span");
-    msgSpan.className = "toast-message";
-    msgSpan.textContent = message;
-    
-    toast.append(iconSpan, msgSpan);
-    container.appendChild(toast);
-    
-    setTimeout(() => {
-      toast.classList.add("removing");
-      setTimeout(() => toast.remove(), 300);
-    }, 3000);
-  }
+    /* ── Toast System ── */
+    function showToast(message, type = "info") {
+      const container = document.getElementById("toast-container");
+      const icons = { success: "check_circle", error: "error", warning: "warning", info: "info" };
+      const toast = document.createElement("div");
+      toast.className = `toast toast-${type}`;
 
-  /* ── Loading State ── */
-  function setEnhancing(isEnhancing) {
-    btn.disabled = isEnhancing;
-    btn.classList.toggle("loading", isEnhancing);
-    outputShell.classList.toggle("loading", isEnhancing);
-    btn.querySelector("span:first-child").textContent = isEnhancing ? "Forging..." : "Enhance Prompt";
-    btnSpinner.style.display = isEnhancing ? "inline-block" : "none";
-    btnArrow.style.display = isEnhancing ? "none" : "";
-    enhanceStatus.textContent = isEnhancing ? "Forging prompt..." : `Press ${modLabel}+Enter or click to enhance`;
-  }
+      const iconSpan = document.createElement("span");
+      iconSpan.className = "material-symbols-outlined toast-icon";
+      iconSpan.textContent = icons[type] || icons.info;
 
-  /* ── Input Validation ── */
-  function updateCharCount() {
-    const n = ta.value.length;
-    charCounter.textContent = n === 1 ? "1 char" : `${n}/${MAX_CHARS} chars`;
-    charCounter.classList.remove("char-counter-warn", "char-counter-error", "char-counter-ok");
-    if (n > 0 && n < MIN_CHARS) charCounter.classList.add("char-counter-warn");
-    else if (n > MAX_CHARS) charCounter.classList.add("char-counter-error");
-    else if (n >= MIN_CHARS) charCounter.classList.add("char-counter-ok");
-  }
+      const msgSpan = document.createElement("span");
+      msgSpan.className = "toast-message";
+      msgSpan.textContent = message;
 
-  function validateInput() {
-    const len = ta.value.trim().length;
-    if (len === 0) { enhanceStatus.textContent = "Enter a prompt first"; return false; }
-    if (len < MIN_CHARS) { showToast(`Please enter at least ${MIN_CHARS} characters for better results.`, "warning"); return false; }
-    if (ta.value.length > MAX_CHARS) { showToast(`Input exceeds ${MAX_CHARS} characters. Please shorten your prompt.`, "error"); return false; }
-    return true;
-  }
+      toast.append(iconSpan, msgSpan);
+      container.appendChild(toast);
 
-  ta.addEventListener("input", updateCharCount);
+      setTimeout(() => {
+        toast.classList.add("removing");
+        setTimeout(() => toast.remove(), 300);
+      }, 3000);
+    }
 
-  clearBtn.addEventListener("click", () => {
-    ta.value = "";
-    updateCharCount();
-    ta.focus();
-  });
+    /* ── Loading State ── */
+    function setEnhancing(isEnhancing) {
+      btn.disabled = isEnhancing;
+      btn.classList.toggle("loading", isEnhancing);
+      outputShell.classList.toggle("loading", isEnhancing);
+      btn.querySelector("span:first-child").textContent = isEnhancing ? "Forging..." : "Enhance Prompt";
+      btnSpinner.style.display = isEnhancing ? "inline-block" : "none";
+      btnArrow.style.display = isEnhancing ? "none" : "";
+      enhanceStatus.textContent = isEnhancing ? "Forging prompt..." : `Press ${modLabel}+Enter or click to enhance`;
+    }
 
-  exampleChips.forEach((chip) => {
-    chip.addEventListener("click", () => {
-      ta.value = chip.dataset.example;
+    /* ── Input Validation ── */
+    function updateCharCount() {
+      const n = ta.value.length;
+      charCounter.textContent = n === 1 ? "1 char" : `${n}/${MAX_CHARS} chars`;
+      charCounter.classList.remove("char-counter-warn", "char-counter-error", "char-counter-ok");
+      if (n > 0 && n < MIN_CHARS) charCounter.classList.add("char-counter-warn");
+      else if (n > MAX_CHARS) charCounter.classList.add("char-counter-error");
+      else if (n >= MIN_CHARS) charCounter.classList.add("char-counter-ok");
+    }
+
+    function validateInput() {
+      const len = ta.value.trim().length;
+      if (len === 0) { enhanceStatus.textContent = "Enter a prompt first"; return false; }
+      if (len < MIN_CHARS) { showToast(`Please enter at least ${MIN_CHARS} characters for better results.`, "warning"); return false; }
+      if (ta.value.length > MAX_CHARS) { showToast(`Input exceeds ${MAX_CHARS} characters. Please shorten your prompt.`, "error"); return false; }
+      return true;
+    }
+
+    ta.addEventListener("input", updateCharCount);
+
+    clearBtn.addEventListener("click", () => {
+      ta.value = "";
       updateCharCount();
       ta.focus();
-      ta.setSelectionRange(ta.value.length, ta.value.length);
-    });
-  });
-
-  ta.addEventListener("keydown", (e) => {
-    if ((e.metaKey || e.ctrlKey) && e.key === "Enter") {
-      e.preventDefault();
-      btn.click();
-    }
-  });
-
-  updateCharCount();
-
-  function setMeta(data) {
-    templateChip.textContent = data.template || data.template_id || "Template selected";
-    domainChip.textContent = data.domain ? `Domain ${data.domain}` : "Domain selected";
-    
-    const confidence = data.confidence || "";
-    confidenceChip.textContent = `Confidence ${confidence}`;
-    confidenceChip.classList.remove("confidence-high", "confidence-medium", "confidence-low");
-    if (confidence.toLowerCase().includes("high") || (data.score && data.score >= 0.8)) {
-      confidenceChip.classList.add("confidence-high");
-    } else if (confidence.toLowerCase().includes("med") || (data.score && data.score >= 0.5)) {
-      confidenceChip.classList.add("confidence-medium");
-    } else if (confidence.toLowerCase().includes("low") || (data.score && data.score < 0.5)) {
-      confidenceChip.classList.add("confidence-low");
-    }
-    
-    metaBar.classList.remove("hidden");
-  }
-
-  function renderLoading() {
-    latestOutput = "";
-    metaBar.classList.add("hidden");
-    out.className = "output-body";
-    out.replaceChildren();
-
-    const section = document.createElement("article");
-    section.className = "output-section";
-
-    const heading = document.createElement("div");
-    heading.className = "skeleton-line";
-    heading.style.width = "38%";
-    heading.style.marginBottom = "1.3rem";
-    section.appendChild(heading);
-
-    [92, 78, 86, 64, 72].forEach((width) => {
-      const line = document.createElement("div");
-      line.className = "skeleton-line";
-      line.style.width = `${width}%`;
-      line.style.marginTop = ".8rem";
-      section.appendChild(line);
     });
 
-    out.appendChild(section);
-  }
+    exampleChips.forEach((chip) => {
+      chip.addEventListener("click", () => {
+        ta.value = chip.dataset.example;
+        updateCharCount();
+        ta.focus();
+        ta.setSelectionRange(ta.value.length, ta.value.length);
+      });
+    });
 
-  function renderMessage(title, message) {
-    latestOutput = "";
-    latestOutputData = null;
-    metaBar.classList.add("hidden");
-    out.className = "output-body output-empty";
-    out.replaceChildren();
+    ta.addEventListener("keydown", (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === "Enter") {
+        e.preventDefault();
+        btn.click();
+      }
+    });
 
-    const empty = document.createElement("div");
-    empty.className = "empty-state";
-    const h = document.createElement("p");
-    h.className = "serif-display text-xl leading-relaxed text-[#f0f1f5]";
-    h.textContent = title;
-    const p = document.createElement("p");
-    p.className = "text-sm leading-relaxed mt-3 text-[#9ca3af]";
-    p.textContent = message;
-    empty.append(h, p);
-    out.appendChild(empty);
-  }
+    updateCharCount();
 
-  /* ── Error State with Retry ── */
-  function renderError(rawMessage) {
-    latestOutput = "";
-    latestOutputData = null;
-    metaBar.classList.add("hidden");
-    out.className = "output-body";
-    out.replaceChildren();
+    function setMeta(data) {
+      templateChip.textContent = data.template || data.template_id || "Template selected";
+      domainChip.textContent = data.domain ? `Domain ${data.domain}` : "Domain selected";
 
-    const errorMessages = {
-      'rate_limit': 'Enhancement limit reached. Please wait a moment and try again.',
-      'Failed to fetch': 'Connection failed. Please check your internet connection.',
-      'NetworkError': 'Connection failed. Please check your internet connection.',
-      'timeout': 'Request timed out. Please try again.',
-      '500': 'Service temporarily unavailable. Please try again later.',
-      '503': 'Service temporarily unavailable. Please try again later.',
-    };
-    let friendlyMsg = 'Something went wrong. Please try again.';
-    for (const [key, msg] of Object.entries(errorMessages)) {
-      if (rawMessage && rawMessage.includes(key)) { friendlyMsg = msg; break; }
+      const confidence = data.confidence || "";
+      confidenceChip.textContent = `Confidence ${confidence}`;
+      confidenceChip.classList.remove("confidence-high", "confidence-medium", "confidence-low");
+      if (confidence.toLowerCase().includes("high") || (data.score && data.score >= 0.8)) {
+        confidenceChip.classList.add("confidence-high");
+      } else if (confidence.toLowerCase().includes("med") || (data.score && data.score >= 0.5)) {
+        confidenceChip.classList.add("confidence-medium");
+      } else if (confidence.toLowerCase().includes("low") || (data.score && data.score < 0.5)) {
+        confidenceChip.classList.add("confidence-low");
+      }
+
+      metaBar.classList.remove("hidden");
     }
 
-    const errDiv = document.createElement("div");
-    errDiv.className = "error-state";
-    errDiv.innerHTML = `
+    function renderLoading() {
+      latestOutput = "";
+      metaBar.classList.add("hidden");
+      out.className = "output-body";
+      out.replaceChildren();
+
+      const section = document.createElement("article");
+      section.className = "output-section";
+
+      const heading = document.createElement("div");
+      heading.className = "skeleton-line";
+      heading.style.width = "38%";
+      heading.style.marginBottom = "1.3rem";
+      section.appendChild(heading);
+
+      [92, 78, 86, 64, 72].forEach((width) => {
+        const line = document.createElement("div");
+        line.className = "skeleton-line";
+        line.style.width = `${width}%`;
+        line.style.marginTop = ".8rem";
+        section.appendChild(line);
+      });
+
+      out.appendChild(section);
+    }
+
+    function renderMessage(title, message) {
+      latestOutput = "";
+      latestOutputData = null;
+      metaBar.classList.add("hidden");
+      out.className = "output-body output-empty";
+      out.replaceChildren();
+
+      const empty = document.createElement("div");
+      empty.className = "empty-state";
+      const h = document.createElement("p");
+      h.className = "serif-display text-xl leading-relaxed text-[#f0f1f5]";
+      h.textContent = title;
+      const p = document.createElement("p");
+      p.className = "text-sm leading-relaxed mt-3 text-[#9ca3af]";
+      p.textContent = message;
+      empty.append(h, p);
+      out.appendChild(empty);
+    }
+
+    /* ── Error State with Retry ── */
+    function renderError(rawMessage) {
+      latestOutput = "";
+      latestOutputData = null;
+      metaBar.classList.add("hidden");
+      out.className = "output-body";
+      out.replaceChildren();
+
+      const errorMessages = {
+        'rate_limit': 'Enhancement limit reached. Please wait a moment and try again.',
+        'Failed to fetch': 'Connection failed. Please check your internet connection.',
+        'NetworkError': 'Connection failed. Please check your internet connection.',
+        'timeout': 'Request timed out. Please try again.',
+        '500': 'Service temporarily unavailable. Please try again later.',
+        '503': 'Service temporarily unavailable. Please try again later.',
+      };
+      let friendlyMsg = 'Something went wrong. Please try again.';
+      for (const [key, msg] of Object.entries(errorMessages)) {
+        if (rawMessage && rawMessage.includes(key)) { friendlyMsg = msg; break; }
+      }
+
+      const errDiv = document.createElement("div");
+      errDiv.className = "error-state";
+      errDiv.innerHTML = `
       <span class="material-symbols-outlined error-state-icon">error_outline</span>
       <p class="error-state-title">Enhancement Failed</p>
       <p class="error-state-desc">${friendlyMsg}</p>
@@ -680,428 +1424,430 @@
         <span>Try Again</span>
       </button>
     `;
-    out.appendChild(errDiv);
-    document.getElementById("error-retry").addEventListener("click", () => btn.click());
-    showToast("Enhancement failed", "error");
-  }
+      out.appendChild(errDiv);
+      document.getElementById("error-retry").addEventListener("click", () => btn.click());
+      showToast("Enhancement failed", "error");
+    }
 
-  function titleCase(value) {
-    return value
-      .toLowerCase()
-      .replace(/\b[a-z]/g, (char) => char.toUpperCase())
-      .replace(/\bAi\b/g, "AI")
-      .replace(/\bApi\b/g, "API")
-      .replace(/\bPrd\b/g, "PRD");
-  }
+    function titleCase(value) {
+      return value
+        .toLowerCase()
+        .replace(/\b[a-z]/g, (char) => char.toUpperCase())
+        .replace(/\bAi\b/g, "AI")
+        .replace(/\bApi\b/g, "API")
+        .replace(/\bPrd\b/g, "PRD");
+    }
 
-  function extractHeading(line) {
-    const markdown = line.match(/^#{1,6}\s+(.+)$/);
-    if (markdown) return markdown[1].replace(/:$/, "").trim();
+    function extractHeading(line) {
+      const markdown = line.match(/^#{1,6}\s+(.+)$/);
+      if (markdown) return markdown[1].replace(/:$/, "").trim();
 
-    const numbered = line.match(/^(\d+(?:\.\d+)*[.)]?)\s+(.+)$/);
-    if (numbered) {
-      const label = numbered[1].replace(/[.)]$/, ".");
-      const text = numbered[2].replace(/:$/, "").trim();
-      const letters = text.replace(/[^A-Za-z]/g, "");
-      if (letters && letters === letters.toUpperCase()) return `${label} ${titleCase(text)}`;
+      const numbered = line.match(/^(\d+(?:\.\d+)*[.)]?)\s+(.+)$/);
+      if (numbered) {
+        const label = numbered[1].replace(/[.)]$/, ".");
+        const text = numbered[2].replace(/:$/, "").trim();
+        const letters = text.replace(/[^A-Za-z]/g, "");
+        if (letters && letters === letters.toUpperCase()) return `${label} ${titleCase(text)}`;
+        return null;
+      }
+
+      const clean = line.replace(/:$/, "").trim();
+      const letters = clean.replace(/[^A-Za-z]/g, "");
+      if (line.endsWith(":") && clean.length <= 72) return clean;
+      if (clean.length <= 72 && letters.length > 3 && letters === letters.toUpperCase()) return titleCase(clean);
       return null;
     }
 
-    const clean = line.replace(/:$/, "").trim();
-    const letters = clean.replace(/[^A-Za-z]/g, "");
-    if (line.endsWith(":") && clean.length <= 72) return clean;
-    if (clean.length <= 72 && letters.length > 3 && letters === letters.toUpperCase()) return titleCase(clean);
-    return null;
-  }
+    function appendParagraph(section, text) {
+      const p = document.createElement("p");
+      p.textContent = text;
+      section.appendChild(p);
+    }
 
-  function appendParagraph(section, text) {
-    const p = document.createElement("p");
-    p.textContent = text;
-    section.appendChild(p);
-  }
+    function appendDefinition(section, key, value) {
+      const row = document.createElement("div");
+      row.className = "definition-row";
+      const strong = document.createElement("strong");
+      strong.textContent = key;
+      const span = document.createElement("span");
+      span.textContent = value;
+      row.append(strong, span);
+      section.appendChild(row);
+    }
 
-  function appendDefinition(section, key, value) {
-    const row = document.createElement("div");
-    row.className = "definition-row";
-    const strong = document.createElement("strong");
-    strong.textContent = key;
-    const span = document.createElement("span");
-    span.textContent = value;
-    row.append(strong, span);
-    section.appendChild(row);
-  }
-
-  function createSection(fragment, title) {
-    const section = document.createElement("article");
-    section.className = "output-section";
-    const h = document.createElement("h3");
-    h.textContent = title;
-    section.appendChild(h);
-    fragment.appendChild(section);
-    return section;
-  }
-
-  function createBriefGrid(fragment) {
-    let grid = fragment.querySelector?.(".output-brief-grid");
-    if (grid) return grid;
-    grid = document.createElement("dl");
-    grid.className = "output-brief-grid";
-    fragment.appendChild(grid);
-    return grid;
-  }
-
-  function appendBrief(fragment, key, value) {
-    const grid = createBriefGrid(fragment);
-    const item = document.createElement("div");
-    item.className = "output-brief";
-    const dt = document.createElement("dt");
-    dt.textContent = key;
-    const dd = document.createElement("dd");
-    dd.textContent = value;
-    item.append(dt, dd);
-    grid.appendChild(item);
-  }
-
-  function renderOutput(text, data) {
-    latestOutput = text;
-    latestOutputData = data || null;
-    out.className = "output-body";
-    out.replaceChildren();
-
-    const fragment = document.createDocumentFragment();
-    const lines = text.replace(/\r\n/g, "\n").split("\n");
-    let section = null;
-    let list = null;
-    let paragraph = [];
-
-    function ensureSection() {
-      if (!section) section = createSection(fragment, "Prompt Blueprint");
+    function createSection(fragment, title) {
+      const section = document.createElement("article");
+      section.className = "output-section";
+      const h = document.createElement("h3");
+      h.textContent = title;
+      section.appendChild(h);
+      fragment.appendChild(section);
       return section;
     }
 
-    function flushParagraph() {
-      if (!paragraph.length) return;
-      appendParagraph(ensureSection(), paragraph.join(" "));
-      paragraph = [];
+    function createBriefGrid(fragment) {
+      let grid = fragment.querySelector?.(".output-brief-grid");
+      if (grid) return grid;
+      grid = document.createElement("dl");
+      grid.className = "output-brief-grid";
+      fragment.appendChild(grid);
+      return grid;
     }
 
-    function clearList() {
-      list = null;
+    function appendBrief(fragment, key, value) {
+      const grid = createBriefGrid(fragment);
+      const item = document.createElement("div");
+      item.className = "output-brief";
+      const dt = document.createElement("dt");
+      dt.textContent = key;
+      const dd = document.createElement("dd");
+      dd.textContent = value;
+      item.append(dt, dd);
+      grid.appendChild(item);
     }
 
-    lines.forEach((rawLine) => {
-      const line = rawLine.trim();
-      if (!line) {
-        flushParagraph();
-        clearList();
-        return;
+    function renderOutput(text, data) {
+      latestOutput = text;
+      latestOutputData = data || null;
+      out.className = "output-body";
+      out.replaceChildren();
+
+      const fragment = document.createDocumentFragment();
+      const lines = text.replace(/\r\n/g, "\n").split("\n");
+      let section = null;
+      let list = null;
+      let paragraph = [];
+
+      function ensureSection() {
+        if (!section) section = createSection(fragment, "Prompt Blueprint");
+        return section;
       }
 
-      const heading = extractHeading(line);
-      if (heading) {
-        flushParagraph();
-        clearList();
-        section = createSection(fragment, heading);
-        return;
+      function flushParagraph() {
+        if (!paragraph.length) return;
+        appendParagraph(ensureSection(), paragraph.join(" "));
+        paragraph = [];
       }
 
-      const keyValue = line.match(/^([A-Za-z][A-Za-z /_-]{1,28}):\s+(.+)$/);
-      if (keyValue) {
-        flushParagraph();
-        clearList();
-        const key = keyValue[1].trim();
-        const value = keyValue[2].trim();
-        if (!section && /^(role|task|objective|context|audience)$/i.test(key)) {
-          appendBrief(fragment, key, value);
-        } else {
-          appendDefinition(ensureSection(), key, value);
+      function clearList() {
+        list = null;
+      }
+
+      lines.forEach((rawLine) => {
+        const line = rawLine.trim();
+        if (!line) {
+          flushParagraph();
+          clearList();
+          return;
         }
-        return;
-      }
 
-      const bullet = line.match(/^[-*\u2022]\s+(.+)$/);
-      const numbered = line.match(/^\d+[\.)]\s+(.+)$/);
-      if (bullet || numbered) {
-        flushParagraph();
-        const ordered = Boolean(numbered);
-        if (!list || (ordered && list.tagName !== "OL") || (!ordered && list.tagName !== "UL")) {
-          list = document.createElement(ordered ? "ol" : "ul");
-          ensureSection().appendChild(list);
+        const heading = extractHeading(line);
+        if (heading) {
+          flushParagraph();
+          clearList();
+          section = createSection(fragment, heading);
+          return;
         }
-        const li = document.createElement("li");
-        li.textContent = (bullet || numbered)[1].trim();
-        list.appendChild(li);
-        return;
+
+        const keyValue = line.match(/^([A-Za-z][A-Za-z /_-]{1,28}):\s+(.+)$/);
+        if (keyValue) {
+          flushParagraph();
+          clearList();
+          const key = keyValue[1].trim();
+          const value = keyValue[2].trim();
+          if (!section && /^(role|task|objective|context|audience)$/i.test(key)) {
+            appendBrief(fragment, key, value);
+          } else {
+            appendDefinition(ensureSection(), key, value);
+          }
+          return;
+        }
+
+        const bullet = line.match(/^[-*\u2022]\s+(.+)$/);
+        const numbered = line.match(/^\d+[\.)]\s+(.+)$/);
+        if (bullet || numbered) {
+          flushParagraph();
+          const ordered = Boolean(numbered);
+          if (!list || (ordered && list.tagName !== "OL") || (!ordered && list.tagName !== "UL")) {
+            list = document.createElement(ordered ? "ol" : "ul");
+            ensureSection().appendChild(list);
+          }
+          const li = document.createElement("li");
+          li.textContent = (bullet || numbered)[1].trim();
+          list.appendChild(li);
+          return;
+        }
+
+        clearList();
+        paragraph.push(line);
+      });
+
+      flushParagraph();
+      if (!fragment.childNodes.length) renderMessage("No output returned", "Try a more specific raw prompt.");
+      else out.appendChild(fragment);
+    }
+
+    btn.addEventListener("click", async () => {
+      const p = ta.value;
+      if (!validateInput()) return;
+      setEnhancing(true);
+      renderLoading();
+      try {
+        const r = await fetch("/enhance", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ prompt: p }) });
+        const d = await r.json();
+        if (!r.ok || d.error) throw new Error(d.error || `Request failed with status ${r.status}`);
+        setMeta(d);
+        renderOutput(d.result || d.enhanced_prompt || "", d);
+        showToast("Prompt enhanced successfully!", "success");
+      } catch (e) {
+        renderError(e.message || "The enhancement service did not respond.");
+        console.error(e);
+      } finally {
+        setEnhancing(false);
       }
-
-      clearList();
-      paragraph.push(line);
     });
 
-    flushParagraph();
-    if (!fragment.childNodes.length) renderMessage("No output returned", "Try a more specific raw prompt.");
-    else out.appendChild(fragment);
-  }
-
-  btn.addEventListener("click", async () => {
-    const p = ta.value;
-    if (!validateInput()) return;
-    setEnhancing(true);
-    renderLoading();
-    try {
-      const r = await fetch("/enhance", { method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({prompt:p}) });
-      const d = await r.json();
-      if (!r.ok || d.error) throw new Error(d.error || `Request failed with status ${r.status}`);
-      setMeta(d);
-      renderOutput(d.result || d.enhanced_prompt || "", d);
-      showToast("Prompt enhanced successfully!", "success");
-    } catch(e) {
-      renderError(e.message || "The enhancement service did not respond.");
-      console.error(e);
-    } finally {
-      setEnhancing(false);
+    /* ── Copy with dropdown format support ── */
+    function getOutputAsMarkdown() {
+      if (!latestOutput) return "";
+      return latestOutput;
     }
-  });
 
-  /* ── Copy with dropdown format support ── */
-  function getOutputAsMarkdown() {
-    if (!latestOutput) return "";
-    return latestOutput;
-  }
-
-  function getOutputAsJSON() {
-    if (latestOutputData) {
-      return JSON.stringify(latestOutputData, null, 2);
+    function getOutputAsJSON() {
+      if (latestOutputData) {
+        return JSON.stringify(latestOutputData, null, 2);
+      }
+      return JSON.stringify({ enhanced_prompt: latestOutput }, null, 2);
     }
-    return JSON.stringify({ enhanced_prompt: latestOutput }, null, 2);
-  }
 
-  function doCopy(text) {
-    if (!text.trim()) return;
-    navigator.clipboard.writeText(text).then(() => {
-      copyLabel.textContent = "Copied";
-      copy.querySelector(".material-symbols-outlined").textContent = "check";
-      showToast("Copied to clipboard!", "success");
-      setTimeout(() => {
-        copyLabel.textContent = "Copy";
-        copy.querySelector(".material-symbols-outlined").textContent = "content_copy";
-      }, 1400);
-    }).catch(err => {
-      console.error(err);
-      showToast("Failed to copy to clipboard", "error");
+    function doCopy(text) {
+      if (!text.trim()) return;
+      navigator.clipboard.writeText(text).then(() => {
+        copyLabel.textContent = "Copied";
+        copy.querySelector(".material-symbols-outlined").textContent = "check";
+        showToast("Copied to clipboard!", "success");
+        setTimeout(() => {
+          copyLabel.textContent = "Copy";
+          copy.querySelector(".material-symbols-outlined").textContent = "content_copy";
+        }, 1400);
+      }).catch(err => {
+        console.error(err);
+        showToast("Failed to copy to clipboard", "error");
+      });
+    }
+
+    copy.addEventListener("click", (e) => {
+      // Toggle dropdown instead of direct copy
+      const dropdown = copy.closest(".copy-dropdown");
+      if (dropdown) {
+        e.stopPropagation();
+        dropdown.classList.toggle("open");
+      }
     });
-  }
 
-  copy.addEventListener("click", (e) => {
-    // Toggle dropdown instead of direct copy
-    const dropdown = copy.closest(".copy-dropdown");
-    if (dropdown) {
-      e.stopPropagation();
-      dropdown.classList.toggle("open");
-    }
-  });
-
-  // Copy format dropdown items
-  document.querySelectorAll(".copy-dropdown-item").forEach(item => {
-    item.addEventListener("click", (e) => {
-      e.stopPropagation();
-      const format = item.dataset.format;
-      let text = latestOutput;
-      if (format === "json") text = getOutputAsJSON();
-      else if (format === "markdown") text = getOutputAsMarkdown();
-      doCopy(text);
-      copy.closest(".copy-dropdown").classList.remove("open");
+    // Copy format dropdown items
+    document.querySelectorAll(".copy-dropdown-item").forEach(item => {
+      item.addEventListener("click", (e) => {
+        e.stopPropagation();
+        const format = item.dataset.format;
+        let text = latestOutput;
+        if (format === "json") text = getOutputAsJSON();
+        else if (format === "markdown") text = getOutputAsMarkdown();
+        doCopy(text);
+        copy.closest(".copy-dropdown").classList.remove("open");
+      });
     });
-  });
 
-  // Close dropdown on outside click
-  document.addEventListener("click", () => {
-    document.querySelectorAll(".copy-dropdown.open").forEach(d => d.classList.remove("open"));
-  });
-</script>
+    // Close dropdown on outside click
+    document.addEventListener("click", () => {
+      document.querySelectorAll(".copy-dropdown.open").forEach(d => d.classList.remove("open"));
+    });
+  </script>
 
-<!-- Toast Container -->
-<div id="toast-container" class="toast-container" aria-live="polite"></div>
+  <!-- Toast Container -->
+  <div id="toast-container" class="toast-container" aria-live="polite"></div>
 
-<!-- Keyboard Shortcuts Modal -->
-<div id="shortcuts-modal" class="shortcuts-modal" role="dialog" aria-modal="true" aria-labelledby="shortcuts-title">
-  <div class="shortcuts-panel">
-    <div class="shortcuts-header">
-      <h2 id="shortcuts-title" class="shortcuts-title">Keyboard Shortcuts</h2>
-      <button id="shortcuts-close" class="shortcuts-close" aria-label="Close shortcuts">
-        <span class="material-symbols-outlined">close</span>
-      </button>
-    </div>
-    <div class="shortcuts-list">
-      <div class="shortcut-row">
-        <span class="shortcut-desc">Enhance Prompt</span>
-        <div class="shortcut-keys"><kbd class="shortcut-key" id="modal-mod-key">⌘</kbd><kbd class="shortcut-key">Enter</kbd></div>
+  <!-- Keyboard Shortcuts Modal -->
+  <div id="shortcuts-modal" class="shortcuts-modal" role="dialog" aria-modal="true" aria-labelledby="shortcuts-title">
+    <div class="shortcuts-panel">
+      <div class="shortcuts-header">
+        <h2 id="shortcuts-title" class="shortcuts-title">Keyboard Shortcuts</h2>
+        <button id="shortcuts-close" class="shortcuts-close" aria-label="Close shortcuts">
+          <span class="material-symbols-outlined">close</span>
+        </button>
       </div>
-      <div class="shortcut-row">
-        <span class="shortcut-desc">Clear Input</span>
-        <div class="shortcut-keys"><kbd class="shortcut-key">Esc</kbd></div>
-      </div>
-      <div class="shortcut-row">
-        <span class="shortcut-desc">Show Shortcuts</span>
-        <div class="shortcut-keys"><kbd class="shortcut-key">?</kbd></div>
-      </div>
-      <div class="shortcut-row">
-        <span class="shortcut-desc">Focus Input</span>
-        <div class="shortcut-keys"><kbd class="shortcut-key">/</kbd></div>
-      </div>
-      <div class="shortcut-row">
-        <span class="shortcut-desc">Copy Output</span>
-        <div class="shortcut-keys"><kbd class="shortcut-key" id="modal-copy-mod-key">⌘</kbd><kbd class="shortcut-key">C</kbd></div>
+      <div class="shortcuts-list">
+        <div class="shortcut-row">
+          <span class="shortcut-desc">Enhance Prompt</span>
+          <div class="shortcut-keys"><kbd class="shortcut-key" id="modal-mod-key">⌘</kbd><kbd
+              class="shortcut-key">Enter</kbd></div>
+        </div>
+        <div class="shortcut-row">
+          <span class="shortcut-desc">Clear Input</span>
+          <div class="shortcut-keys"><kbd class="shortcut-key">Esc</kbd></div>
+        </div>
+        <div class="shortcut-row">
+          <span class="shortcut-desc">Show Shortcuts</span>
+          <div class="shortcut-keys"><kbd class="shortcut-key">?</kbd></div>
+        </div>
+        <div class="shortcut-row">
+          <span class="shortcut-desc">Focus Input</span>
+          <div class="shortcut-keys"><kbd class="shortcut-key">/</kbd></div>
+        </div>
+        <div class="shortcut-row">
+          <span class="shortcut-desc">Copy Output</span>
+          <div class="shortcut-keys"><kbd class="shortcut-key" id="modal-copy-mod-key">⌘</kbd><kbd
+              class="shortcut-key">C</kbd></div>
+        </div>
       </div>
     </div>
   </div>
-</div>
 
-<!-- ═══════════════════════════════════════════════
+  <!-- ═══════════════════════════════════════════════
      SplashCursor — pure WebGL fluid simulation
      FIX: resizeCanvas() called before initFramebuffers()
           render loop starts immediately, not on first mousemove
 ═══════════════════════════════════════════════ -->
-<script>
-(function initSplashCursor() {
+  <script>
+    (function initSplashCursor() {
 
-  const CONFIG = {
-    SIM_RESOLUTION:       128,
-    DYE_RESOLUTION:       1024,
-    DENSITY_DISSIPATION:  3.5,
-    VELOCITY_DISSIPATION: 2,
-    PRESSURE:             0.1,
-    PRESSURE_ITERATIONS:  16,
-    CURL:                 3,
-    SPLAT_RADIUS:         0.2,
-    SPLAT_FORCE:          6000,
-    SHADING:              true,
-    COLOR_UPDATE_SPEED:   10,
-    TRANSPARENT:          true,
-  };
+      const CONFIG = {
+        SIM_RESOLUTION: 128,
+        DYE_RESOLUTION: 1024,
+        DENSITY_DISSIPATION: 3.5,
+        VELOCITY_DISSIPATION: 2,
+        PRESSURE: 0.1,
+        PRESSURE_ITERATIONS: 16,
+        CURL: 3,
+        SPLAT_RADIUS: 0.2,
+        SPLAT_FORCE: 6000,
+        SHADING: true,
+        COLOR_UPDATE_SPEED: 10,
+        TRANSPARENT: true,
+      };
 
-  function Pointer() {
-    this.id = -1;
-    this.texcoordX = 0; this.texcoordY = 0;
-    this.prevTexcoordX = 0; this.prevTexcoordY = 0;
-    this.deltaX = 0; this.deltaY = 0;
-    this.down = false; this.moved = false;
-    this.color = [0,0,0];
-  }
-
-  // ── Canvas is already in DOM, grab it directly ──
-  const canvas = document.getElementById('fluid-canvas');
-  let pointers = [new Pointer()];
-
-  /* ── WebGL context ── */
-  function getWebGLContext(canvas) {
-    const params = { alpha:true, depth:false, stencil:false, antialias:false, preserveDrawingBuffer:false };
-    let gl = canvas.getContext('webgl2', params);
-    const isWebGL2 = !!gl;
-    if (!isWebGL2) gl = canvas.getContext('webgl', params) || canvas.getContext('experimental-webgl', params);
-    let halfFloat, supportLinearFiltering;
-    if (isWebGL2) {
-      gl.getExtension('EXT_color_buffer_float');
-      supportLinearFiltering = gl.getExtension('OES_texture_float_linear');
-    } else {
-      halfFloat = gl.getExtension('OES_texture_half_float');
-      supportLinearFiltering = gl.getExtension('OES_texture_half_float_linear');
-    }
-    gl.clearColor(0,0,0,1);
-    const halfFloatTexType = isWebGL2 ? gl.HALF_FLOAT : (halfFloat && halfFloat.HALF_FLOAT_OES);
-    let formatRGBA, formatRG, formatR;
-    if (isWebGL2) {
-      formatRGBA = getSupportedFormat(gl, gl.RGBA16F, gl.RGBA, halfFloatTexType);
-      formatRG   = getSupportedFormat(gl, gl.RG16F,   gl.RG,   halfFloatTexType);
-      formatR    = getSupportedFormat(gl, gl.R16F,    gl.RED,  halfFloatTexType);
-    } else {
-      formatRGBA = getSupportedFormat(gl, gl.RGBA, gl.RGBA, halfFloatTexType);
-      formatRG   = getSupportedFormat(gl, gl.RGBA, gl.RGBA, halfFloatTexType);
-      formatR    = getSupportedFormat(gl, gl.RGBA, gl.RGBA, halfFloatTexType);
-    }
-    return { gl, ext:{ formatRGBA, formatRG, formatR, halfFloatTexType, supportLinearFiltering } };
-  }
-
-  function getSupportedFormat(gl, internalFormat, format, type) {
-    if (!supportRenderTextureFormat(gl, internalFormat, format, type)) {
-      if (internalFormat === gl.R16F)  return getSupportedFormat(gl, gl.RG16F,   gl.RG,   type);
-      if (internalFormat === gl.RG16F) return getSupportedFormat(gl, gl.RGBA16F, gl.RGBA, type);
-      return null;
-    }
-    return { internalFormat, format };
-  }
-
-  function supportRenderTextureFormat(gl, internalFormat, format, type) {
-    const tex = gl.createTexture();
-    gl.bindTexture(gl.TEXTURE_2D, tex);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-    gl.texImage2D(gl.TEXTURE_2D, 0, internalFormat, 4, 4, 0, format, type, null);
-    const fbo = gl.createFramebuffer();
-    gl.bindFramebuffer(gl.FRAMEBUFFER, fbo);
-    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, tex, 0);
-    return gl.checkFramebufferStatus(gl.FRAMEBUFFER) === gl.FRAMEBUFFER_COMPLETE;
-  }
-
-  const { gl, ext } = getWebGLContext(canvas);
-  if (!ext.supportLinearFiltering) { CONFIG.DYE_RESOLUTION = 256; CONFIG.SHADING = false; }
-
-  /* ── shader helpers ── */
-  function compileShader(type, source, keywords) {
-    if (keywords) source = keywords.map(k => '#define ' + k + '\n').join('') + source;
-    const shader = gl.createShader(type);
-    gl.shaderSource(shader, source); gl.compileShader(shader);
-    if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) console.error(gl.getShaderInfoLog(shader));
-    return shader;
-  }
-
-  function createProgram(vs, fs) {
-    const p = gl.createProgram();
-    gl.attachShader(p, vs); gl.attachShader(p, fs); gl.linkProgram(p);
-    if (!gl.getProgramParameter(p, gl.LINK_STATUS)) console.error(gl.getProgramInfoLog(p));
-    return p;
-  }
-
-  function getUniforms(program) {
-    const u = {};
-    const n = gl.getProgramParameter(program, gl.ACTIVE_UNIFORMS);
-    for (let i = 0; i < n; i++) {
-      const name = gl.getActiveUniform(program, i).name;
-      u[name] = gl.getUniformLocation(program, name);
-    }
-    return u;
-  }
-
-  class Program {
-    constructor(vs, fs) {
-      this.program  = createProgram(vs, fs);
-      this.uniforms = getUniforms(this.program);
-    }
-    bind() { gl.useProgram(this.program); }
-  }
-
-  class Material {
-    constructor(vs, fsSrc) {
-      this.vs = vs; this.fsSrc = fsSrc;
-      this.programs = {}; this.activeProgram = null; this.uniforms = {};
-    }
-    setKeywords(kw) {
-      const hash = kw.reduce((h,k) => h + hashCode(k), 0);
-      if (!this.programs[hash]) {
-        const fs = compileShader(gl.FRAGMENT_SHADER, this.fsSrc, kw);
-        this.programs[hash] = createProgram(this.vs, fs);
+      function Pointer() {
+        this.id = -1;
+        this.texcoordX = 0; this.texcoordY = 0;
+        this.prevTexcoordX = 0; this.prevTexcoordY = 0;
+        this.deltaX = 0; this.deltaY = 0;
+        this.down = false; this.moved = false;
+        this.color = [0, 0, 0];
       }
-      if (this.programs[hash] === this.activeProgram) return;
-      this.activeProgram = this.programs[hash];
-      this.uniforms = getUniforms(this.activeProgram);
-    }
-    bind() { gl.useProgram(this.activeProgram); }
-  }
 
-  /* ── Vertex shader ── */
-  const baseVS = compileShader(gl.VERTEX_SHADER, `
+      // ── Canvas is already in DOM, grab it directly ──
+      const canvas = document.getElementById('fluid-canvas');
+      let pointers = [new Pointer()];
+
+      /* ── WebGL context ── */
+      function getWebGLContext(canvas) {
+        const params = { alpha: true, depth: false, stencil: false, antialias: false, preserveDrawingBuffer: false };
+        let gl = canvas.getContext('webgl2', params);
+        const isWebGL2 = !!gl;
+        if (!isWebGL2) gl = canvas.getContext('webgl', params) || canvas.getContext('experimental-webgl', params);
+        let halfFloat, supportLinearFiltering;
+        if (isWebGL2) {
+          gl.getExtension('EXT_color_buffer_float');
+          supportLinearFiltering = gl.getExtension('OES_texture_float_linear');
+        } else {
+          halfFloat = gl.getExtension('OES_texture_half_float');
+          supportLinearFiltering = gl.getExtension('OES_texture_half_float_linear');
+        }
+        gl.clearColor(0, 0, 0, 1);
+        const halfFloatTexType = isWebGL2 ? gl.HALF_FLOAT : (halfFloat && halfFloat.HALF_FLOAT_OES);
+        let formatRGBA, formatRG, formatR;
+        if (isWebGL2) {
+          formatRGBA = getSupportedFormat(gl, gl.RGBA16F, gl.RGBA, halfFloatTexType);
+          formatRG = getSupportedFormat(gl, gl.RG16F, gl.RG, halfFloatTexType);
+          formatR = getSupportedFormat(gl, gl.R16F, gl.RED, halfFloatTexType);
+        } else {
+          formatRGBA = getSupportedFormat(gl, gl.RGBA, gl.RGBA, halfFloatTexType);
+          formatRG = getSupportedFormat(gl, gl.RGBA, gl.RGBA, halfFloatTexType);
+          formatR = getSupportedFormat(gl, gl.RGBA, gl.RGBA, halfFloatTexType);
+        }
+        return { gl, ext: { formatRGBA, formatRG, formatR, halfFloatTexType, supportLinearFiltering } };
+      }
+
+      function getSupportedFormat(gl, internalFormat, format, type) {
+        if (!supportRenderTextureFormat(gl, internalFormat, format, type)) {
+          if (internalFormat === gl.R16F) return getSupportedFormat(gl, gl.RG16F, gl.RG, type);
+          if (internalFormat === gl.RG16F) return getSupportedFormat(gl, gl.RGBA16F, gl.RGBA, type);
+          return null;
+        }
+        return { internalFormat, format };
+      }
+
+      function supportRenderTextureFormat(gl, internalFormat, format, type) {
+        const tex = gl.createTexture();
+        gl.bindTexture(gl.TEXTURE_2D, tex);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+        gl.texImage2D(gl.TEXTURE_2D, 0, internalFormat, 4, 4, 0, format, type, null);
+        const fbo = gl.createFramebuffer();
+        gl.bindFramebuffer(gl.FRAMEBUFFER, fbo);
+        gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, tex, 0);
+        return gl.checkFramebufferStatus(gl.FRAMEBUFFER) === gl.FRAMEBUFFER_COMPLETE;
+      }
+
+      const { gl, ext } = getWebGLContext(canvas);
+      if (!ext.supportLinearFiltering) { CONFIG.DYE_RESOLUTION = 256; CONFIG.SHADING = false; }
+
+      /* ── shader helpers ── */
+      function compileShader(type, source, keywords) {
+        if (keywords) source = keywords.map(k => '#define ' + k + '\n').join('') + source;
+        const shader = gl.createShader(type);
+        gl.shaderSource(shader, source); gl.compileShader(shader);
+        if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) console.error(gl.getShaderInfoLog(shader));
+        return shader;
+      }
+
+      function createProgram(vs, fs) {
+        const p = gl.createProgram();
+        gl.attachShader(p, vs); gl.attachShader(p, fs); gl.linkProgram(p);
+        if (!gl.getProgramParameter(p, gl.LINK_STATUS)) console.error(gl.getProgramInfoLog(p));
+        return p;
+      }
+
+      function getUniforms(program) {
+        const u = {};
+        const n = gl.getProgramParameter(program, gl.ACTIVE_UNIFORMS);
+        for (let i = 0; i < n; i++) {
+          const name = gl.getActiveUniform(program, i).name;
+          u[name] = gl.getUniformLocation(program, name);
+        }
+        return u;
+      }
+
+      class Program {
+        constructor(vs, fs) {
+          this.program = createProgram(vs, fs);
+          this.uniforms = getUniforms(this.program);
+        }
+        bind() { gl.useProgram(this.program); }
+      }
+
+      class Material {
+        constructor(vs, fsSrc) {
+          this.vs = vs; this.fsSrc = fsSrc;
+          this.programs = {}; this.activeProgram = null; this.uniforms = {};
+        }
+        setKeywords(kw) {
+          const hash = kw.reduce((h, k) => h + hashCode(k), 0);
+          if (!this.programs[hash]) {
+            const fs = compileShader(gl.FRAGMENT_SHADER, this.fsSrc, kw);
+            this.programs[hash] = createProgram(this.vs, fs);
+          }
+          if (this.programs[hash] === this.activeProgram) return;
+          this.activeProgram = this.programs[hash];
+          this.uniforms = getUniforms(this.activeProgram);
+        }
+        bind() { gl.useProgram(this.activeProgram); }
+      }
+
+      /* ── Vertex shader ── */
+      const baseVS = compileShader(gl.VERTEX_SHADER, `
     precision highp float;
     attribute vec2 aPosition;
     varying vec2 vUv,vL,vR,vT,vB;
@@ -1114,18 +1860,18 @@
     }
   `);
 
-  /* ── Fragment shaders ── */
-  const copyFS = compileShader(gl.FRAGMENT_SHADER,`
+      /* ── Fragment shaders ── */
+      const copyFS = compileShader(gl.FRAGMENT_SHADER, `
     precision mediump float;precision mediump sampler2D;
     varying highp vec2 vUv;uniform sampler2D uTexture;
     void main(){gl_FragColor=texture2D(uTexture,vUv);}
   `);
-  const clearFS = compileShader(gl.FRAGMENT_SHADER,`
+      const clearFS = compileShader(gl.FRAGMENT_SHADER, `
     precision mediump float;precision mediump sampler2D;
     varying highp vec2 vUv;uniform sampler2D uTexture;uniform float value;
     void main(){gl_FragColor=value*texture2D(uTexture,vUv);}
   `);
-  const splatFS = compileShader(gl.FRAGMENT_SHADER,`
+      const splatFS = compileShader(gl.FRAGMENT_SHADER, `
     precision highp float;precision highp sampler2D;
     varying vec2 vUv;uniform sampler2D uTarget;
     uniform float aspectRatio;uniform vec3 color;uniform vec2 point;uniform float radius;
@@ -1135,7 +1881,7 @@
       gl_FragColor=vec4(texture2D(uTarget,vUv).xyz+splat,1);
     }
   `);
-  const advectionFS = compileShader(gl.FRAGMENT_SHADER,`
+      const advectionFS = compileShader(gl.FRAGMENT_SHADER, `
     precision highp float;precision highp sampler2D;
     varying vec2 vUv;uniform sampler2D uVelocity,uSource;
     uniform vec2 texelSize,dyeTexelSize;uniform float dt,dissipation;
@@ -1159,7 +1905,7 @@
       gl_FragColor=result/(1.+dissipation*dt);
     }
   `, ext.supportLinearFiltering ? null : ['MANUAL_FILTERING']);
-  const divergenceFS = compileShader(gl.FRAGMENT_SHADER,`
+      const divergenceFS = compileShader(gl.FRAGMENT_SHADER, `
     precision mediump float;precision mediump sampler2D;
     varying highp vec2 vUv,vL,vR,vT,vB;uniform sampler2D uVelocity;
     void main(){
@@ -1170,7 +1916,7 @@
       gl_FragColor=vec4(.5*(R-L+T-B),0,0,1);
     }
   `);
-  const curlFS = compileShader(gl.FRAGMENT_SHADER,`
+      const curlFS = compileShader(gl.FRAGMENT_SHADER, `
     precision mediump float;precision mediump sampler2D;
     varying highp vec2 vUv,vL,vR,vT,vB;uniform sampler2D uVelocity;
     void main(){
@@ -1179,7 +1925,7 @@
       gl_FragColor=vec4(.5*(R-L-T+B),0,0,1);
     }
   `);
-  const vorticityFS = compileShader(gl.FRAGMENT_SHADER,`
+      const vorticityFS = compileShader(gl.FRAGMENT_SHADER, `
     precision highp float;precision highp sampler2D;
     varying vec2 vUv,vL,vR,vT,vB;uniform sampler2D uVelocity,uCurl;
     uniform float curl,dt;
@@ -1194,7 +1940,7 @@
       gl_FragColor=vec4(vel,0,1);
     }
   `);
-  const pressureFS = compileShader(gl.FRAGMENT_SHADER,`
+      const pressureFS = compileShader(gl.FRAGMENT_SHADER, `
     precision mediump float;precision mediump sampler2D;
     varying highp vec2 vUv,vL,vR,vT,vB;
     uniform sampler2D uPressure,uDivergence;
@@ -1205,7 +1951,7 @@
       gl_FragColor=vec4((L+R+B+T-div)*.25,0,0,1);
     }
   `);
-  const gradSubFS = compileShader(gl.FRAGMENT_SHADER,`
+      const gradSubFS = compileShader(gl.FRAGMENT_SHADER, `
     precision mediump float;precision mediump sampler2D;
     varying highp vec2 vUv,vL,vR,vT,vB;
     uniform sampler2D uPressure,uVelocity;
@@ -1216,7 +1962,7 @@
       gl_FragColor=vec4(vel,0,1);
     }
   `);
-  const displayFSSrc = `
+      const displayFSSrc = `
     precision highp float;precision highp sampler2D;
     varying vec2 vUv,vL,vR,vT,vB;
     uniform sampler2D uTexture;uniform vec2 texelSize;
@@ -1234,372 +1980,549 @@
     }
   `;
 
-  /* ── Programs ── */
-  const copyProg  = new Program(baseVS, copyFS);
-  const clearProg = new Program(baseVS, clearFS);
-  const splatProg = new Program(baseVS, splatFS);
-  const advProg   = new Program(baseVS, advectionFS);
-  const divProg   = new Program(baseVS, divergenceFS);
-  const curlProg  = new Program(baseVS, curlFS);
-  const vortProg  = new Program(baseVS, vorticityFS);
-  const presProg  = new Program(baseVS, pressureFS);
-  const gradProg  = new Program(baseVS, gradSubFS);
-  const displayMat = new Material(baseVS, displayFSSrc);
+      /* ── Programs ── */
+      const copyProg = new Program(baseVS, copyFS);
+      const clearProg = new Program(baseVS, clearFS);
+      const splatProg = new Program(baseVS, splatFS);
+      const advProg = new Program(baseVS, advectionFS);
+      const divProg = new Program(baseVS, divergenceFS);
+      const curlProg = new Program(baseVS, curlFS);
+      const vortProg = new Program(baseVS, vorticityFS);
+      const presProg = new Program(baseVS, pressureFS);
+      const gradProg = new Program(baseVS, gradSubFS);
+      const displayMat = new Material(baseVS, displayFSSrc);
 
-  /* ── Blit quad ── */
-  gl.bindBuffer(gl.ARRAY_BUFFER, gl.createBuffer());
-  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1,-1,1,1,1,1,-1]), gl.STATIC_DRAW);
-  gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, gl.createBuffer());
-  gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array([0,1,2,0,2,3]), gl.STATIC_DRAW);
-  gl.vertexAttribPointer(0,2,gl.FLOAT,false,0,0);
-  gl.enableVertexAttribArray(0);
+      /* ── Blit quad ── */
+      gl.bindBuffer(gl.ARRAY_BUFFER, gl.createBuffer());
+      gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, -1, 1, 1, 1, 1, -1]), gl.STATIC_DRAW);
+      gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, gl.createBuffer());
+      gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array([0, 1, 2, 0, 2, 3]), gl.STATIC_DRAW);
+      gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 0, 0);
+      gl.enableVertexAttribArray(0);
 
-  function blit(target, clear=false) {
-    if (target == null) {
-      gl.viewport(0,0,gl.drawingBufferWidth,gl.drawingBufferHeight);
-      gl.bindFramebuffer(gl.FRAMEBUFFER,null);
-    } else {
-      gl.viewport(0,0,target.width,target.height);
-      gl.bindFramebuffer(gl.FRAMEBUFFER,target.fbo);
-    }
-    if (clear) { gl.clearColor(0,0,0,1); gl.clear(gl.COLOR_BUFFER_BIT); }
-    gl.drawElements(gl.TRIANGLES,6,gl.UNSIGNED_SHORT,0);
-  }
+      function blit(target, clear = false) {
+        if (target == null) {
+          gl.viewport(0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight);
+          gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+        } else {
+          gl.viewport(0, 0, target.width, target.height);
+          gl.bindFramebuffer(gl.FRAMEBUFFER, target.fbo);
+        }
+        if (clear) { gl.clearColor(0, 0, 0, 1); gl.clear(gl.COLOR_BUFFER_BIT); }
+        gl.drawElements(gl.TRIANGLES, 6, gl.UNSIGNED_SHORT, 0);
+      }
 
-  /* ── FBO helpers ── */
-  function createFBO(w,h,internalFormat,format,type,param) {
-    gl.activeTexture(gl.TEXTURE0);
-    const tex=gl.createTexture();
-    gl.bindTexture(gl.TEXTURE_2D,tex);
-    gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,param);
-    gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,param);
-    gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_S,gl.CLAMP_TO_EDGE);
-    gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_T,gl.CLAMP_TO_EDGE);
-    gl.texImage2D(gl.TEXTURE_2D,0,internalFormat,w,h,0,format,type,null);
-    const fbo=gl.createFramebuffer();
-    gl.bindFramebuffer(gl.FRAMEBUFFER,fbo);
-    gl.framebufferTexture2D(gl.FRAMEBUFFER,gl.COLOR_ATTACHMENT0,gl.TEXTURE_2D,tex,0);
-    gl.viewport(0,0,w,h); gl.clear(gl.COLOR_BUFFER_BIT);
-    return {
-      texture:tex,fbo,width:w,height:h,
-      texelSizeX:1/w,texelSizeY:1/h,
-      attach(id){ gl.activeTexture(gl.TEXTURE0+id); gl.bindTexture(gl.TEXTURE_2D,tex); return id; }
-    };
-  }
+      /* ── FBO helpers ── */
+      function createFBO(w, h, internalFormat, format, type, param) {
+        gl.activeTexture(gl.TEXTURE0);
+        const tex = gl.createTexture();
+        gl.bindTexture(gl.TEXTURE_2D, tex);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, param);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, param);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+        gl.texImage2D(gl.TEXTURE_2D, 0, internalFormat, w, h, 0, format, type, null);
+        const fbo = gl.createFramebuffer();
+        gl.bindFramebuffer(gl.FRAMEBUFFER, fbo);
+        gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, tex, 0);
+        gl.viewport(0, 0, w, h); gl.clear(gl.COLOR_BUFFER_BIT);
+        return {
+          texture: tex, fbo, width: w, height: h,
+          texelSizeX: 1 / w, texelSizeY: 1 / h,
+          attach(id) { gl.activeTexture(gl.TEXTURE0 + id); gl.bindTexture(gl.TEXTURE_2D, tex); return id; }
+        };
+      }
 
-  function createDoubleFBO(w,h,iF,f,t,p) {
-    let a=createFBO(w,h,iF,f,t,p), b=createFBO(w,h,iF,f,t,p);
-    return {
-      width:w,height:h,texelSizeX:a.texelSizeX,texelSizeY:a.texelSizeY,
-      get read(){return a;},set read(v){a=v;},
-      get write(){return b;},set write(v){b=v;},
-      swap(){let t=a;a=b;b=t;}
-    };
-  }
+      function createDoubleFBO(w, h, iF, f, t, p) {
+        let a = createFBO(w, h, iF, f, t, p), b = createFBO(w, h, iF, f, t, p);
+        return {
+          width: w, height: h, texelSizeX: a.texelSizeX, texelSizeY: a.texelSizeY,
+          get read() { return a; }, set read(v) { a = v; },
+          get write() { return b; }, set write(v) { b = v; },
+          swap() { let t = a; a = b; b = t; }
+        };
+      }
 
-  function resizeFBO(target,w,h,iF,f,t,p) {
-    const n=createFBO(w,h,iF,f,t,p);
-    copyProg.bind();
-    gl.uniform1i(copyProg.uniforms.uTexture,target.attach(0));
-    blit(n); return n;
-  }
+      function resizeFBO(target, w, h, iF, f, t, p) {
+        const n = createFBO(w, h, iF, f, t, p);
+        copyProg.bind();
+        gl.uniform1i(copyProg.uniforms.uTexture, target.attach(0));
+        blit(n); return n;
+      }
 
-  function resizeDoubleFBO(target,w,h,iF,f,t,p) {
-    if(target.width===w&&target.height===h) return target;
-    target.read=resizeFBO(target.read,w,h,iF,f,t,p);
-    target.write=createFBO(w,h,iF,f,t,p);
-    target.width=w;target.height=h;
-    target.texelSizeX=1/w;target.texelSizeY=1/h;
-    return target;
-  }
+      function resizeDoubleFBO(target, w, h, iF, f, t, p) {
+        if (target.width === w && target.height === h) return target;
+        target.read = resizeFBO(target.read, w, h, iF, f, t, p);
+        target.write = createFBO(w, h, iF, f, t, p);
+        target.width = w; target.height = h;
+        target.texelSizeX = 1 / w; target.texelSizeY = 1 / h;
+        return target;
+      }
 
-  let dye,velocity,divergence,curl,pressure;
+      let dye, velocity, divergence, curl, pressure;
 
-  function initFramebuffers() {
-    const simRes=getResolution(CONFIG.SIM_RESOLUTION);
-    const dyeRes=getResolution(CONFIG.DYE_RESOLUTION);
-    const tt=ext.halfFloatTexType,rgba=ext.formatRGBA,rg=ext.formatRG,r=ext.formatR;
-    const filt=ext.supportLinearFiltering?gl.LINEAR:gl.NEAREST;
-    gl.disable(gl.BLEND);
-    if(!dye) dye=createDoubleFBO(dyeRes.width,dyeRes.height,rgba.internalFormat,rgba.format,tt,filt);
-    else dye=resizeDoubleFBO(dye,dyeRes.width,dyeRes.height,rgba.internalFormat,rgba.format,tt,filt);
-    if(!velocity) velocity=createDoubleFBO(simRes.width,simRes.height,rg.internalFormat,rg.format,tt,filt);
-    else velocity=resizeDoubleFBO(velocity,simRes.width,simRes.height,rg.internalFormat,rg.format,tt,filt);
-    divergence=createFBO(simRes.width,simRes.height,r.internalFormat,r.format,tt,gl.NEAREST);
-    curl=createFBO(simRes.width,simRes.height,r.internalFormat,r.format,tt,gl.NEAREST);
-    pressure=createDoubleFBO(simRes.width,simRes.height,r.internalFormat,r.format,tt,gl.NEAREST);
-  }
+      function initFramebuffers() {
+        const simRes = getResolution(CONFIG.SIM_RESOLUTION);
+        const dyeRes = getResolution(CONFIG.DYE_RESOLUTION);
+        const tt = ext.halfFloatTexType, rgba = ext.formatRGBA, rg = ext.formatRG, r = ext.formatR;
+        const filt = ext.supportLinearFiltering ? gl.LINEAR : gl.NEAREST;
+        gl.disable(gl.BLEND);
+        if (!dye) dye = createDoubleFBO(dyeRes.width, dyeRes.height, rgba.internalFormat, rgba.format, tt, filt);
+        else dye = resizeDoubleFBO(dye, dyeRes.width, dyeRes.height, rgba.internalFormat, rgba.format, tt, filt);
+        if (!velocity) velocity = createDoubleFBO(simRes.width, simRes.height, rg.internalFormat, rg.format, tt, filt);
+        else velocity = resizeDoubleFBO(velocity, simRes.width, simRes.height, rg.internalFormat, rg.format, tt, filt);
+        divergence = createFBO(simRes.width, simRes.height, r.internalFormat, r.format, tt, gl.NEAREST);
+        curl = createFBO(simRes.width, simRes.height, r.internalFormat, r.format, tt, gl.NEAREST);
+        pressure = createDoubleFBO(simRes.width, simRes.height, r.internalFormat, r.format, tt, gl.NEAREST);
+      }
 
-  function getResolution(res) {
-    let ar=gl.drawingBufferWidth/gl.drawingBufferHeight;
-    if(ar<1) ar=1/ar;
-    const min=Math.round(res),max=Math.round(res*ar);
-    return gl.drawingBufferWidth>gl.drawingBufferHeight?{width:max,height:min}:{width:min,height:max};
-  }
+      function getResolution(res) {
+        let ar = gl.drawingBufferWidth / gl.drawingBufferHeight;
+        if (ar < 1) ar = 1 / ar;
+        const min = Math.round(res), max = Math.round(res * ar);
+        return gl.drawingBufferWidth > gl.drawingBufferHeight ? { width: max, height: min } : { width: min, height: max };
+      }
 
-  /* ── utilities ── */
-  function scaleByPixelRatio(v){
-    // Cap screen scaling at 1.5x on high-DPI displays to optimize rendering and keep coordinates aligned
-    const dpr = Math.min(window.devicePixelRatio || 1, 1.5);
-    return Math.floor(v * dpr);
-  }
-  function hashCode(s){ let h=0;for(let i=0;i<s.length;i++){h=(h<<5)-h+s.charCodeAt(i);h|=0;}return h; }
-  function wrap(v,min,max){ const r=max-min;return r===0?min:((v-min)%r)+min; }
+      /* ── utilities ── */
+      function scaleByPixelRatio(v) {
+        // Cap screen scaling at 1.5x on high-DPI displays to optimize rendering and keep coordinates aligned
+        const dpr = Math.min(window.devicePixelRatio || 1, 1.5);
+        return Math.floor(v * dpr);
+      }
+      function hashCode(s) { let h = 0; for (let i = 0; i < s.length; i++) { h = (h << 5) - h + s.charCodeAt(i); h |= 0; } return h; }
+      function wrap(v, min, max) { const r = max - min; return r === 0 ? min : ((v - min) % r) + min; }
 
-  function generateColor(){
-    const c=HSVtoRGB(Math.random(),1,1);
-    return {r:c.r*.15,g:c.g*.15,b:c.b*.15};
-  }
-  function HSVtoRGB(h,s,v){
-    const i=Math.floor(h*6),f=h*6-i,p=v*(1-s),q=v*(1-f*s),t=v*(1-(1-f)*s);
-    switch(i%6){
-      case 0:return{r:v,g:t,b:p};case 1:return{r:q,g:v,b:p};case 2:return{r:p,g:v,b:t};
-      case 3:return{r:p,g:q,b:v};case 4:return{r:t,g:p,b:v};case 5:return{r:v,g:p,b:q};
-    }
-  }
+      function generateColor() {
+        const isGold = Math.random() < 0.7;
+        let h, s, v;
+        if (isGold) {
+          h = 0.09 + Math.random() * 0.035;
+          s = 0.4 + Math.random() * 0.25;
+          v = 0.85 + Math.random() * 0.15;
+        } else {
+          h = 0.55 + Math.random() * 0.11;
+          s = 0.04 + Math.random() * 0.08;
+          v = 0.75 + Math.random() * 0.25;
+        }
+        const c = HSVtoRGB(h, s, v);
+        const intensity = isGold ? 0.18 : 0.12;
+        return { r: c.r * intensity, g: c.g * intensity, b: c.b * intensity };
+      }
+      function HSVtoRGB(h, s, v) {
+        const i = Math.floor(h * 6), f = h * 6 - i, p = v * (1 - s), q = v * (1 - f * s), t = v * (1 - (1 - f) * s);
+        switch (i % 6) {
+          case 0: return { r: v, g: t, b: p }; case 1: return { r: q, g: v, b: p }; case 2: return { r: p, g: v, b: t };
+          case 3: return { r: p, g: q, b: v }; case 4: return { r: t, g: p, b: v }; case 5: return { r: v, g: p, b: q };
+        }
+      }
 
-  function correctRadius(radius){
-    const ar=canvas.width/canvas.height;
-    return ar>1?radius*ar:radius;
-  }
-  function correctDeltaX(d){const ar=canvas.width/canvas.height;return ar<1?d*ar:d;}
-  function correctDeltaY(d){const ar=canvas.width/canvas.height;return ar>1?d/ar:d;}
+      function correctRadius(radius) {
+        const ar = canvas.width / canvas.height;
+        return ar > 1 ? radius * ar : radius;
+      }
+      function correctDeltaX(d) { const ar = canvas.width / canvas.height; return ar < 1 ? d * ar : d; }
+      function correctDeltaY(d) { const ar = canvas.width / canvas.height; return ar > 1 ? d / ar : d; }
 
-  /* ── pointer data helpers ── */
-  function updatePointerDownData(p,id,x,y){
-    p.id=id;p.down=true;p.moved=false;
-    p.texcoordX=x/canvas.width;p.texcoordY=1-y/canvas.height;
-    p.prevTexcoordX=p.texcoordX;p.prevTexcoordY=p.texcoordY;
-    p.deltaX=0;p.deltaY=0;p.color=generateColor();
-  }
-  function updatePointerMoveData(p,x,y,color){
-    p.prevTexcoordX=p.texcoordX;p.prevTexcoordY=p.texcoordY;
-    p.texcoordX=x/canvas.width;p.texcoordY=1-y/canvas.height;
-    p.deltaX=correctDeltaX(p.texcoordX-p.prevTexcoordX);
-    p.deltaY=correctDeltaY(p.texcoordY-p.prevTexcoordY);
-    p.moved=Math.abs(p.deltaX)>0||Math.abs(p.deltaY)>0;
-    p.color=color;
-  }
-  function updatePointerUpData(p){p.down=false;}
+      /* ── pointer data helpers ── */
+      function updatePointerDownData(p, id, x, y) {
+        p.id = id; p.down = true; p.moved = false;
+        p.texcoordX = x / canvas.width; p.texcoordY = 1 - y / canvas.height;
+        p.prevTexcoordX = p.texcoordX; p.prevTexcoordY = p.texcoordY;
+        p.deltaX = 0; p.deltaY = 0; p.color = generateColor();
+      }
+      function updatePointerMoveData(p, x, y, color) {
+        p.prevTexcoordX = p.texcoordX; p.prevTexcoordY = p.texcoordY;
+        p.texcoordX = x / canvas.width; p.texcoordY = 1 - y / canvas.height;
+        p.deltaX = correctDeltaX(p.texcoordX - p.prevTexcoordX);
+        p.deltaY = correctDeltaY(p.texcoordY - p.prevTexcoordY);
+        p.moved = Math.abs(p.deltaX) > 0 || Math.abs(p.deltaY) > 0;
+        p.color = color;
+      }
+      function updatePointerUpData(p) { p.down = false; }
 
-  /* ── splat ── */
-  function splat(x,y,dx,dy,color){
-    splatProg.bind();
-    gl.uniform1i(splatProg.uniforms.uTarget,velocity.read.attach(0));
-    gl.uniform1f(splatProg.uniforms.aspectRatio,canvas.width/canvas.height);
-    gl.uniform2f(splatProg.uniforms.point,x,y);
-    gl.uniform3f(splatProg.uniforms.color,dx,dy,0);
-    gl.uniform1f(splatProg.uniforms.radius,correctRadius(CONFIG.SPLAT_RADIUS/100));
-    blit(velocity.write); velocity.swap();
-    gl.uniform1i(splatProg.uniforms.uTarget,dye.read.attach(0));
-    gl.uniform3f(splatProg.uniforms.color,color.r,color.g,color.b);
-    blit(dye.write); dye.swap();
-  }
-  function splatPointer(p){
-    splat(p.texcoordX,p.texcoordY,p.deltaX*CONFIG.SPLAT_FORCE,p.deltaY*CONFIG.SPLAT_FORCE,p.color);
-  }
-  function clickSplat(p){
-    const c=generateColor();c.r*=10;c.g*=10;c.b*=10;
-    splat(p.texcoordX,p.texcoordY,10*(Math.random()-.5),30*(Math.random()-.5),c);
-  }
+      /* ── splat ── */
+      function splat(x, y, dx, dy, color) {
+        splatProg.bind();
+        gl.uniform1i(splatProg.uniforms.uTarget, velocity.read.attach(0));
+        gl.uniform1f(splatProg.uniforms.aspectRatio, canvas.width / canvas.height);
+        gl.uniform2f(splatProg.uniforms.point, x, y);
+        gl.uniform3f(splatProg.uniforms.color, dx, dy, 0);
+        gl.uniform1f(splatProg.uniforms.radius, correctRadius(CONFIG.SPLAT_RADIUS / 100));
+        blit(velocity.write); velocity.swap();
+        gl.uniform1i(splatProg.uniforms.uTarget, dye.read.attach(0));
+        gl.uniform3f(splatProg.uniforms.color, color.r, color.g, color.b);
+        blit(dye.write); dye.swap();
+      }
+      function splatPointer(p) {
+        splat(p.texcoordX, p.texcoordY, p.deltaX * CONFIG.SPLAT_FORCE, p.deltaY * CONFIG.SPLAT_FORCE, p.color);
+      }
+      function clickSplat(p) {
+        const c = generateColor(); c.r *= 10; c.g *= 10; c.b *= 10;
+        splat(p.texcoordX, p.texcoordY, 10 * (Math.random() - .5), 30 * (Math.random() - .5), c);
+      }
 
-  /* ── simulation step ── */
-  function step(dt){
-    gl.disable(gl.BLEND);
-    curlProg.bind();
-    gl.uniform2f(curlProg.uniforms.texelSize,velocity.texelSizeX,velocity.texelSizeY);
-    gl.uniform1i(curlProg.uniforms.uVelocity,velocity.read.attach(0));
-    blit(curl);
+      /* ── simulation step ── */
+      function step(dt) {
+        gl.disable(gl.BLEND);
+        curlProg.bind();
+        gl.uniform2f(curlProg.uniforms.texelSize, velocity.texelSizeX, velocity.texelSizeY);
+        gl.uniform1i(curlProg.uniforms.uVelocity, velocity.read.attach(0));
+        blit(curl);
 
-    vortProg.bind();
-    gl.uniform2f(vortProg.uniforms.texelSize,velocity.texelSizeX,velocity.texelSizeY);
-    gl.uniform1i(vortProg.uniforms.uVelocity,velocity.read.attach(0));
-    gl.uniform1i(vortProg.uniforms.uCurl,curl.attach(1));
-    gl.uniform1f(vortProg.uniforms.curl,CONFIG.CURL);
-    gl.uniform1f(vortProg.uniforms.dt,dt);
-    blit(velocity.write); velocity.swap();
+        vortProg.bind();
+        gl.uniform2f(vortProg.uniforms.texelSize, velocity.texelSizeX, velocity.texelSizeY);
+        gl.uniform1i(vortProg.uniforms.uVelocity, velocity.read.attach(0));
+        gl.uniform1i(vortProg.uniforms.uCurl, curl.attach(1));
+        gl.uniform1f(vortProg.uniforms.curl, CONFIG.CURL);
+        gl.uniform1f(vortProg.uniforms.dt, dt);
+        blit(velocity.write); velocity.swap();
 
-    divProg.bind();
-    gl.uniform2f(divProg.uniforms.texelSize,velocity.texelSizeX,velocity.texelSizeY);
-    gl.uniform1i(divProg.uniforms.uVelocity,velocity.read.attach(0));
-    blit(divergence);
+        divProg.bind();
+        gl.uniform2f(divProg.uniforms.texelSize, velocity.texelSizeX, velocity.texelSizeY);
+        gl.uniform1i(divProg.uniforms.uVelocity, velocity.read.attach(0));
+        blit(divergence);
 
-    clearProg.bind();
-    gl.uniform1i(clearProg.uniforms.uTexture,pressure.read.attach(0));
-    gl.uniform1f(clearProg.uniforms.value,CONFIG.PRESSURE);
-    blit(pressure.write); pressure.swap();
+        clearProg.bind();
+        gl.uniform1i(clearProg.uniforms.uTexture, pressure.read.attach(0));
+        gl.uniform1f(clearProg.uniforms.value, CONFIG.PRESSURE);
+        blit(pressure.write); pressure.swap();
 
-    presProg.bind();
-    gl.uniform2f(presProg.uniforms.texelSize,velocity.texelSizeX,velocity.texelSizeY);
-    gl.uniform1i(presProg.uniforms.uDivergence,divergence.attach(0));
-    for(let i=0;i<CONFIG.PRESSURE_ITERATIONS;i++){
-      gl.uniform1i(presProg.uniforms.uPressure,pressure.read.attach(1));
-      blit(pressure.write); pressure.swap();
-    }
+        presProg.bind();
+        gl.uniform2f(presProg.uniforms.texelSize, velocity.texelSizeX, velocity.texelSizeY);
+        gl.uniform1i(presProg.uniforms.uDivergence, divergence.attach(0));
+        for (let i = 0; i < CONFIG.PRESSURE_ITERATIONS; i++) {
+          gl.uniform1i(presProg.uniforms.uPressure, pressure.read.attach(1));
+          blit(pressure.write); pressure.swap();
+        }
 
-    gradProg.bind();
-    gl.uniform2f(gradProg.uniforms.texelSize,velocity.texelSizeX,velocity.texelSizeY);
-    gl.uniform1i(gradProg.uniforms.uPressure,pressure.read.attach(0));
-    gl.uniform1i(gradProg.uniforms.uVelocity,velocity.read.attach(1));
-    blit(velocity.write); velocity.swap();
+        gradProg.bind();
+        gl.uniform2f(gradProg.uniforms.texelSize, velocity.texelSizeX, velocity.texelSizeY);
+        gl.uniform1i(gradProg.uniforms.uPressure, pressure.read.attach(0));
+        gl.uniform1i(gradProg.uniforms.uVelocity, velocity.read.attach(1));
+        blit(velocity.write); velocity.swap();
 
-    advProg.bind();
-    gl.uniform2f(advProg.uniforms.texelSize,velocity.texelSizeX,velocity.texelSizeY);
-    if(!ext.supportLinearFiltering) gl.uniform2f(advProg.uniforms.dyeTexelSize,velocity.texelSizeX,velocity.texelSizeY);
-    const velId=velocity.read.attach(0);
-    gl.uniform1i(advProg.uniforms.uVelocity,velId);
-    gl.uniform1i(advProg.uniforms.uSource,velId);
-    gl.uniform1f(advProg.uniforms.dt,dt);
-    gl.uniform1f(advProg.uniforms.dissipation,CONFIG.VELOCITY_DISSIPATION);
-    blit(velocity.write); velocity.swap();
+        advProg.bind();
+        gl.uniform2f(advProg.uniforms.texelSize, velocity.texelSizeX, velocity.texelSizeY);
+        if (!ext.supportLinearFiltering) gl.uniform2f(advProg.uniforms.dyeTexelSize, velocity.texelSizeX, velocity.texelSizeY);
+        const velId = velocity.read.attach(0);
+        gl.uniform1i(advProg.uniforms.uVelocity, velId);
+        gl.uniform1i(advProg.uniforms.uSource, velId);
+        gl.uniform1f(advProg.uniforms.dt, dt);
+        gl.uniform1f(advProg.uniforms.dissipation, CONFIG.VELOCITY_DISSIPATION);
+        blit(velocity.write); velocity.swap();
 
-    if(!ext.supportLinearFiltering) gl.uniform2f(advProg.uniforms.dyeTexelSize,dye.texelSizeX,dye.texelSizeY);
-    gl.uniform1i(advProg.uniforms.uVelocity,velocity.read.attach(0));
-    gl.uniform1i(advProg.uniforms.uSource,dye.read.attach(1));
-    gl.uniform1f(advProg.uniforms.dissipation,CONFIG.DENSITY_DISSIPATION);
-    blit(dye.write); dye.swap();
-  }
+        if (!ext.supportLinearFiltering) gl.uniform2f(advProg.uniforms.dyeTexelSize, dye.texelSizeX, dye.texelSizeY);
+        gl.uniform1i(advProg.uniforms.uVelocity, velocity.read.attach(0));
+        gl.uniform1i(advProg.uniforms.uSource, dye.read.attach(1));
+        gl.uniform1f(advProg.uniforms.dissipation, CONFIG.DENSITY_DISSIPATION);
+        blit(dye.write); dye.swap();
+      }
 
-  function render(target){
-    gl.blendFunc(gl.ONE,gl.ONE_MINUS_SRC_ALPHA);
-    gl.enable(gl.BLEND);
-    const w=target==null?gl.drawingBufferWidth:target.width;
-    const h=target==null?gl.drawingBufferHeight:target.height;
-    displayMat.bind();
-    if(CONFIG.SHADING) gl.uniform2f(displayMat.uniforms.texelSize,1/w,1/h);
-    gl.uniform1i(displayMat.uniforms.uTexture,dye.read.attach(0));
-    blit(target);
-  }
+      function render(target) {
+        gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
+        gl.enable(gl.BLEND);
+        const w = target == null ? gl.drawingBufferWidth : target.width;
+        const h = target == null ? gl.drawingBufferHeight : target.height;
+        displayMat.bind();
+        if (CONFIG.SHADING) gl.uniform2f(displayMat.uniforms.texelSize, 1 / w, 1 / h);
+        gl.uniform1i(displayMat.uniforms.uTexture, dye.read.attach(0));
+        blit(target);
+      }
 
-  /* ── Canvas resize ── */
-  function resizeCanvas(){
-    const w=scaleByPixelRatio(canvas.clientWidth),h=scaleByPixelRatio(canvas.clientHeight);
-    if(canvas.width!==w||canvas.height!==h){canvas.width=w;canvas.height=h;return true;}
-    return false;
-  }
+      /* ── Canvas resize ── */
+      function resizeCanvas() {
+        const w = scaleByPixelRatio(canvas.clientWidth), h = scaleByPixelRatio(canvas.clientHeight);
+        if (canvas.width !== w || canvas.height !== h) { canvas.width = w; canvas.height = h; return true; }
+        return false;
+      }
 
-  // ── FIXED: initialize with a real color object, not [0,0,0] array ──
-  pointers[0].color = generateColor();
+      // ── FIXED: initialize with a real color object, not [0,0,0] array ──
+      pointers[0].color = generateColor();
 
-  /* ── FIXED: resize canvas FIRST, then init framebuffers ── */
-  displayMat.setKeywords(CONFIG.SHADING?['SHADING']:[]);
-  resizeCanvas();          // ← set correct dimensions before creating FBOs
-  initFramebuffers();
+      /* ── FIXED: resize canvas FIRST, then init framebuffers ── */
+      displayMat.setKeywords(CONFIG.SHADING ? ['SHADING'] : []);
+      resizeCanvas();          // ← set correct dimensions before creating FBOs
+      initFramebuffers();
 
-  let lastUpdateTime=performance.now(), colorUpdateTimer=0;
-  let animationFrameId;
-  let isVisible = true;
+      let lastUpdateTime = performance.now(), colorUpdateTimer = 0;
+      let animationFrameId;
+      let isVisible = true;
 
-  /* ── Performance detection ── */
-  const isLowEnd = () => {
-    const cores = navigator.hardwareConcurrency || 4;
-    return cores <= 2 || window.innerWidth < 768;
-  };
-  const targetInterval = 0; // Uncapped FPS (60/90/120Hz) for buttery smooth animations
-  let lastFrameRender = 0;
+      /* ── Performance detection ── */
+      const isLowEnd = () => {
+        const cores = navigator.hardwareConcurrency || 4;
+        return cores <= 2 || window.innerWidth < 768;
+      };
+      const targetInterval = 0; // Uncapped FPS (60/90/120Hz) for buttery smooth animations
+      let lastFrameRender = 0;
 
-  /* ── Reduced motion: hide canvas entirely ── */
-  const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
-  function handleReducedMotion(mq) {
-    if (mq.matches) {
-      canvas.style.display = 'none';
-      if (animationFrameId) { cancelAnimationFrame(animationFrameId); animationFrameId = null; }
-    } else {
-      canvas.style.display = 'block';
-      if (!animationFrameId && isVisible) { lastUpdateTime = Date.now(); animationFrameId = requestAnimationFrame(updateFrame); }
-    }
-  }
-  prefersReducedMotion.addEventListener('change', handleReducedMotion);
+      /* ── Reduced motion: hide canvas entirely ── */
+      const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+      function handleReducedMotion(mq) {
+        if (mq.matches) {
+          canvas.style.display = 'none';
+          if (animationFrameId) { cancelAnimationFrame(animationFrameId); animationFrameId = null; }
+        } else {
+          canvas.style.display = 'block';
+          if (!animationFrameId && isVisible) { lastUpdateTime = Date.now(); animationFrameId = requestAnimationFrame(updateFrame); }
+        }
+      }
+      prefersReducedMotion.addEventListener('change', handleReducedMotion);
 
-  /* ── Visibility-based pause ── */
-  document.addEventListener('visibilitychange', () => {
-    isVisible = !document.hidden;
-    if (!isVisible) {
-      if (animationFrameId) { cancelAnimationFrame(animationFrameId); animationFrameId = null; }
-    } else if (!prefersReducedMotion.matches) {
-      lastUpdateTime = performance.now();
-      animationFrameId = requestAnimationFrame(updateFrame);
-    }
-  });
+      /* ── Visibility-based pause ── */
+      document.addEventListener('visibilitychange', () => {
+        isVisible = !document.hidden;
+        if (!isVisible) {
+          if (animationFrameId) { cancelAnimationFrame(animationFrameId); animationFrameId = null; }
+        } else if (!prefersReducedMotion.matches) {
+          lastUpdateTime = performance.now();
+          animationFrameId = requestAnimationFrame(updateFrame);
+        }
+      });
 
-  /* ── main loop — performance-aware ── */
-  function updateFrame(){
-    if (!isVisible || prefersReducedMotion.matches) { animationFrameId = null; return; }
+      /* ── main loop — performance-aware ── */
+      function updateFrame() {
+        if (!isVisible || prefersReducedMotion.matches) { animationFrameId = null; return; }
 
-    const now=performance.now();
+        const now = performance.now();
 
-    // FPS throttling on low-end devices
-    if (targetInterval > 0 && (now - lastFrameRender) < targetInterval) {
-      animationFrameId = requestAnimationFrame(updateFrame);
-      return;
-    }
-    lastFrameRender = now;
+        // FPS throttling on low-end devices
+        if (targetInterval > 0 && (now - lastFrameRender) < targetInterval) {
+          animationFrameId = requestAnimationFrame(updateFrame);
+          return;
+        }
+        lastFrameRender = now;
 
-    let dt=Math.min((now-lastUpdateTime)/1000,0.033333);
-    lastUpdateTime=now;
-    if(resizeCanvas()) initFramebuffers();   // re-init only on actual resize
-    colorUpdateTimer+=dt*CONFIG.COLOR_UPDATE_SPEED;
-    if(colorUpdateTimer>=1){
-      colorUpdateTimer=wrap(colorUpdateTimer,0,1);
-      pointers.forEach(p=>{ p.color=generateColor(); });
-    }
-    pointers.forEach(p=>{ if(p.moved){p.moved=false;splatPointer(p);} });
-    step(dt);
-    render(null);
-    animationFrameId = requestAnimationFrame(updateFrame);
-  }
+        let dt = Math.min((now - lastUpdateTime) / 1000, 0.033333);
+        lastUpdateTime = now;
+        if (resizeCanvas()) initFramebuffers();   // re-init only on actual resize
+        colorUpdateTimer += dt * CONFIG.COLOR_UPDATE_SPEED;
+        if (colorUpdateTimer >= 1) {
+          colorUpdateTimer = wrap(colorUpdateTimer, 0, 1);
+          pointers.forEach(p => { p.color = generateColor(); });
+        }
+        pointers.forEach(p => { if (p.moved) { p.moved = false; splatPointer(p); } });
+        step(dt);
+        render(null);
+        animationFrameId = requestAnimationFrame(updateFrame);
+      }
 
-  // ── Start the loop (respecting reduced-motion) ──
-  if (!prefersReducedMotion.matches) {
-    animationFrameId = requestAnimationFrame(updateFrame);
-  } else {
-    canvas.style.display = 'none';
-  }
+      // ── Start the loop (respecting reduced-motion) ──
+      if (!prefersReducedMotion.matches) {
+        animationFrameId = requestAnimationFrame(updateFrame);
+      } else {
+        canvas.style.display = 'none';
+      }
 
-  /* ── Input events (splat interaction only) ── */
-  window.addEventListener('mousedown', e => {
-    const p=pointers[0];
-    updatePointerDownData(p,-1,scaleByPixelRatio(e.clientX),scaleByPixelRatio(e.clientY));
-    clickSplat(p);
-  });
+      /* ── Input events (splat interaction only) ── */
+      window.addEventListener('mousedown', e => {
+        const p = pointers[0];
+        updatePointerDownData(p, -1, scaleByPixelRatio(e.clientX), scaleByPixelRatio(e.clientY));
+        clickSplat(p);
+      });
 
-  window.addEventListener('mousemove', e => {
-    const p=pointers[0];
-    // always pass a valid color — p.color may still be stale on first move
-    if(!p.color || Array.isArray(p.color)) p.color = generateColor();
-    updatePointerMoveData(p,scaleByPixelRatio(e.clientX),scaleByPixelRatio(e.clientY),p.color);
-  });
+      window.addEventListener('mousemove', e => {
+        const p = pointers[0];
+        // always pass a valid color — p.color may still be stale on first move
+        if (!p.color || Array.isArray(p.color)) p.color = generateColor();
+        updatePointerMoveData(p, scaleByPixelRatio(e.clientX), scaleByPixelRatio(e.clientY), p.color);
+      });
 
-  window.addEventListener('touchstart', e => {
-    const p=pointers[0],t=e.targetTouches[0];
-    updatePointerDownData(p,t.identifier,scaleByPixelRatio(t.clientX),scaleByPixelRatio(t.clientY));
-    clickSplat(p);
-  });
+      window.addEventListener('touchstart', e => {
+        const p = pointers[0], t = e.targetTouches[0];
+        updatePointerDownData(p, t.identifier, scaleByPixelRatio(t.clientX), scaleByPixelRatio(t.clientY));
+        clickSplat(p);
+      });
 
-  window.addEventListener('touchmove', e => {
-    const p=pointers[0],t=e.targetTouches[0];
-    updatePointerMoveData(p,scaleByPixelRatio(t.clientX),scaleByPixelRatio(t.clientY),p.color);
-  },{passive:false});
+      window.addEventListener('touchmove', e => {
+        const p = pointers[0], t = e.targetTouches[0];
+        updatePointerMoveData(p, scaleByPixelRatio(t.clientX), scaleByPixelRatio(t.clientY), p.color);
+      }, { passive: false });
 
-  window.addEventListener('touchend', () => updatePointerUpData(pointers[0]));
+      window.addEventListener('touchend', () => updatePointerUpData(pointers[0]));
 
-  /* ── WebGL context loss recovery ── */
-  canvas.addEventListener('webglcontextlost', e => {
-    e.preventDefault();
-    if (animationFrameId) { cancelAnimationFrame(animationFrameId); animationFrameId = null; }
-    console.warn('WebGL context lost — will restore on regain');
-  });
+      /* ── WebGL context loss recovery ── */
+      canvas.addEventListener('webglcontextlost', e => {
+        e.preventDefault();
+        if (animationFrameId) { cancelAnimationFrame(animationFrameId); animationFrameId = null; }
+        console.warn('WebGL context lost — will restore on regain');
+      });
 
-  canvas.addEventListener('webglcontextrestored', () => {
-    initFramebuffers();
-    if (!prefersReducedMotion.matches && isVisible) {
-      lastUpdateTime = Date.now();
-      animationFrameId = requestAnimationFrame(updateFrame);
-    }
-  });
+      canvas.addEventListener('webglcontextrestored', () => {
+        initFramebuffers();
+        if (!prefersReducedMotion.matches && isVisible) {
+          lastUpdateTime = Date.now();
+          animationFrameId = requestAnimationFrame(updateFrame);
+        }
+      });
 
-})();
-</script>
+    })();
+  </script><!-- Keyboard Shortcuts, Custom Cursor, Scroll Progress, and Card Hover Glows -->
+  <script>
+    (function initUXPolishes() {
+      // 1. Page Reveal
+      document.body.classList.add("loaded");
+
+      // 2. Scroll Progress Bar
+      const progress = document.createElement("div");
+      progress.id = "scroll-progress";
+      document.body.appendChild(progress);
+      window.addEventListener("scroll", () => {
+        const winScroll = document.body.scrollTop || document.documentElement.scrollTop;
+        const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+        const scrolled = height > 0 ? (winScroll / height) * 100 : 0;
+        progress.style.width = scrolled + "%";
+      });
+
+      // 3. Card Mouse Glow Tracking
+      const updateGlow = (e, card) => {
+        const rect = card.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        card.style.setProperty("--mouse-x", `${x}px`);
+        card.style.setProperty("--mouse-y", `${y}px`);
+      };
+      document.querySelectorAll(".surface-card, .output-shell").forEach((card) => {
+        card.addEventListener("mousemove", (e) => updateGlow(e, card));
+      });
+
+      // 4. Custom Interactive Cursor
+      if (window.matchMedia("(pointer: fine)").matches) {
+        const dot = document.createElement("div");
+        dot.id = "custom-cursor-dot";
+        const ring = document.createElement("div");
+        ring.id = "custom-cursor-ring";
+        document.body.appendChild(dot);
+        document.body.appendChild(ring);
+
+        let mouseX = -100, mouseY = -100;
+        let ringX = -100, ringY = -100;
+        let cursorVisible = false;
+
+        window.addEventListener("mousemove", (e) => {
+          if (!cursorVisible) {
+            dot.style.opacity = "1";
+            ring.style.opacity = "1";
+            cursorVisible = true;
+          }
+          mouseX = e.clientX;
+          mouseY = e.clientY;
+          dot.style.transform = `translate3d(${mouseX}px, ${mouseY}px, 0) translate(-50%, -50%)`;
+
+          const target = e.target;
+          const isInteractive = target.closest("a, button, input, textarea, select, [role='button'], .example-chip, .copy-dropdown-item, .shortcuts-close, kbd");
+          if (isInteractive) {
+            document.body.classList.add("cursor-hovering");
+          } else {
+            document.body.classList.remove("cursor-hovering");
+          }
+        });
+
+        window.addEventListener("mousedown", () => {
+          document.body.classList.add("cursor-clicking");
+        });
+        window.addEventListener("mouseup", () => {
+          document.body.classList.remove("cursor-clicking");
+        });
+        document.addEventListener("mouseleave", () => {
+          dot.style.opacity = "0";
+          ring.style.opacity = "0";
+          cursorVisible = false;
+        });
+        document.addEventListener("mouseenter", () => {
+          dot.style.opacity = "1";
+          ring.style.opacity = "1";
+          cursorVisible = true;
+        });
+
+        function animateRing() {
+          const damping = 0.15;
+          if (ringX === -100 && ringY === -100) {
+            ringX = mouseX;
+            ringY = mouseY;
+          } else {
+            ringX += (mouseX - ringX) * damping;
+            ringY += (mouseY - ringY) * damping;
+          }
+          ring.style.transform = `translate3d(${ringX}px, ${ringY}px, 0) translate(-50%, -50%)`;
+          requestAnimationFrame(animateRing);
+        }
+        requestAnimationFrame(animateRing);
+      }
+
+      // 5. Navbar Shortcuts Trigger & Modal Control
+      const modal = document.getElementById("shortcuts-modal");
+      const modalClose = document.getElementById("shortcuts-close");
+      const kbd = document.querySelector("nav kbd.shortcut-key");
+      if (kbd) {
+        const label = kbd.nextElementSibling;
+        const wrapper = document.createElement("div");
+        wrapper.className = "nav-shortcuts-btn hidden sm:inline-flex items-center gap-2 cursor-pointer";
+        wrapper.style.opacity = "0.7";
+        wrapper.style.transition = "opacity var(--transition-fast)";
+        kbd.parentNode.insertBefore(wrapper, kbd);
+        wrapper.appendChild(kbd);
+        wrapper.appendChild(label);
+        kbd.classList.remove("hidden");
+        label.classList.remove("hidden");
+
+        wrapper.addEventListener("click", () => {
+          modal.classList.add("open");
+        });
+      }
+
+      if (modalClose) {
+        modalClose.addEventListener("click", () => {
+          modal.classList.remove("open");
+        });
+      }
+      if (modal) {
+        modal.addEventListener("click", (e) => {
+          if (e.target === modal) {
+            modal.classList.remove("open");
+          }
+        });
+      }
+
+      // 6. Keyboard Shortcuts
+      const ta = document.getElementById("raw-input");
+      if (ta) {
+        ta.addEventListener("keydown", (e) => {
+          if (e.key === "Escape") {
+            ta.value = "";
+            if (typeof updateCharCount === "function") updateCharCount();
+            if (typeof showToast === "function") showToast("Input cleared", "info");
+          }
+        });
+      }
+
+      window.addEventListener("keydown", (e) => {
+        // Ignore global keyboard shortcuts when typing in inputs/textareas
+        const active = document.activeElement;
+        if (active && (active.tagName === "INPUT" || active.tagName === "TEXTAREA")) {
+          return;
+        }
+        if (e.key === "?") {
+          e.preventDefault();
+          if (modal) modal.classList.toggle("open");
+        }
+        if (e.key === "Escape") {
+          if (modal) modal.classList.remove("open");
+        }
+        if (e.key === "/") {
+          e.preventDefault();
+          if (ta) ta.focus();
+        }
+        if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "c") {
+          if (typeof latestOutput !== "undefined" && latestOutput) {
+            e.preventDefault();
+            if (typeof doCopy === "function") doCopy(latestOutput);
+          }
+        }
+      });
+    })();
+  </script>
 
 </body>
+
 </html>

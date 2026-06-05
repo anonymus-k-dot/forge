@@ -44,14 +44,21 @@
 </script>
 <style>
   .material-symbols-outlined{font-variation-settings:'FILL' 0,'wght' 200,'GRAD' 0,'opsz' 24;font-size:20px}
-  body{background-color:#0d0e10;color:#e3e5ed;font-family:'Inter',sans-serif}
+  html{color-scheme:dark}
+  body{background-color:#0d0e10;color:#e3e5ed;font-family:'Inter',sans-serif;min-height:100dvh}
   .serif-display{font-family:'Noto Serif',serif}
   ::-webkit-scrollbar{width:4px}
   ::-webkit-scrollbar-track{background:#0d0e10}
   ::-webkit-scrollbar-thumb{background:#23262b}
   .brand-giant{font-size:clamp(2rem,18vw,24rem);line-height:0.8;letter-spacing:0}
-  #fluid-canvas{position:fixed;top:0;left:0;width:100vw;height:100vh;display:block;pointer-events:none;z-index:50}
-  .output-shell{position:sticky;top:7rem;display:flex;min-height:560px;max-height:calc(100vh - 8rem);flex-direction:column;border:1px solid rgba(255,255,255,.08);border-radius:8px;background:linear-gradient(180deg,rgba(24,26,29,.96),rgba(14,15,17,.96));box-shadow:0 24px 80px rgba(0,0,0,.34);overflow:hidden}
+  #fluid-canvas{position:fixed;top:0;left:0;width:100vw;height:100vh;display:block;pointer-events:none;z-index:0}
+  :root{--surface-page:#0d0e10;--surface-card:#15171a;--surface-elevated:#1d2024;--hairline:rgba(255,255,255,.08);--hairline-strong:rgba(255,255,255,.14);--label:#a9abb2;--label-strong:#c9cdd6}
+  .surface-page{background:var(--surface-page)}
+  .surface-card{background:var(--surface-card);border:1px solid var(--hairline);border-radius:10px;box-shadow:0 1px 0 rgba(255,255,255,.02) inset,0 24px 60px rgba(0,0,0,.28)}
+  .surface-elevated{background:var(--surface-elevated);border:1px solid var(--hairline);border-radius:10px}
+  .field-label{font-family:'Inter',sans-serif;font-size:.78rem;font-weight:500;letter-spacing:.12em;text-transform:uppercase;color:var(--label)}
+  .field-label-strong{color:var(--label-strong)}
+  .output-shell{position:sticky;top:7rem;display:flex;min-height:560px;max-height:calc(100dvh - 8rem);flex-direction:column;background:linear-gradient(180deg,#181a1d 0%,#131418 100%);box-shadow:0 1px 0 rgba(255,255,255,.02) inset,0 24px 80px rgba(0,0,0,.34);overflow:hidden;border:1px solid var(--hairline-strong);border-radius:12px}
   .output-head{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;padding:1.5rem 1.5rem 1.1rem;border-bottom:1px solid rgba(255,255,255,.06)}
   .output-meta{display:flex;flex-wrap:wrap;gap:.5rem;padding:0 1.5rem 1rem;border-bottom:1px solid rgba(255,255,255,.05)}
   .meta-pill{border:1px solid rgba(255,255,255,.08);border-radius:999px;padding:.35rem .65rem;color:#c6c6c6;background:rgba(255,255,255,.035);font-size:.68rem;letter-spacing:.08em;text-transform:uppercase}
@@ -72,9 +79,11 @@
   .definition-row span{color:#d9dce5;line-height:1.65}
   .skeleton-line{height:.85rem;border-radius:999px;background:linear-gradient(90deg,rgba(255,255,255,.06),rgba(255,255,255,.14),rgba(255,255,255,.06));background-size:200% 100%;animation:shimmer 1.4s infinite}
   @keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+  .example-chip{font-family:"Inter",sans-serif;font-size:.72rem;font-weight:500;letter-spacing:.04em;color:#c9cdd6;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);border-radius:999px;padding:.45rem .85rem;cursor:pointer;transition:all .25s ease}
+  .example-chip:hover{color:#fff;background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.18)}
   @media (max-width:1023px){
-    .output-shell{position:relative;top:auto;min-height:430px;max-height:none}
-    .output-body{max-height:70vh}
+    .output-shell{position:relative;top:auto;min-height:430px;max-height:none;border-radius:12px}
+    .output-body{max-height:70dvh}
     .output-brief-grid{grid-template-columns:1fr}
   }
 </style>
@@ -85,32 +94,48 @@
 <canvas id="fluid-canvas"></canvas>
 
 <!-- TopAppBar -->
-<nav class="bg-[#0d0e10] flex justify-center items-center w-full py-8 px-12 fixed top-0 z-50 border-none">
-  <div class="text-xl font-serif tracking-normal text-[#c6c6c6] uppercase">FORGE</div>
+<nav class="surface-page flex justify-center items-center w-full py-6 px-6 md:px-12 fixed top-0 left-0 z-40 border-b border-white/[0.06]">
+  <div class="flex items-center gap-3">
+    <span class="text-[0.7rem] font-medium tracking-[0.32em] text-[#7f848d]">FORGE</span>
+    <span class="h-3 w-px bg-white/15"></span>
+    <span class="font-label text-[0.65rem] tracking-[0.28em] uppercase text-outline">Prompt Engine</span>
+  </div>
 </nav>
 
 <main class="flex-grow pt-32 pb-12 px-6 md:px-12 flex flex-col items-center">
 
   <!-- Hero -->
   <header class="w-full max-w-6xl mb-24 mt-12 text-center md:text-left">
-    <h1 class="serif-display text-5xl md:text-7xl lg:text-8xl tracking-normal text-on-surface leading-tight">
+    <h1 class="serif-display text-5xl md:text-7xl lg:text-8xl tracking-normal text-on-surface leading-[1.02]">
       Elevate your <br/>
-      <span class="text-secondary opacity-50">Vision</span>
+      <span class="italic font-normal text-on-surface/75 relative inline-block">Vision<span class="absolute left-0 -bottom-2 h-px w-full bg-white/20"></span></span>
     </h1>
   </header>
 
   <!-- Prompt Engine -->
   <section class="w-full max-w-6xl grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 mb-24">
 
-    <div class="lg:col-span-5 flex flex-col gap-8">
-      <div class="relative group">
-        <label class="font-label uppercase tracking-[0.1em] text-[0.65rem] text-outline mb-4 block">Raw Input</label>
-        <textarea class="w-full bg-transparent border-none border-b border-outline focus:border-primary focus:ring-0 text-2xl md:text-3xl font-light leading-relaxed p-0 min-h-[240px] resize-none transition-colors duration-500 placeholder:text-surface-variant" placeholder="Enter the skeletal prompt here..."></textarea>
-      </div>
-      <div class="flex justify-start">
-        <button class="enhance-btn bg-transparent text-white border border-white/10 px-16 py-4 font-label tracking-[0.3em] text-[0.65rem] font-light transition-all duration-1000 ease-out hover:border-white/40 hover:shadow-[0_0_30px_rgba(255,255,255,0.08)] flex items-center gap-6 group relative overflow-hidden">
-          <span class="opacity-70 group-hover:opacity-100 transition-opacity duration-1000" style="font-variant:small-caps;">enhance protocol</span>
-          <span class="material-symbols-outlined text-[16px] opacity-40 group-hover:opacity-90 transition-all duration-1000 group-hover:scale-110 font-extralight">auto_awesome</span>
+    <div class="lg:col-span-5 flex flex-col gap-6">
+      <article class="surface-card p-5 md:p-6 flex flex-col gap-4">
+        <div class="flex items-baseline justify-between">
+          <label for="raw-input" class="field-label">Raw Input</label>
+          <div class="flex items-center gap-3">
+            <span id="char-counter" class="font-label text-[0.7rem] tracking-[0.18em] uppercase text-outline">0 chars</span>
+            <button type="button" id="clear-input" class="font-label text-[0.7rem] tracking-[0.18em] uppercase text-outline hover:text-on-surface transition-colors duration-300">Clear</button>
+          </div>
+        </div>
+        <textarea id="raw-input" class="w-full bg-transparent border-0 outline-none ring-0 text-xl md:text-2xl font-light leading-relaxed p-0 min-h-[200px] resize-none placeholder:text-surface-variant focus:outline-none" placeholder="Enter the skeletal prompt here..."></textarea>
+        <div class="flex flex-wrap gap-2 -mx-1">
+          <button type="button" data-example="Write a launch announcement for a developer tool that turns meeting transcripts into structured Jira tickets." class="example-chip">Launch announcement</button>
+          <button type="button" data-example="Summarize the attached research paper and extract the three most actionable findings for a product team." class="example-chip">Research summary</button>
+          <button type="button" data-example="Refactor this Python function to be async, type-safe, and covered by pytest cases." class="example-chip">Code refactor</button>
+        </div>
+      </article>
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <p id="enhance-status" class="font-label text-[0.72rem] tracking-[0.18em] uppercase text-outline">Press Enter or click to enhance</p>
+        <button class="enhance-btn inline-flex items-center gap-3 px-6 md:px-8 py-3 md:py-3.5 border border-white/15 hover:border-white/40 bg-white/[0.02] hover:bg-white/[0.05] text-white font-label tracking-[0.22em] text-[0.72rem] font-medium uppercase transition-all duration-300 ease-out hover:shadow-[0_8px_28px_rgba(255,255,255,0.06)] group rounded-full">
+          <span>Enhance Prompt</span>
+          <span class="material-symbols-outlined text-[18px] opacity-60 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all duration-300 font-light">arrow_forward</span>
         </button>
       </div>
     </div>
@@ -118,12 +143,15 @@
     <div class="lg:col-span-7 relative">
       <div class="output-shell">
         <div class="output-head">
-          <div>
-            <label class="font-label uppercase tracking-[0.1em] text-[0.65rem] text-outline block mb-3">Architected Output</label>
-            <p class="text-sm leading-relaxed text-on-surface-variant">A structured preview for long prompts, grouped into readable sections.</p>
+          <div class="flex flex-col gap-2">
+            <div class="flex items-center gap-3">
+              <span class="field-label">Architected Output</span>
+              <span class="h-px flex-1 bg-white/10"></span>
+            </div>
+            <p class="text-[0.8rem] leading-relaxed text-on-surface-variant">A structured preview for long prompts, grouped into readable sections.</p>
           </div>
-          <button class="copy-btn text-outline hover:text-on-surface transition-colors duration-300 font-label uppercase tracking-[0.1em] text-[0.65rem] flex items-center gap-2 border border-white/10 rounded-full px-4 py-2">
-            <span class="material-symbols-outlined text-xs">content_copy</span>
+          <button class="copy-btn text-outline hover:text-on-surface transition-colors duration-300 font-label text-[0.72rem] tracking-[0.18em] uppercase flex items-center gap-2 border border-white/15 hover:border-white/30 rounded-full px-4 py-2 bg-white/[0.02] hover:bg-white/[0.04]">
+            <span class="material-symbols-outlined text-[14px]">content_copy</span>
             <span class="copy-label">Copy</span>
           </button>
         </div>
@@ -162,7 +190,7 @@
 ═══════════════════════════════════════════ -->
 <script>
   const btn  = document.querySelector(".enhance-btn");
-  const ta   = document.querySelector("textarea");
+  const ta   = document.getElementById("raw-input");
   const out  = document.getElementById("output");
   const copy = document.querySelector(".copy-btn");
   const copyLabel = document.querySelector(".copy-label");
@@ -170,14 +198,50 @@
   const templateChip = document.getElementById("template-chip");
   const domainChip = document.getElementById("domain-chip");
   const confidenceChip = document.getElementById("confidence-chip");
+  const charCounter = document.getElementById("char-counter");
+  const clearBtn = document.getElementById("clear-input");
+  const enhanceStatus = document.getElementById("enhance-status");
+  const exampleChips = document.querySelectorAll(".example-chip");
   let latestOutput = "";
 
   function setEnhancing(isEnhancing) {
     btn.disabled = isEnhancing;
     btn.classList.toggle("opacity-60", isEnhancing);
     btn.classList.toggle("cursor-wait", isEnhancing);
-    btn.querySelector("span").textContent = isEnhancing ? "forging prompt" : "enhance protocol";
+    btn.querySelector("span").textContent = isEnhancing ? "Forging..." : "Enhance Prompt";
+    enhanceStatus.textContent = isEnhancing ? "Forging prompt..." : "Press Enter or click to enhance";
   }
+
+  function updateCharCount() {
+    const n = ta.value.length;
+    charCounter.textContent = n === 1 ? "1 char" : n + " chars";
+  }
+
+  ta.addEventListener("input", updateCharCount);
+
+  clearBtn.addEventListener("click", () => {
+    ta.value = "";
+    updateCharCount();
+    ta.focus();
+  });
+
+  exampleChips.forEach((chip) => {
+    chip.addEventListener("click", () => {
+      ta.value = chip.dataset.example;
+      updateCharCount();
+      ta.focus();
+      ta.setSelectionRange(ta.value.length, ta.value.length);
+    });
+  });
+
+  ta.addEventListener("keydown", (e) => {
+    if ((e.metaKey || e.ctrlKey) && e.key === "Enter") {
+      e.preventDefault();
+      btn.click();
+    }
+  });
+
+  updateCharCount();
 
   function setMeta(data) {
     templateChip.textContent = data.template || data.template_id || "Template selected";
@@ -389,7 +453,7 @@
 
   btn.addEventListener("click", async () => {
     const p = ta.value;
-    if (!p.trim()) { alert("Enter a prompt first"); return; }
+    if (!p.trim()) { enhanceStatus.textContent = "Enter a prompt first"; return; }
     setEnhancing(true);
     renderLoading();
     try {
@@ -418,7 +482,7 @@
       }, 1400);
     } catch (e) {
       console.error(e);
-      alert("Copy failed");
+      copyLabel.textContent = "Copy failed";
     }
   });
 </script>

@@ -1180,11 +1180,6 @@
               </div>
             </div>
           </div>
-          <div id="output-meta" class="output-meta hidden animate-entrance stagger-5">
-            <span id="template-chip" class="meta-pill">Template pending</span>
-            <span id="domain-chip" class="meta-pill">Domain pending</span>
-            <span id="confidence-chip" class="meta-pill">Confidence pending</span>
-          </div>
           <div id="output" class="output-body output-empty">
             <div class="empty-state">
               <div class="empty-state-icon material-symbols-outlined mb-4 text-[32px] opacity-50 text-gold">auto_awesome
@@ -1224,10 +1219,6 @@
     const out = document.getElementById("output");
     const copy = document.querySelector(".copy-btn");
     const copyLabel = document.querySelector(".copy-label");
-    const metaBar = document.getElementById("output-meta");
-    const templateChip = document.getElementById("template-chip");
-    const domainChip = document.getElementById("domain-chip");
-    const confidenceChip = document.getElementById("confidence-chip");
     const charCounter = document.getElementById("char-counter");
     const clearBtn = document.getElementById("clear-input");
     const enhanceStatus = document.getElementById("enhance-status");
@@ -1329,27 +1320,10 @@
 
     updateCharCount();
 
-    function setMeta(data) {
-      templateChip.textContent = data.template || data.template_id || "Template selected";
-      domainChip.textContent = data.domain ? `Domain ${data.domain}` : "Domain selected";
-
-      const confidence = data.confidence || "";
-      confidenceChip.textContent = `Confidence ${confidence}`;
-      confidenceChip.classList.remove("confidence-high", "confidence-medium", "confidence-low");
-      if (confidence.toLowerCase().includes("high") || (data.score && data.score >= 0.8)) {
-        confidenceChip.classList.add("confidence-high");
-      } else if (confidence.toLowerCase().includes("med") || (data.score && data.score >= 0.5)) {
-        confidenceChip.classList.add("confidence-medium");
-      } else if (confidence.toLowerCase().includes("low") || (data.score && data.score < 0.5)) {
-        confidenceChip.classList.add("confidence-low");
-      }
-
-      metaBar.classList.remove("hidden");
-    }
+    function setMeta() {}
 
     function renderLoading() {
       latestOutput = "";
-      metaBar.classList.add("hidden");
       out.className = "output-body";
       out.replaceChildren();
 
@@ -1376,7 +1350,6 @@
     function renderMessage(title, message) {
       latestOutput = "";
       latestOutputData = null;
-      metaBar.classList.add("hidden");
       out.className = "output-body output-empty";
       out.replaceChildren();
 
@@ -1396,7 +1369,6 @@
     function renderError(rawMessage) {
       latestOutput = "";
       latestOutputData = null;
-      metaBar.classList.add("hidden");
       out.className = "output-body";
       out.replaceChildren();
 
@@ -1438,20 +1410,42 @@
         .replace(/\bPrd\b/g, "PRD");
     }
 
-    function extractHeading(line) {
-      const markdown = line.match(/^#{1,6}\s+(.+)$/);
-      if (markdown) return markdown[1].replace(/:$/, "").trim();
+    function formatInlineMarkdown(text) {
+      if (!text) return "";
+      let html = text
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;");
 
-      const numbered = line.match(/^(\d+(?:\.\d+)*[.)]?)\s+(.+)$/);
+      // Convert **bold** to <strong>
+      html = html.replace(/(\*\*|__)(.*?)\1/g, '<strong class="font-semibold text-white">$2</strong>');
+      // Convert *italic* to <em>
+      html = html.replace(/(\*|_)(.*?)\1/g, '<em class="italic text-zinc-300">$2</em>');
+      // Convert `code` to <code>
+      html = html.replace(/`(.*?)`/g, '<code class="bg-[#191920] text-gold px-1.5 py-0.5 rounded text-xs font-mono">$1</code>');
+      // Clean any unclosed or leftover ** asterisks
+      html = html.replace(/\*\*/g, '');
+
+      return html;
+    }
+
+    function extractHeading(line) {
+      const unbolded = line.replace(/^\*\*\s*/, "").replace(/\s*\*\*$/, "").trim();
+
+      const markdown = unbolded.match(/^#{1,6}\s+(.+)$/);
+      if (markdown) return markdown[1].replace(/:$/, "").replace(/\*\*/g, "").trim();
+
+      const numbered = unbolded.match(/^(\d+(?:\.\d+)*[.)]?)\s+(.+)$/);
       if (numbered) {
         const label = numbered[1].replace(/[.)]$/, ".");
-        const text = numbered[2].replace(/:$/, "").trim();
+        const text = numbered[2].replace(/:$/, "").replace(/\*\*/g, "").trim();
         const letters = text.replace(/[^A-Za-z]/g, "");
         if (letters && letters === letters.toUpperCase()) return `${label} ${titleCase(text)}`;
+        if (line.startsWith("**") || line.endsWith("**")) return `${label} ${text}`;
         return null;
       }
 
-      const clean = line.replace(/:$/, "").trim();
+      const clean = unbolded.replace(/:$/, "").replace(/\*\*/g, "").trim();
       const letters = clean.replace(/[^A-Za-z]/g, "");
       if (line.endsWith(":") && clean.length <= 72) return clean;
       if (clean.length <= 72 && letters.length > 3 && letters === letters.toUpperCase()) return titleCase(clean);
@@ -1460,7 +1454,7 @@
 
     function appendParagraph(section, text) {
       const p = document.createElement("p");
-      p.textContent = text;
+      p.innerHTML = formatInlineMarkdown(text);
       section.appendChild(p);
     }
 
@@ -1468,9 +1462,9 @@
       const row = document.createElement("div");
       row.className = "definition-row";
       const strong = document.createElement("strong");
-      strong.textContent = key;
+      strong.innerHTML = formatInlineMarkdown(key);
       const span = document.createElement("span");
-      span.textContent = value;
+      span.innerHTML = formatInlineMarkdown(value);
       row.append(strong, span);
       section.appendChild(row);
     }
@@ -1478,9 +1472,11 @@
     function createSection(fragment, title) {
       const section = document.createElement("article");
       section.className = "output-section";
-      const h = document.createElement("h3");
-      h.textContent = title;
-      section.appendChild(h);
+      if (title) {
+        const h = document.createElement("h3");
+        h.innerHTML = formatInlineMarkdown(title);
+        section.appendChild(h);
+      }
       fragment.appendChild(section);
       return section;
     }
@@ -1499,9 +1495,9 @@
       const item = document.createElement("div");
       item.className = "output-brief";
       const dt = document.createElement("dt");
-      dt.textContent = key;
+      dt.innerHTML = formatInlineMarkdown(key);
       const dd = document.createElement("dd");
-      dd.textContent = value;
+      dd.innerHTML = formatInlineMarkdown(value);
       item.append(dt, dd);
       grid.appendChild(item);
     }
@@ -1519,7 +1515,7 @@
       let paragraph = [];
 
       function ensureSection() {
-        if (!section) section = createSection(fragment, "Prompt Blueprint");
+        if (!section) section = createSection(fragment, null);
         return section;
       }
 
@@ -1573,7 +1569,8 @@
             ensureSection().appendChild(list);
           }
           const li = document.createElement("li");
-          li.textContent = (bullet || numbered)[1].trim();
+          const itemText = (bullet || numbered)[1].trim();
+          li.innerHTML = formatInlineMarkdown(itemText);
           list.appendChild(li);
           return;
         }
@@ -1593,12 +1590,66 @@
       setEnhancing(true);
       renderLoading();
       try {
-        const r = await fetch("/enhance", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ prompt: p }) });
-        const d = await r.json();
-        if (!r.ok || d.error) throw new Error(d.error || `Request failed with status ${r.status}`);
-        setMeta(d);
-        renderOutput(d.result || d.enhanced_prompt || "", d);
-        showToast("Prompt enhanced successfully!", "success");
+        const r = await fetch("/enhance", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ prompt: p, stream: true })
+        });
+        if (!r.ok) {
+          const d = await r.json().catch(() => ({}));
+          throw new Error(d.error || `Request failed with status ${r.status}`);
+        }
+
+        const defaultMeta = { template_matched: "Direct Enhancement", domain: "General", confidence: "98%", score: 0.98 };
+        setMeta(defaultMeta);
+
+        const reader = r.body.getReader();
+        const decoder = new TextDecoder();
+        let fullText = "";
+        let buffer = "";
+        let renderScheduled = false;
+
+        const scheduleFrameRender = () => {
+          if (!renderScheduled) {
+            renderScheduled = true;
+            requestAnimationFrame(() => {
+              renderScheduled = false;
+              renderOutput(fullText, defaultMeta);
+            });
+          }
+        };
+
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          buffer += decoder.decode(value, { stream: true });
+          const lines = buffer.split("\n");
+          buffer = lines.pop(); // keep trailing incomplete line
+
+          for (const line of lines) {
+            const trimmed = line.trim();
+            if (trimmed.startsWith("data: ")) {
+              try {
+                const payload = JSON.parse(trimmed.substring(6));
+                if (payload.error) throw new Error(payload.error);
+                if (payload.chunk) {
+                  fullText += payload.chunk;
+                  scheduleFrameRender();
+                }
+              } catch (err) {
+                if (err.message && !err.message.includes("Unexpected end of JSON")) {
+                  throw err;
+                }
+              }
+            }
+          }
+        }
+        if (fullText.trim()) {
+          renderOutput(fullText.trim(), defaultMeta);
+          showToast("Prompt enhanced successfully!", "success");
+        } else {
+          throw new Error("No output returned from enhancement service.");
+        }
       } catch (e) {
         renderError(e.message || "The enhancement service did not respond.");
         console.error(e);

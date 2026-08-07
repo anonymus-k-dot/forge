@@ -101,25 +101,37 @@
     }
 
     .brand-giant {
-      font-size: clamp(2rem, 18vw, 24rem);
+      font-size: clamp(2.5rem, 14vw, 14rem);
       line-height: 1.0;
-      padding-bottom: 0.05em;
+      padding-bottom: 0.1em;
       letter-spacing: -0.03em;
-      background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0.95) 45%, rgba(197, 168, 128, 1) 50%, rgba(255, 255, 255, 0.95) 55%, rgba(255, 255, 255, 0.95) 100%);
-      background-size: 200% auto;
+      margin: 0;
+      background: linear-gradient(
+        120deg,
+        rgba(244, 244, 245, 0.75) 0%,
+        rgba(255, 255, 255, 0.95) 25%,
+        rgba(197, 168, 128, 0.95) 50%,
+        rgba(255, 255, 255, 0.95) 75%,
+        rgba(244, 244, 245, 0.75) 100%
+      );
+      background-size: 250% 100%;
       background-position: 100% 0;
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       background-clip: text;
-      opacity: 0.9;
-      transition: letter-spacing 1.5s var(--ease-default), filter 1.5s var(--ease-default), background-position 1.5s var(--ease-default), opacity 1.5s var(--ease-default)
+      opacity: 0.85;
+      transform: translateZ(0);
+      transition: background-position 0.8s cubic-bezier(0.16, 1, 0.3, 1),
+                  opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1),
+                  filter 0.8s cubic-bezier(0.16, 1, 0.3, 1),
+                  transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
     }
 
     .brand-giant:hover {
-      letter-spacing: 0.06em;
       background-position: 0% 0;
-      filter: drop-shadow(0 0 45px rgba(197, 168, 128, 0.25));
-      opacity: 1
+      opacity: 1;
+      transform: translateY(-2px);
+      filter: drop-shadow(0 12px 30px rgba(197, 168, 128, 0.18));
     }
 
     #fluid-canvas {
@@ -404,12 +416,12 @@
     }
 
     .definition-row strong {
-      color: #a1a1aa;
+      color: var(--accent);
       font-family: 'Outfit', sans-serif;
       font-size: var(--text-xs);
       letter-spacing: .12em;
       text-transform: uppercase;
-      font-weight: 500
+      font-weight: 600
     }
 
     .definition-row span {
@@ -1079,10 +1091,10 @@
     </div>
   </nav>
 
-  <main class="flex-grow pt-48 pb-12 px-6 md:px-12 flex flex-col items-center">
+  <main class="flex-grow pt-24 pb-12 px-6 md:px-12 flex flex-col items-center">
 
     <!-- Hero Redesigned -->
-    <header class="w-full max-w-6xl mb-20 mt-12 text-left animate-entrance stagger-2">
+    <header class="w-full max-w-6xl mb-10 mt-2 text-left animate-entrance stagger-2">
       <div class="flex flex-col gap-2">
         <span class="font-display text-[0.75rem] font-semibold tracking-[0.4em] text-gold uppercase mb-2">Architectural
           Prompting</span>
@@ -1195,14 +1207,14 @@
     </section>
 
     <!-- Brand display -->
-    <section class="w-full overflow-hidden flex justify-center items-end mt-24 pb-8">
+    <section class="w-full flex justify-center items-center mt-6 mb-0 pb-0">
       <h2 class="brand-giant serif-display font-bold select-none">FORGE</h2>
     </section>
 
   </main>
 
   <footer
-    class="bg-transparent flex flex-col md:flex-row justify-between items-center w-full px-12 py-16 gap-8 border-t border-border">
+    class="bg-transparent flex flex-col md:flex-row justify-between items-center w-full px-8 md:px-12 py-6 gap-4 border-t border-border">
     <div class="flex flex-col gap-2">
       <div class="text-sm font-semibold uppercase tracking-[0.15em] text-gold">FORGE</div>
       <div class="font-display text-[0.7rem] uppercase tracking-widest text-on-surface-muted">© 2024 THE SILENT
@@ -1551,11 +1563,7 @@
           clearList();
           const key = keyValue[1].trim();
           const value = keyValue[2].trim();
-          if (!section && /^(role|task|objective|context|audience)$/i.test(key)) {
-            appendBrief(fragment, key, value);
-          } else {
-            appendDefinition(ensureSection(), key, value);
-          }
+          appendDefinition(ensureSection(), key, value);
           return;
         }
 

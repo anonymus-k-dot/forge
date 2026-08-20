@@ -20,11 +20,12 @@ Token usage vs old architecture:
 
 from __future__ import annotations
 
+import json
 import os
 import re
 
 from dotenv import load_dotenv
-from flask import Flask, jsonify, render_template, request
+from flask import Flask, jsonify, render_template, request, Response, stream_with_context
 from google import genai
 from google.genai import types
 
@@ -148,9 +149,6 @@ def enhance_prompt(user_prompt: str) -> dict:
 
 
 # ── Flask routes ──────────────────────────────────────────────────────────
-
-import json
-from flask import Response, stream_with_context
 
 
 @app.route("/")

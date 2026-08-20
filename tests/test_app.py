@@ -1,4 +1,4 @@
-from app import build_forge_prompt, _clean_output, enhance_prompt, GEMMA_MODEL
+from app import GEMMA_MODEL, _clean_output, build_forge_prompt, enhance_prompt
 
 
 class TestUnitFunctions:

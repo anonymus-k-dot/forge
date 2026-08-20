@@ -1,5 +1,6 @@
 import os
 from unittest.mock import MagicMock
+
 import pytest
 
 # Ensure GEMINI_API_KEY is present in environment before app imports

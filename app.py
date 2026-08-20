@@ -25,7 +25,14 @@ import os
 import re
 
 from dotenv import load_dotenv
-from flask import Flask, jsonify, render_template, request, Response, stream_with_context
+from flask import (
+    Flask,
+    Response,
+    jsonify,
+    render_template,
+    request,
+    stream_with_context,
+)
 from google import genai
 from google.genai import types
 
@@ -135,7 +142,7 @@ def enhance_prompt(user_prompt: str) -> dict:
             "raw":              response_text,
         }
 
-    except Exception as exc:
+    except Exception as exc:  # noqa: BLE001
         return {
             "success": False,
             "template_id":      "ERROR",
@@ -182,7 +189,7 @@ def enhance():
                 if chunk.text:
                     yield f"data: {json.dumps({'chunk': chunk.text})}\n\n"
             yield f"data: {json.dumps({'done': True})}\n\n"
-        except Exception as exc:
+        except Exception as exc:  # noqa: BLE001
             yield f"data: {json.dumps({'error': str(exc)})}\n\n"
 
     return Response(stream_with_context(generate()), mimetype="text/event-stream")

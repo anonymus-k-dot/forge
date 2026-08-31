@@ -1,37 +1,41 @@
 # syntax=docker/dockerfile:1
-FROM python:3.11-slim as base
 
-# Prevents Python from writing pyc files to disc & prevents buffering stdout/stderr
+FROM python:3.11-slim AS base
+
+# Prevent Python from writing .pyc files
+# and ensure logs are immediately visible.
 ENV PYTHONDONTWRITEBYTECODE=1 \
-    PYTHONUNBUFFERED=1 \
-    PORT=5000
+    PYTHONUNBUFFERED=1
 
 WORKDIR /app
 
-# Install system dependencies if required
+# Install required system dependency for health checks.
 RUN apt-get update && \
     apt-get install -y --no-install-recommends curl && \
     rm -rf /var/lib/apt/lists/*
 
-# Install Python dependencies
+# Install Python dependencies.
 COPY requirements.txt .
+
 RUN pip install --no-cache-dir --upgrade pip && \
     pip install --no-cache-dir -r requirements.txt
 
-# Copy application code
+# Copy application source code.
 COPY . .
 
-# Create non-root user for enhanced security
+# Create a non-root user.
 RUN useradd -m -u 1000 forgeuser && \
     chown -R forgeuser:forgeuser /app
 
 USER forgeuser
 
-EXPOSE 5000
+# Render's default expected HTTP port is 10000.
+EXPOSE 10000
 
-# Healthcheck against Flask /health route
+# Container-level health check.
 HEALTHCHECK --interval=30s --timeout=5s --start-period=5s --retries=3 \
-    CMD curl -f http://localhost:5000/health || exit 1
+    CMD curl -f http://localhost:${PORT:-10000}/health || exit 1
 
-# Production WSGI execution with Gunicorn (threaded for SSE streaming support)
-CMD ["gunicorn", "--bind", "0.0.0.0:5000", "--workers", "2", "--threads", "4", "--timeout", "120", "app:app"]
+# Run Gunicorn.
+# Use sh -c so ${PORT} is expanded at runtime.
+CMD ["sh", "-c", "gunicorn --bind 0.0.0.0:${PORT:-10000} --workers 2 --threads 4 --timeout 120 app:app"]

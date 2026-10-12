@@ -4,7 +4,7 @@
 [![Flask](https://img.shields.io/badge/Flask-3.0.3-000000?logo=flask&logoColor=white)](https://flask.palletsprojects.com/)
 [![Google GenAI](https://img.shields.io/badge/Google%20GenAI-Gemma--4--31B--IT-4285F4?logo=google&logoColor=white)](https://ai.google.dev/)
 [![Docker](https://img.shields.io/badge/Docker-Ready-2496ED?logo=docker&logoColor=white)](https://www.docker.com/)
-[![Tests](https://img.shields.io/badge/Tests-Passing%20(12%2F12)-brightgreen)](#testing)
+[![CI](https://github.com/anonymus-k-dot/forge/actions/workflows/ci.yml/badge.svg)](https://github.com/anonymus-k-dot/forge/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 **FORGE** is a lightweight, low-latency prompt enhancement platform. It transforms rough, underspecified user inputs into structured, high-performance prompts tailored for large language models. Powered by Google's `gemma-4-31b-it` via the `google-genai` SDK and served by an asynchronous, SSE-streaming Flask backend.
@@ -81,16 +81,22 @@ forge/
 │   └── setup.md                 # Local development & troubleshooting guide
 ├── scripts/
 │   └── verify_environment.py    # Pre-flight environment check script
-├── templates/
-│   └── index.html               # Frontend SPA (UI, WebGL canvas, SSE parser)
-├── tests/
-│   ├── __init__.py
-│   ├── conftest.py              # Pytest fixtures & GenAI mocks
-│   └── test_app.py              # Unit & integration test suite (12 tests)
+├── config/
+│   └── providers.example.json   # Example provider/model configuration (no secrets)
+├── src/forge/                   # Installable package (pip install -e .)
+│   ├── app.py                   # Flask application factory
+│   ├── settings.py              # Environment configuration
+│   ├── logging.py               # JSON logs and X-Request-ID
+│   ├── api/                     # /, /health, /enhance blueprints
+│   ├── legacy/enhance.py        # FORGE 1.x enhancement (provider-independent)
+│   ├── providers/               # Provider router, adapters, retries, config
+│   └── templates/index.html     # Frontend SPA (UI, WebGL canvas, SSE parser)
+├── tests/                       # pytest suite (fake providers; no real model calls)
 ├── .dockerignore
+├── CHANGELOG.md                 # Notable changes and deprecations
 ├── .env.example                 # Environment configuration template
 ├── .gitignore                   # Comprehensive git exclusions
-├── app.py                       # Flask application & GenAI pipeline
+├── app.py                       # Compatibility entry point (gunicorn app:app)
 ├── docker-compose.yml           # Docker Compose configuration
 ├── Dockerfile                   # Production container definition
 ├── LICENSE                      # MIT License
@@ -200,7 +206,7 @@ docker compose up -d
   ...
   data: {"done": true}
   ```
-* **Non-Streaming Response (`stream: false`)**: Returns full JSON payload with `enhanced_prompt`, `score`, and `domain`.
+* **Non-Streaming Response (`stream: false`)**: Returns a JSON payload with `enhanced_prompt` (`confidence` and `score` are deprecated and always `null`; see `CHANGELOG.md`).
 
 *See [docs/api.md](docs/api.md) for full endpoint specifications and error codes.*
 

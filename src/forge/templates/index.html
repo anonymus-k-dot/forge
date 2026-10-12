@@ -1608,9 +1608,6 @@
           throw new Error(d.error || `Request failed with status ${r.status}`);
         }
 
-        const defaultMeta = { template_matched: "Direct Enhancement", domain: "General", confidence: "98%", score: 0.98 };
-        setMeta(defaultMeta);
-
         const reader = r.body.getReader();
         const decoder = new TextDecoder();
         let fullText = "";
@@ -1622,7 +1619,7 @@
             renderScheduled = true;
             requestAnimationFrame(() => {
               renderScheduled = false;
-              renderOutput(fullText, defaultMeta);
+              renderOutput(fullText);
             });
           }
         };
@@ -1653,7 +1650,7 @@
           }
         }
         if (fullText.trim()) {
-          renderOutput(fullText.trim(), defaultMeta);
+          renderOutput(fullText.trim());
           showToast("Prompt enhanced successfully!", "success");
         } else {
           throw new Error("No output returned from enhancement service.");

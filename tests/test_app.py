@@ -39,7 +39,8 @@ class TestUnitFunctions:
         assert result["success"] is True
         assert result["enhanced_prompt"] == "Act as a senior cloud architect."
         assert result["domain"] == "General"
-        assert result["confidence"] == "98%"
+        # Step 3: fabricated metrics deprecated; keys kept, values null.
+        assert result["confidence"] is None and result["score"] is None
 
     def test_enhance_prompt_failure_handling(self, monkeypatch):
         import app as app_module
@@ -51,7 +52,9 @@ class TestUnitFunctions:
         result = enhance_prompt("Any prompt")
 
         assert result["success"] is False
-        assert "Error: API connection timeout" in result["enhanced_prompt"]
+        # Step 2: clients get a safe normalized message, never the raw exception text.
+        assert result["enhanced_prompt"] == "Error: The model provider request failed unexpectedly."
+        assert "API connection timeout" not in str(result)
         assert result["template_id"] == "ERROR"
 
 
@@ -95,7 +98,8 @@ class TestRoutes:
         data = response.get_json()
         assert data["success"] is True
         assert data["enhanced_prompt"] == "Enhanced: Create a microservices architecture."
-        assert data["confidence"] == "98%"
+        # Step 3: fabricated metrics deprecated; keys kept, values null.
+        assert data["confidence"] is None and data["score"] is None
 
     def test_enhance_non_streaming_error_response(self, client, monkeypatch):
         import app as app_module
@@ -112,7 +116,11 @@ class TestRoutes:
         assert response.status_code == 500
         data = response.get_json()
         assert data["success"] is False
-        assert "Upstream service unavailable" in data["enhanced_prompt"]
+        # Step 2: a connection failure is classified "unavailable" and reported safely.
+        assert data["enhanced_prompt"] == (
+            "Error: The model provider is currently unavailable. Please try again later."
+        )
+        assert "Upstream service unavailable" not in response.get_data(as_text=True)
 
     def test_enhance_streaming_success(self, client, mock_genai_stream):
         mock_genai_stream(["Chunk 1 ", "Chunk 2"])
@@ -144,4 +152,6 @@ class TestRoutes:
 
         assert response.status_code == 200
         stream_data = response.data.decode("utf-8")
-        assert 'data: {"error": "Invalid payload"}' in stream_data
+        # Step 2: same SSE error frame, with a safe message instead of the raw exception.
+        assert stream_data == 'data: {"error": "The model provider request failed unexpectedly."}\n\n'
+        assert "Invalid payload" not in stream_data

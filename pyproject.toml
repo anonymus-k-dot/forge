@@ -1,18 +1,37 @@
 [build-system]
-requires = ["setuptools>=61.0"]
+requires = ["setuptools>=64"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "forge"
-version = "1.0.0"
+dynamic = ["version", "dependencies"]
 description = "Precision prompt engineering and enhancement platform"
 readme = "README.md"
 requires-python = ">=3.10"
 license = { text = "MIT" }
 
+[tool.setuptools.dynamic]
+version = { attr = "forge.__version__" }
+# requirements.txt stays the single dependency list so `pip install -r requirements.txt`
+# (the Render build command) and `pip install .` install the same packages.
+dependencies = { file = ["requirements.txt"] }
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+forge = [
+    "templates/*.html",
+    "providers/*.json",
+    "db/migrations/*.py",
+    "db/migrations/*.mako",
+    "db/migrations/versions/*.py",
+]
+
 [tool.ruff]
 line-length = 100
 target-version = "py310"
+src = ["src", "."]
 
 [tool.ruff.lint]
 select = ["E", "F", "W", "I", "UP"]
@@ -24,3 +43,7 @@ combine-as-imports = true
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 python_files = ["test_*.py"]
+pythonpath = ["src"]
+markers = [
+    "postgres: needs a local PostgreSQL via TEST_DATABASE_URL (skipped when unset)",
+]

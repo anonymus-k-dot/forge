@@ -51,13 +51,13 @@ def check_env_configuration():
         print("       Please copy .env.example to .env and set your GEMINI_API_KEY.")
         return False
 
-    masked_key = api_key[:4] + "..." + api_key[-4:] if len(api_key) > 8 else "***"
-    print(f"[OK] GEMINI_API_KEY is configured (Value: {masked_key})")
+    # Never print any part of the key; its length is enough to spot an empty/truncated value.
+    print(f"[OK] GEMINI_API_KEY is configured ({len(api_key)} characters)")
     return True
 
 
 def check_templates():
-    template_file = Path(__file__).resolve().parent.parent / "templates" / "index.html"
+    template_file = Path(__file__).resolve().parent.parent / "src" / "forge" / "templates" / "index.html"
     if template_file.exists():
         print(f"[OK] UI template found: {template_file.name} ({template_file.stat().st_size:,} bytes)")
         return True

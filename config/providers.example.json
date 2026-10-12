@@ -1,0 +1,40 @@
+{
+  "default_model": "legacy-enhancer",
+  "providers": {
+    "gemini": {
+      "type": "google_genai",
+      "api_key_env": "GEMINI_API_KEY",
+      "timeout_seconds": 60,
+      "max_concurrency": 4
+    },
+    "groq": {
+      "type": "openai_compatible",
+      "base_url": "https://api.groq.com/openai/v1",
+      "auth": "bearer",
+      "api_key_env": "GROQ_API_KEY",
+      "timeout_seconds": 60,
+      "max_concurrency": 4,
+      "retry": { "max_attempts": 3, "max_retry_after_seconds": 20 }
+    },
+    "ollama": {
+      "type": "openai_compatible",
+      "base_url": "http://localhost:11434/v1",
+      "auth": "none",
+      "timeout_seconds": 120,
+      "max_concurrency": 1
+    },
+    "llamacpp": {
+      "type": "openai_compatible",
+      "base_url": "http://localhost:8080/v1",
+      "auth": "none",
+      "timeout_seconds": 120,
+      "max_concurrency": 1
+    }
+  },
+  "models": {
+    "legacy-enhancer": { "provider": "gemini", "model": "gemma-4-31b-it" },
+    "groq-example": { "provider": "groq", "model": "REPLACE_WITH_A_MODEL_ID_FROM_GROQ_MODELS_ENDPOINT" },
+    "ollama-example": { "provider": "ollama", "model": "REPLACE_WITH_A_MODEL_FROM_ollama_list" },
+    "llamacpp-example": { "provider": "llamacpp", "model": "REPLACE_WITH_THE_LOADED_MODEL_NAME" }
+  }
+}

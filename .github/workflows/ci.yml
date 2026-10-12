@@ -15,6 +15,23 @@ jobs:
       matrix:
         python-version: ["3.10", "3.11", "3.12"]
 
+    # Throwaway PostgreSQL for migration and database tests (CI-only credentials).
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: forge
+          POSTGRES_PASSWORD: forge-ci-only
+          POSTGRES_DB: forge
+        ports:
+          # 5433 on the runner: the test guard refuses port 5432 (tests/db/safety.py).
+          - 5433:5432
+        options: >-
+          --health-cmd "pg_isready -U forge -d forge"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -34,8 +51,19 @@ jobs:
         run: |
           ruff check .
 
+      - name: Migrations (fresh database, repeat run, model check)
+        env:
+          DATABASE_URL: postgresql://forge:forge-ci-only@localhost:5433/forge
+        run: |
+          alembic upgrade head
+          alembic current
+          alembic upgrade head
+          alembic check
+
       - name: Run Test Suite
         env:
           GEMINI_API_KEY: mock_key_for_testing
+          TEST_DATABASE_URL: postgresql://forge:forge-ci-only@localhost:5433/postgres
+          FORGE_REQUIRE_DB_TESTS: "1"
         run: |
           pytest -v --tb=short

@@ -63,7 +63,7 @@ FORGE supports two operational modes over HTTP:
    - Initiated with `stream: false`.
    - Collects full model generation, processes through `_clean_output`, and returns a structured JSON payload with metadata.
 
-### 2.3 Frontend & Interaction Engine (`templates/index.html`)
+### 2.3 Frontend & Interaction Engine (`src/forge/templates/index.html`)
 - **Design System**: Luxury dark aesthetic built using Tailwind CSS utility classes and custom CSS variables (`--surface-page`, `--card`, `--gold`, `--platinum`).
 - **Interactive Visual Layer**:
   - Custom WebGL fluid simulation engine (`#fluid-canvas`) computing multi-pass density and velocity dissipation on pointer interaction.

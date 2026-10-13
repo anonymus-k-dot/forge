@@ -16,13 +16,17 @@ from contextlib import contextmanager
 from dataclasses import dataclass, replace
 from typing import TypeVar
 
+from forge.infrastructure.budgets import BudgetGuard, Reservation
+from forge.infrastructure.cache import CachedResponse, CachePolicy, cache_key, is_cacheable
 from forge.providers.base import (
     GenerationParams,
     GenerationRequest,
     GenerationResult,
     ProviderAdapter,
+    StreamEnd,
     StreamEvent,
     TextDelta,
+    Usage,
 )
 from forge.providers.config import ProviderConfig, ProvidersConfig
 from forge.providers.errors import (
@@ -138,49 +142,118 @@ class ProviderRouter:
 
     # ── calls ──────────────────────────────────────────────────────────────
 
-    def generate(self, request: GenerationRequest, *, model: str | None = None) -> GenerationResult:
+    def generate(
+        self,
+        request: GenerationRequest,
+        *,
+        model: str | None = None,
+        budget: BudgetGuard | None = None,
+        cache: CachePolicy | None = None,
+    ) -> GenerationResult:
+        """One completion.
+
+        ``cache`` (opt-in): a fresh, non-expired cached result for the identical effective
+        request is returned with ``cache_hit=True`` and no provider call; otherwise a
+        complete, successful result (``is_cacheable``) is stored. ``budget``: every provider
+        attempt (including retries)
+        reserves budget first and is settled afterwards; cache hits consume none.
+        """
         profile, adapter, request = self._prepare(request, model, streaming=False)
+        key = None
+        if cache is not None:
+            key = cache_key(adapter, profile.model, request, cache.namespace)
+            cached = cache.store.get(key)
+            if cached is not None:
+                _log_cache("cache.hit", key, profile)
+                if budget is not None:
+                    _record_cache_hit(budget)
+                return cached.to_result(profile.provider, profile.model)
+            _log_cache("cache.miss", key, profile)
+
         policy = self._policy(profile.provider)
         for attempt in range(1, policy.max_attempts + 1):
             try:
                 with self._slot(profile.provider):
-                    return _normalized(
-                        profile.provider, lambda: adapter.generate(profile.model, request)
-                    )
+                    reservation = budget.reserve(request) if budget is not None else None
+                    try:
+                        result = _normalized(
+                            profile.provider, lambda: adapter.generate(profile.model, request)
+                        )
+                    except ProviderError:
+                        _settle(budget, reservation, None)
+                        raise
+                    _settle(budget, reservation, result.usage)
+                break
             except ProviderError as error:
                 self._backoff_or_raise(error, attempt, policy, profile.provider)
-        raise AssertionError("unreachable")  # pragma: no cover
+        else:  # pragma: no cover - the loop always returns, breaks or raises
+            raise AssertionError("unreachable")
+
+        if cache is not None and key is not None:
+            if not is_cacheable(result):
+                _log_cache("cache.not_stored", key, profile)
+                return result
+            cache.store.put(
+                key,
+                CachedResponse.from_result(result),
+                ttl_seconds=cache.ttl_seconds,
+                provider_type=self._config.providers[profile.provider].type,
+                model=profile.model,
+            )
+            _log_cache("cache.store", key, profile)
+        return result
 
     def stream(
-        self, request: GenerationRequest, *, model: str | None = None
+        self,
+        request: GenerationRequest,
+        *,
+        model: str | None = None,
+        budget: BudgetGuard | None = None,
     ) -> Generator[StreamEvent, None, None]:
-        """Stream events. Retries only happen before the first text has been yielded."""
+        """Stream events. Retries only happen before the first text has been yielded.
+
+        Streams never use the response cache (no partial or re-chunked replays). With a
+        ``budget``, every attempt is reserved and settled, including interrupted streams.
+        """
         profile, adapter, request = self._prepare(request, model, streaming=True)
-        return self._stream(profile, adapter, request)
+        return self._stream(profile, adapter, request, budget)
 
     def _stream(
-        self, profile: ModelProfile, adapter: ProviderAdapter, request: GenerationRequest
+        self,
+        profile: ModelProfile,
+        adapter: ProviderAdapter,
+        request: GenerationRequest,
+        budget: BudgetGuard | None = None,
     ) -> Generator[StreamEvent, None, None]:
         policy = self._policy(profile.provider)
         delivered = False
         for attempt in range(1, policy.max_attempts + 1):
             try:
                 with self._slot(profile.provider):
-                    events = _normalized(
-                        profile.provider, lambda: adapter.stream(profile.model, request)
-                    )
+                    reservation = budget.reserve(request) if budget is not None else None
+                    usage = None
                     try:
-                        while True:
-                            event = _normalized(profile.provider, lambda: next(events, None))
-                            if event is None:
-                                return
-                            if isinstance(event, TextDelta) and event.text:
-                                delivered = True
-                            yield event
+                        events = _normalized(
+                            profile.provider, lambda: adapter.stream(profile.model, request)
+                        )
+                        try:
+                            while True:
+                                event = _normalized(profile.provider, lambda: next(events, None))
+                                if event is None:
+                                    return
+                                if isinstance(event, TextDelta) and event.text:
+                                    delivered = True
+                                elif isinstance(event, StreamEnd):
+                                    usage = event.usage
+                                yield event
+                        finally:
+                            close = getattr(events, "close", None)
+                            if callable(close):
+                                close()
                     finally:
-                        close = getattr(events, "close", None)
-                        if callable(close):
-                            close()
+                        # Completed streams settle with reported usage; failed or
+                        # abandoned ones keep the conservative estimate.
+                        _settle(budget, reservation, usage)
             except ProviderError as error:
                 if delivered:
                     raise
@@ -263,3 +336,36 @@ def _normalized(provider: str, call: Callable[[], T]) -> T:
         raise UnknownProviderError(
             f"{provider}: unexpected {type(exc).__name__}", provider=provider
         ) from exc
+
+
+def _settle(
+    budget: BudgetGuard | None, reservation: Reservation | None, usage: Usage | None
+) -> None:
+    """Settle an attempt's reservation. A failure here keeps the reservation counted
+    (conservative), so enforcement is never weakened; the result is still returned."""
+    if budget is None or reservation is None or reservation.settled:
+        return
+    try:
+        budget.settle(reservation, usage)
+    except Exception as exc:  # noqa: BLE001
+        logger.warning("budget.settle_failed", extra={"forge": {"error_type": type(exc).__name__}})
+
+
+def _record_cache_hit(budget: BudgetGuard) -> None:
+    """Cache hits consume no budget; counting them is best-effort statistics."""
+    try:
+        budget.record_cache_hit()
+    except Exception as exc:  # noqa: BLE001
+        logger.warning(
+            "budget.cache_hit_not_recorded", extra={"forge": {"error_type": type(exc).__name__}}
+        )
+
+
+def _log_cache(event: str, key: str, profile: ModelProfile) -> None:
+    # Only a key prefix and identifiers: never prompts, responses or full keys.
+    logger.info(
+        event,
+        extra={
+            "forge": {"key_prefix": key[:12], "provider": profile.provider, "model": profile.model}
+        },
+    )

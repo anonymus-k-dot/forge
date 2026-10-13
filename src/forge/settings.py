@@ -28,6 +28,8 @@ class Settings:
     log_level: str = "INFO"
     # DATABASE_URL and DATABASE_* pool options; None = no database configured.
     database: DatabaseSettings | None = None
+    # FORGE_CACHE_TTL_SECONDS: lifetime of response-cache entries (used by runs, not /enhance).
+    cache_ttl_seconds: int = 30 * 24 * 3600
     # Process environment snapshot, used only to look up credentials by variable name.
     # Excluded from repr/eq so secrets never end up in logs or tracebacks.
     environ: Mapping[str, str] = field(default_factory=dict, repr=False, compare=False)
@@ -52,12 +54,29 @@ class Settings:
             providers_file=_optional(snapshot.get("FORGE_PROVIDERS_FILE")),
             log_level=log_level,
             database=parse_database_settings(snapshot),
+            cache_ttl_seconds=_cache_ttl(snapshot.get("FORGE_CACHE_TTL_SECONDS")),
             environ=snapshot,
         )
 
     def get_secret(self, name: str) -> str | None:
         """Value of the credential variable ``name``, or ``None`` if unset or blank."""
         return _optional(self.environ.get(name))
+
+
+def _cache_ttl(raw: str | None) -> int:
+    from forge.infrastructure.cache import DEFAULT_TTL_SECONDS, validate_ttl
+
+    value = _optional(raw)
+    if value is None:
+        return DEFAULT_TTL_SECONDS
+    try:
+        seconds = int(value)
+    except ValueError:
+        raise ConfigurationError("FORGE_CACHE_TTL_SECONDS must be an integer.") from None
+    try:
+        return validate_ttl(seconds)
+    except ConfigurationError as exc:
+        raise ConfigurationError(f"FORGE_CACHE_TTL_SECONDS: {exc}") from None
 
 
 def _optional(value: str | None) -> str | None:

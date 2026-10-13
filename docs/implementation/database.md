@@ -90,7 +90,7 @@ confirming it holds nothing you need):
 alembic downgrade base && alembic upgrade head
 ```
 
-## Schema (revision 0001)
+## Schema (revisions 0001 and 0002)
 
 | Table | Holds | Deletion |
 |---|---|---|
@@ -98,6 +98,13 @@ alembic downgrade base && alembic upgrade head
 | `runs` | Manifest (JSONB) + SHA-256 `manifest_hash`, status, FORGE version, budget limits, timestamps | `RESTRICT` while executions exist |
 | `executions` | One model call: case, system, role, sample index, provider/models, params, request hash, **raw output**, finish reason, provider-reported usage + source, latency, cache hit, error category | `RESTRICT` while evaluations exist |
 | `evaluations` | Derived results from one evaluator version (results JSONB, `passed` nullable = undecidable) | — |
+| `llm_cache_entries` (0002) | Cached complete, successful responses: `cache_key` (SHA-256 hex, primary key), `key_version`, `provider_type`, `model`, `response` JSONB, `created_at`, `expires_at` (indexed; `expires_at > created_at`). The request itself is not stored | free to purge |
+
+Revision `0002` also adds budget counters to `runs`: `model_calls_used`, `tokens_used`,
+`tokens_reserved` (bigint), `cache_hits`, all `NOT NULL DEFAULT 0` and non-negative, plus
+`ck_runs_model_calls_within_limit` (`model_calls_used` may never exceed
+`budget_limits->>'max_model_calls'`) and `ck_runs_budget_limits_object`. Accounting rules:
+target architecture §5.2, ADR-018.
 
 History is never cascade-deleted. A privacy deletion path (removing user content while
 keeping anonymised aggregates) is not implemented yet.
@@ -119,3 +126,15 @@ tests skip with a reason; CI sets `FORGE_REQUIRE_DB_TESTS=1` so they cannot be s
 
 Not automated. Local: `docker compose exec db pg_dump -U forge forge > forge.sql`. Hosted:
 use the provider's backup/branching features.
+
+## Revision 0002: upgrade and rollback
+
+- `alembic upgrade head` from `0001` is additive: a new table and index, four counter columns
+  with constant defaults (existing runs get 0; metadata-only in PostgreSQL ≥ 11), three CHECK
+  constraints. It requires every existing run's `budget_limits` to be a JSON object (the
+  `0001` default `{}` is). Existing data is preserved (tested).
+- `alembic downgrade 0001` drops `llm_cache_entries` (cached responses — regenerable) and the
+  four counters (run usage history is lost). Runs and executions are kept. Only run it
+  deliberately.
+- Expired cache rows are ignored by lookups; delete them with
+  `PostgresCacheStore(database).purge_expired()` when needed (not scheduled automatically).

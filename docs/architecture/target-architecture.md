@@ -56,22 +56,22 @@ src/forge/
   providers/
     base.py                 # ProviderAdapter protocol, request/response types, capabilities
     errors.py               # normalized ProviderError categories
-    router.py               # ProviderRouter: profiles, retries, concurrency (cache, budget later)
+    router.py               # ProviderRouter: profiles, retries, concurrency, cache + budget hooks
     retry.py                # RetryPolicy, Retry-After parsing
     config.py               # provider/model-profile config loading (no secrets in files)
     default_providers.json  # packaged default: Gemini legacy profile
     google_genai.py         # retained adapter
     openai_compatible.py    # Groq / Ollama / llama.cpp / other compatible endpoints (httpx)
     fake.py                 # deterministic adapter for tests and CI
-  infrastructure/
-    cache.py                # cache key + CacheStore (memory, postgres)
-    budgets.py              # BudgetGuard
+  infrastructure/           # (increment 5)
+    cache.py                # cache key, CachePolicy, memory + PostgreSQL stores
+    budgets.py              # BudgetLimits, check_plan, memory + PostgreSQL run budgets
   db/                       # (increment 4)
     config.py               # DATABASE_* parsing, URL redaction
     models.py               # SQLAlchemy 2 models + naming convention
     session.py              # lazy engine, session() unit of work, readiness()
     migrate.py              # Alembic helpers without alembic.ini
-    repositories.py         # workspace/run helpers (cache helpers arrive in increment 5)
+    repositories.py         # workspace/run helpers (create_run validates budgets)
     migrations/             # Alembic env + versions (0001_initial_schema)
   benchmark/
     tasks.py                # task file schema + loading + hashing
@@ -218,15 +218,96 @@ provider health endpoints, `context_overflow`/`cancelled` categories, Ollama-nat
 llama.cpp-native APIs, and closing adapters at process shutdown (clients live for the
 process lifetime).
 
-## 5. Cache and budgets (Phase 0)
+## 5. Cache and budgets — implemented in Phase 0 Step 5
 
-- Cache key = SHA-256 of canonical JSON (sorted keys, no whitespace, UTF-8) over
-  `{key_version, provider, model, messages, system, params, response_schema, adapter_version}`.
-- Only successful, complete results are cached. Each result records `cache_hit`.
-- Backends: in-memory (tests, CLI without DB) and PostgreSQL (`llm_cache_entries`, unique on key).
-- `BudgetGuard` per run: `max_model_calls`, `max_estimated_tokens`, `max_cases`,
-  `max_samples_per_case`. Checked **before** each call; raises `BudgetExceeded`.
-  Cache hits do not consume call budget but are counted separately.
+Code: `src/forge/infrastructure/cache.py`, `src/forge/infrastructure/budgets.py`, router
+integration in `src/forge/providers/router.py`, schema in revision `0002`.
+
+### 5.1 Response cache
+
+- **Opt-in per call** (`router.generate(..., cache=CachePolicy(...))`). Used for non-streaming
+  run executions (benchmarks/evaluations from increment 6). `/enhance` never uses it, so its
+  results stay fresh samples. Streams never use it (no partial or re-chunked replay).
+- **Key** = SHA-256 hex of canonical JSON (sorted keys, no whitespace, UTF-8, no ASCII
+  escaping, NaN/Infinity rejected, JSON types preserved so `1` ≠ `1.0`, no Unicode
+  normalization) over `{key_version, request: adapter.cache_identity(model, request),
+  namespace}`. `cache_identity` is the exact request the adapter would send — endpoint (base
+  URL/path or API), model, messages, system, all parameters with their wire names, and any
+  response-format fields once supported — and never headers or credentials. Profile default
+  params are merged before keying. `namespace` carries caller context such as an evaluator
+  version. Bump `CACHE_KEY_VERSION` or an adapter's `CACHE_IDENTITY_VERSION` to invalidate.
+- **Repeated samples**: identical requests share one entry, so with caching, N samples of the
+  same request would all replay the first sample. A caller that needs independent samples
+  (e.g. `samples_per_case > 1`) must put the sample index in `namespace`, or not cache.
+  Enforcing this is the runner's job (increment 6).
+- **Stored**: only complete, successful `generate` results (`is_cacheable`: non-empty text and
+  finish reason `stop`/`length`/`max_tokens` in any case, or none reported) — text, reported
+  model, finish reason, provider-reported usage. Empty, blocked, filtered or otherwise
+  abnormal results are returned to the caller but not stored (`cache.not_stored`). Never
+  failures, retries-exhausted errors or streams. The request content is not stored.
+- **TTL**: `FORGE_CACHE_TTL_SECONDS` (default 2,592,000 = 30 days; 1 s – 365 days). Expiry is
+  evaluated on the database clock; expired entries are misses and are replaced by the next
+  successful call. `PostgresCacheStore.purge_expired()` deletes expired rows (not scheduled).
+- **Concurrency**: one row per key (primary key). Writes are `INSERT … ON CONFLICT DO UPDATE
+  … WHERE expires_at <= now()` — the first valid entry wins, readers only ever see a complete
+  row. There is no single-flight: concurrent misses for the same key each call the provider
+  (and each is charged to the budget), because coordinating them would require holding a
+  lock or transaction during the model call.
+- **Database unavailable / table missing**: fail open — lookup is a miss, write is skipped,
+  `cache.unavailable` is logged (operation + error type only). A malformed stored entry is
+  also a miss (`cache.invalid_entry`); it stays until it expires.
+- **Observability**: `cache.hit`, `cache.miss`, `cache.store`, `cache.not_stored` log events
+  with a 12-character key prefix, provider and model only (never prompts, responses,
+  namespace values or the full key). Results carry `cache_hit`; run rows count `cache_hits`.
+  A hit returns the original call's provider-reported usage; with `cache_hit=True` it must
+  not be counted as fresh usage.
+
+### 5.2 Per-run budgets
+
+- Limits in `runs.budget_limits` (validated by `BudgetLimits`, strict integers, unknown keys
+  rejected): **`max_model_calls` (required)**, `max_estimated_tokens`, `max_cases`,
+  `max_samples_per_case`, `max_candidates`, `confirm_above_model_calls`.
+- **Calls**: every provider *attempt* — first try, each retry, failed attempts — consumes one
+  unit *before* it is sent, inside the provider concurrency slot (a slot timeout consumes
+  nothing). Nothing is refunded. Cache hits consume nothing and are counted in `cache_hits`.
+- **Tokens** (only when `max_estimated_tokens` is set; then every request must set
+  `max_output_tokens`): each attempt reserves `ceil(chars(system + messages) / 4) +
+  max_output_tokens`. After the attempt the reservation is released and the run is charged
+  provider-reported input + output tokens when both are reported, otherwise the estimate
+  (also for failed or abandoned attempts).
+- **Atomicity**: `PostgresRunBudget.reserve` is one conditional `UPDATE … WHERE status IN
+  ('pending','running') AND model_calls_used + 1 <= limit AND tokens_used + tokens_reserved +
+  reservation <= token_limit RETURNING …`. PostgreSQL's row lock serialises concurrent
+  workers, so the limit cannot be overspent; `ck_runs_model_calls_within_limit` enforces the
+  call limit again at the database level. No transaction is held during the model call. If
+  the `UPDATE` matches nothing, the row is locked (`FOR UPDATE`) and re-checked: the run is
+  marked exhausted only if the reservation still does not fit (a concurrent settlement may
+  have released tokens in between).
+- **Concurrency and tokens**: outstanding reservations count against the token budget, so
+  with parallel workers a run can be refused (and marked `budget_exceeded`) when actual usage
+  would have fit; the outcome is conservative but can depend on concurrency.
+- **Exhaustion**: the attempt is not made, the run is set to `budget_exceeded` (results kept),
+  and `BudgetExceededError` (code `budget_exceeded`, with `dimension`) is raised. Runs not in
+  `pending`/`running` raise `RunNotActiveError` (code `run_not_active`) — this is also how a
+  cancelled run stops spending. Cache hits spend nothing and are served without checking the
+  run status, so the runner must stop scheduling work for an inactive run itself.
+  `MemoryRunBudget` has no run status: after exhaustion it keeps raising
+  `BudgetExceededError`, where `PostgresRunBudget` raises `RunNotActiveError` with status
+  `budget_exceeded`.
+- **Pre-run check**: `check_plan(limits, RunPlan, max_attempts, confirmed)` rejects plans
+  exceeding structural limits or whose minimum call count exceeds `max_model_calls`, and
+  raises `BudgetConfirmationRequiredError` when the worst case (calls × max attempts) exceeds
+  `confirm_above_model_calls` without confirmation.
+- **Failure behaviour**: reservation fails closed — any database error raises and no call is
+  made. If *settling* fails after a call, the reservation stays counted (conservative) and
+  `budget.settle_failed` is logged. A crash between reserve and settle leaves tokens reserved
+  (conservative; reconciliation belongs to the job system, Phase 2).
+- **Cost**: not implemented — no versioned pricing configuration exists, and costs are never
+  fabricated (spec §19). Each settlement reports whether it used provider-reported or
+  estimated tokens (`Settlement.source`), but `runs.tokens_used` is a budget-accounting total
+  that mixes both; per-call usage and its source belong in `executions.usage_source`
+  (written by the runner, increment 6). Without a token budget, an attempt with no
+  `max_output_tokens` and no provider usage adds 0 to `tokens_used`.
 
 ## 6. Data model
 
@@ -240,7 +321,7 @@ as Alembic revision `0001`** — full column list, constraints and operations in
 | `runs` | One benchmark/pilot run: manifest (JSONB), `manifest_hash`, status, forge version, timestamps, budget limits | FK workspace `RESTRICT`; check on `status` |
 | `executions` | One model call: system variant, case ID, **role** (generator/critic/judge/target), **sample index**, provider, requested/reported model, params, request hash, **raw output**, finish reason, usage + usage source, latency, cache_hit, error category | FK run `RESTRICT` (history is not cascade-deleted); unique (run_id, case_id, system, role, sample_index), which also serves as the (run_id, case_id) index; CHECKs on role, usage source, error category, hashes, non-negative counts, output-or-error |
 | `evaluations` | Derived results, separate from raw output: evaluator name + version + config, per-check results (JSONB), passed | FK execution `RESTRICT`; unique (execution_id, evaluator, evaluator_version) |
-| `llm_cache_entries` | Response cache | unique `cache_key`; provider/model columns for inspection — **not created yet: arrives with the cache in increment 5 as revision `0002`** |
+| `llm_cache_entries` | Response cache (revision `0002`) | primary key `cache_key` (SHA-256 hex), `expires_at` index; see §5.1 |
 
 Deferred to the phase that implements them: `prompts`, `prompt_versions` (Phase 1, with a
 DB trigger enforcing immutability), `test_suites`, `test_cases`, `suite_revisions`, `jobs`

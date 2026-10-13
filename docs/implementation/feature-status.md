@@ -4,7 +4,7 @@ Legend: **Implemented** (code exists) · **Tested-fake** (automated tests with f
 providers pass) · **Tested-real** (verified against a real provider/database) ·
 **Benchmarked** · **Not started** · **NOT RUN** (designed but never executed).
 
-Last updated: 2026-10-12 — Phase 0 increments 1–4 done; Step 2, Steps 1–3 and Steps 1–4 reviews done; uncommitted.
+Last updated: 2026-10-13 — increments 1–4 committed locally (`eb126f0`); increment 5 done, uncommitted.
 Details and evidence: [phase-0-plan.md §7](phase-0-plan.md#7-progress-log).
 
 ## Legacy (FORGE 1.x) compatibility
@@ -47,12 +47,27 @@ Details and evidence: [phase-0-plan.md §7](phase-0-plan.md#7-progress-log).
 | 2. Provider abstraction (+ review fixes) | **Done** — real providers unverified |
 | 3. Fake-metric deprecation, JSON export fix, structured logging, request IDs | **Done** |
 | 4. PostgreSQL + Alembic | **Done** — Tested-real against local PostgreSQL 17 (Docker); hosted DBs not connected; local dev DB reconciled to the corrected `0001` (23/23 constraint names match) |
-| 5. Cache + budgets | Not started |
+| 5. Cache + budgets | **Done, uncommitted; acceptance audit done (3 defects fixed)** — Tested-real on PostgreSQL 17 (ephemeral) before the audit and PostgreSQL 18 (disposable cluster) after it; persistent local DB upgraded to `0002` (owner-approved, verified before the audit); Docker/Gunicorn not re-run after the audit; not yet used by a runner (increment 6) |
 | 6. Pilot benchmark (~30 tasks) | Not started — real run **NOT RUN** |
 | 7. Real-provider verification | Not started — needs your permission to use keys |
 | 8. CI with PostgreSQL, docs, README | Not started |
 
-Phase 0 acceptance: **not met** (increments 5–8 outstanding).
+Phase 0 acceptance: **not met** (increments 6–8 outstanding).
+
+## Cache and budgets (increment 5)
+
+| Item | Status |
+|---|---|
+| Canonical cache key over adapter `cache_identity` (no secrets) | Implemented, Tested (51 tests) |
+| Response cache (opt-in, non-streaming, TTL, fail-open), memory + PostgreSQL stores | Implemented, Tested-real |
+| Only complete, successful results stored (no empty/blocked/filtered); malformed entries are misses | Implemented in the audit, Tested-real |
+| No prompts, responses, namespace values or full keys in cache logs or stored rows | Tested |
+| Per-run budgets (attempt-based calls, token reserve/reconcile, structural limits, confirmation threshold) | Implemented, Tested-real |
+| Atomic, concurrency-safe reservation; DB-level call-limit CHECK | Tested-real (20 concurrent workers, limit 5); refused reservations re-checked under the row lock (audit fix) |
+| Budget fails closed on database errors | Tested |
+| `/enhance` unaffected (never cached, never budgeted) | Tested |
+| Used by a benchmark/evaluation runner | **Not yet** — increment 6 |
+| Cost estimation | Not implemented (no pricing config; never fabricated) |
 
 ## Persistence (increment 4)
 
@@ -67,7 +82,7 @@ Phase 0 acceptance: **not met** (increments 5–8 outstanding).
 | Docker Compose `db` service | Validated; healthy |
 | CI database job | Configured; reproduced locally on Py 3.10/3.11/3.12; **not yet run on GitHub** |
 | Test-database safety guard (local hosts only, never port 5432, disposable-server inventory) | Implemented, Tested (15 tests; refusal verified with 0 connections to 5432) |
-| Cache table | Not created (increment 5) |
+| Cache table | Created in revision `0002` |
 | Hosted PostgreSQL (Neon/Supabase) | **Not connected** |
 
 

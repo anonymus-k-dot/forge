@@ -42,6 +42,8 @@ DEFAULT_CAPABILITIES = Capabilities(
 )
 
 MAX_SSE_LINE_CHARS = 1_000_000
+# Bump whenever cache_identity() serialization changes (invalidates cached responses).
+CACHE_IDENTITY_VERSION = 1
 _LINE_END = re.compile(r"\r\n|\r|\n")
 _CHAT_PATH = "/chat/completions"
 
@@ -81,6 +83,16 @@ class OpenAICompatibleAdapter:
                         base_url=self._base_url, timeout=self._timeout, transport=self._transport
                     )
         return self._client
+
+    def cache_identity(self, model: str, request: GenerationRequest) -> dict[str, Any]:
+        """The endpoint and exact JSON payload a non-streaming call would send (no headers)."""
+        return {
+            "type": "openai_compatible",
+            "version": CACHE_IDENTITY_VERSION,
+            "base_url": self._base_url,
+            "path": _CHAT_PATH,
+            "payload": self.build_payload(model, request, stream=False),
+        }
 
     def close(self) -> None:
         with self._lock:

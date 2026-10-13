@@ -90,12 +90,14 @@ web request is never held open for a long upstream-requested delay. `cancelled` 
 successful results cached; PostgreSQL table with unique key; memory backend for tests.
 Cache hits are recorded on every result and every execution row.
 **Consequences.** Changing adapter serialization requires bumping `key_version`.
+**Status (Step 5).** Implemented; see ADR-019 for scope, TTL and identity decisions.
 
 ## ADR-008 — Budgets enforced before calls, per run
 
 **Decision.** `BudgetGuard` is consulted by the router before every non-cached call.
 Exceeding a limit raises `BudgetExceeded`; the run is marked `budget_exceeded` with partial
 results kept. Pre-run estimate = cases × systems × samples × calls-per-system.
+**Status (Step 5).** Implemented; accounting rules in ADR-018.
 
 ## ADR-009 — Remove fabricated `confidence` / `score` from `/enhance` (explicit contract change)
 
@@ -188,3 +190,55 @@ the head revision packaged with the running code; otherwise 503 with `unavailabl
 `migrations_pending`. `/health` stays process-only.
 **Consequences.** A deploy that forgot to migrate is reported as not ready instead of failing
 later on missing tables. The check costs one pooled connection per call.
+
+## ADR-018 — Budget accounting rules (owner decisions, Step 5)
+
+**Context.** Spec §19 lists per-run maximum model calls and a token budget "where estimable"
+separately from bounded retries; ADR-008 said "before every non-cached call" without
+defining a call. The owner chose the rules below on 2026-10-13 and approved them, including
+the mandatory `max_model_calls`, in the Step 5 review the same day.
+**Decision.**
+- Every provider attempt (including retries and failed attempts) consumes one call unit
+  before it is sent; nothing is refunded.
+- Token budgets reserve `ceil(input chars / 4) + max_output_tokens` per attempt and reconcile
+  to provider-reported usage when both counts are reported, else keep the estimate; a token
+  budget requires `max_output_tokens` on every request.
+- Cache hits consume nothing and are counted separately.
+- Every run must declare `max_model_calls` (enforced by `create_run`), so no run can make an
+  unbounded number of calls; reservation fails closed on database errors.
+**Consequences.** Upstream traffic per run is bounded by `max_model_calls` regardless of retry
+behaviour. A logical execution can use up to `max_attempts` units. Estimated token counts are
+conservative and labelled as estimates. The requirement is enforced in the application
+(`BudgetLimits`); the database CHECK `ck_runs_model_calls_within_limit` caps the counter
+when the limit is present but does not itself require the key. A row written without it
+(only possible by bypassing `create_run`) cannot spend: `PostgresRunBudget` rejects its
+limits before reserving. Outstanding token reservations count against the budget, so with
+parallel workers a run can be refused while its eventual actual usage would have fit
+(conservative; outcome may depend on concurrency). A refused conditional reservation is
+re-checked under the row lock before the run is marked `budget_exceeded`.
+
+## ADR-019 — Response cache scope, TTL and request identity (owner decisions, Step 5)
+
+**Context.** Spec §19/ADR-007 call for a persistent response cache but leave its scope,
+expiry and failure behaviour open. The owner chose the rules below on 2026-10-13 and
+approved them in the Step 5 review the same day.
+**Decision.**
+- Caching is opt-in per call and used for non-streaming run executions only; `/enhance` and
+  all streams never use it (preserves `/enhance` behaviour; avoids partial/re-chunked replay).
+- Default TTL 30 days (`FORGE_CACHE_TTL_SECONDS`); expired entries are misses.
+- The key covers `adapter.cache_identity()` — the exact request the adapter would send minus
+  headers — so every behavior-affecting input is included by construction and credentials
+  cannot be.
+- Only complete, successful results are stored: non-empty text and a normal finish reason
+  (`stop`, `length`/`max_tokens`, or none reported). Blocked, filtered, empty or otherwise
+  abnormal results are returned but not stored (added in the Step 5 acceptance audit).
+- Store failures fail open (miss, logged), as do malformed stored entries; the budget still
+  fails closed.
+- No single-flight de-duplication of concurrent misses (would require holding locks during
+  model calls).
+**Consequences.** `/enhance` output is unchanged and never replayed. A changed adapter
+payload changes the key, so stale identities miss instead of returning wrong results; key
+changes that are not payload changes require bumping `CACHE_KEY_VERSION`. Concurrent
+identical misses each call the provider and are each charged. Identical requests share one
+entry, so callers needing independent repeated samples must add the sample index to the
+namespace (the runner's responsibility, increment 6).

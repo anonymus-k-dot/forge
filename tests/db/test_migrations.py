@@ -52,10 +52,10 @@ def test_upgrade_from_empty_database_records_head(empty_database):
         assert migrate.current_revision(connection) is None
     migrate.upgrade(engine)
     with engine.connect() as connection:
-        assert migrate.current_revision(connection) == migrate.head_revision() == "0001"
+        assert migrate.current_revision(connection) == migrate.head_revision() == "0002"
         assert connection.execute(
             text("SELECT version_num FROM alembic_version")
-        ).scalars().all() == ["0001"]
+        ).scalars().all() == ["0002"]
     assert TABLES <= set(inspect(engine).get_table_names())
 
 
@@ -111,7 +111,7 @@ def test_alembic_cli_uses_database_url_and_shows_status(empty_database):
 
     assert alembic("upgrade", "head").returncode == 0
     current = alembic("current")
-    assert current.returncode == 0 and "0001 (head)" in current.stdout
+    assert current.returncode == 0 and "0002 (head)" in current.stdout
     check = alembic("check")
     assert check.returncode == 0, check.stderr
     for output in (current.stdout + current.stderr, check.stdout + check.stderr):

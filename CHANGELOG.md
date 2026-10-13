@@ -1,9 +1,29 @@
 # Changelog
 
 All notable changes to FORGE. Dates are ISO 8601. Entries under **Unreleased** are not yet
-committed or deployed.
+released.
 
-## Unreleased — FORGE 2.0 Phase 0 (Steps 1–4)
+## Unreleased — FORGE 2.0 Phase 0 Step 5
+
+### Added
+
+- Response cache for run executions (opt-in; never used by `/enhance` or streams):
+  canonical SHA-256 keys over the exact request each adapter would send, PostgreSQL table
+  `llm_cache_entries` (Alembic `0002`), TTL `FORGE_CACHE_TTL_SECONDS` (default 30 days),
+  fail-open on database errors and malformed entries, `cache_hit` on results. Only complete,
+  successful results are stored; empty, blocked or filtered responses are not.
+- Per-run budgets: required `max_model_calls`, optional token budget with reserve-then-
+  reconcile, structural limits and a confirmation threshold; every provider attempt counts;
+  atomic PostgreSQL reservations; exhausted runs become `budget_exceeded`. Alembic `0002`
+  adds the counters to `runs`.
+
+### Changed
+
+- `repositories.create_run` now requires a valid `budget_limits` with `max_model_calls`.
+- Existing databases must run `alembic upgrade head` (`0001` → `0002`, additive); until then
+  `/ready` reports `migrations_pending`.
+
+## FORGE 2.0 Phase 0 Steps 1–4 (local commit eb126f0)
 
 ### Deprecated
 
@@ -60,7 +80,6 @@ committed or deployed.
   existing "Empty prompt" `400`. Pre-existing since FORGE 1.x; found in the Steps 1–3 review.
 - `scripts/verify_environment.py` printed the first and last four characters of
   `GEMINI_API_KEY`; it now prints only that the key is set and its length.
-
 - Web UI **"Copy as JSON"** exported hardcoded metadata (`confidence: "98%"`, `score: 0.98`,
   …) instead of the enhanced prompt. It now exports `{"enhanced_prompt": "..."}`. (Step 3)
 

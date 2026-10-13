@@ -13,6 +13,7 @@ from datetime import datetime
 from typing import Any
 
 from sqlalchemy import (
+    BigInteger,
     Boolean,
     CheckConstraint,
     DateTime,
@@ -97,6 +98,19 @@ class Run(Base):
         ),
         Index(None, "workspace_id", "created_at"),
         Index(None, "manifest_hash"),
+        # Budget counters (revision 0002). The call limit is also enforced by the database;
+        # token usage may legitimately exceed the pre-call estimate, so it is not.
+        CheckConstraint("jsonb_typeof(budget_limits) = 'object'", name="budget_limits_object"),
+        CheckConstraint(
+            "model_calls_used >= 0 AND tokens_used >= 0 AND tokens_reserved >= 0 "
+            "AND cache_hits >= 0",
+            name="budget_counters_non_negative",
+        ),
+        CheckConstraint(
+            "budget_limits->>'max_model_calls' IS NULL "
+            "OR model_calls_used <= (budget_limits->>'max_model_calls')::bigint",
+            name="model_calls_within_limit",
+        ),
     )
 
     id: Mapped[uuid.UUID] = _uuid_pk()
@@ -113,6 +127,10 @@ class Run(Base):
     created_at: Mapped[datetime] = _created_at()
     started_at: Mapped[datetime | None]
     finished_at: Mapped[datetime | None]
+    model_calls_used: Mapped[int] = mapped_column(Integer, default=0, server_default=text("0"))
+    tokens_used: Mapped[int] = mapped_column(BigInteger, default=0, server_default=text("0"))
+    tokens_reserved: Mapped[int] = mapped_column(BigInteger, default=0, server_default=text("0"))
+    cache_hits: Mapped[int] = mapped_column(Integer, default=0, server_default=text("0"))
 
     workspace: Mapped[Workspace] = relationship(back_populates="runs")
     executions: Mapped[list[Execution]] = relationship(back_populates="run", passive_deletes="all")
@@ -198,3 +216,26 @@ class Evaluation(Base):
     created_at: Mapped[datetime] = _created_at()
 
     execution: Mapped[Execution] = relationship(back_populates="evaluations")
+
+
+class LlmCacheEntry(Base):
+    """A cached successful model response (revision 0002). The key is the SHA-256 of the
+    canonical request document (``forge.infrastructure.cache``); the request itself is not
+    stored. Expired rows are ignored by lookups and replaced by the next successful call."""
+
+    __tablename__ = "llm_cache_entries"
+    __table_args__ = (
+        CheckConstraint(f"cache_key ~ '{SHA256_HEX}'", name="cache_key_sha256"),
+        CheckConstraint("key_version >= 1", name="key_version_positive"),
+        CheckConstraint("expires_at > created_at", name="expires_after_created"),
+        CheckConstraint("jsonb_typeof(response) = 'object'", name="response_object"),
+        Index(None, "expires_at"),
+    )
+
+    cache_key: Mapped[str] = mapped_column(primary_key=True)
+    key_version: Mapped[int] = mapped_column(Integer)
+    provider_type: Mapped[str]
+    model: Mapped[str]
+    response: Mapped[dict[str, Any]]
+    created_at: Mapped[datetime] = _created_at()
+    expires_at: Mapped[datetime]

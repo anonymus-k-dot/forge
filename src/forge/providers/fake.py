@@ -4,7 +4,8 @@ from __future__ import annotations
 
 import threading
 from collections.abc import Iterable, Iterator
-from dataclasses import dataclass
+from dataclasses import asdict, dataclass
+from typing import Any
 
 from forge.providers.base import (
     Capabilities,
@@ -107,6 +108,17 @@ class FakeAdapter:
         finally:
             with self._lock:
                 self.open_streams -= 1
+
+    def cache_identity(self, model: str, request: GenerationRequest) -> dict[str, Any]:
+        return {
+            "type": "fake",
+            "version": 1,
+            "name": self.name,
+            "model": model,
+            "system": request.system,
+            "messages": [asdict(m) for m in request.messages],
+            "params": asdict(request.params),
+        }
 
     def close(self) -> None:
         self.closed = True

@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from collections.abc import Iterator
 from dataclasses import dataclass, field, fields, replace
-from typing import Literal, Protocol
+from typing import Any, Literal, Protocol
 
 Role = Literal["user", "assistant"]
 
@@ -79,6 +79,8 @@ class GenerationResult:
     reported_model: str | None = None
     finish_reason: str | None = None
     usage: Usage | None = None
+    # True when served from the response cache instead of a fresh provider call.
+    cache_hit: bool = False
 
 
 @dataclass(frozen=True)
@@ -112,6 +114,16 @@ class ProviderAdapter(Protocol):
         """Yield ``TextDelta`` events, then exactly one ``StreamEnd``.
 
         Closing the iterator early must release any underlying connection.
+        """
+        ...
+
+    def cache_identity(self, model: str, request: GenerationRequest) -> dict[str, Any]:
+        """JSON-serializable description of exactly what would be sent for this request.
+
+        Used for response-cache keys: it must include every output-affecting input (endpoint,
+        model, messages, system, parameters, response format) and must never include
+        credentials or headers. Bump the adapter's ``CACHE_IDENTITY_VERSION`` whenever this
+        serialization changes.
         """
         ...
 

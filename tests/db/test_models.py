@@ -48,6 +48,7 @@ def run_id(migrated_database):
             manifest={"cases": 1},
             manifest_hash=HASH,
             forge_version="1.0.0",
+            budget_limits={"max_model_calls": 10},
         )
         return run.id
 

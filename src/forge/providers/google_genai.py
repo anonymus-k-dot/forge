@@ -51,6 +51,9 @@ try:
 except ImportError:  # pragma: no cover
     pass
 
+# Bump whenever cache_identity() serialization changes (invalidates cached responses).
+CACHE_IDENTITY_VERSION = 1
+
 _RETRY_DELAY = re.compile(r"^\s*(\d+(?:\.\d+)?)s\s*$")
 
 
@@ -168,6 +171,20 @@ class GoogleGenAIAdapter:
             if callable(close):
                 close()
         yield end
+
+    def cache_identity(self, model: str, request: GenerationRequest) -> dict[str, Any]:
+        """Model, contents and generation config exactly as passed to the SDK (no key)."""
+        contents = self.build_contents(request)
+        return {
+            "type": "google_genai",
+            "version": CACHE_IDENTITY_VERSION,
+            "api": "gemini-developer-api",
+            "model": model,
+            "contents": contents
+            if isinstance(contents, str)
+            else [c.model_dump(mode="json", exclude_none=True) for c in contents],
+            "config": self.build_config(request).model_dump(mode="json", exclude_none=True),
+        }
 
     def close(self) -> None:
         self._client = None

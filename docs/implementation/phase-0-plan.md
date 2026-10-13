@@ -27,7 +27,7 @@ Each is a separately reviewable diff.
 | 2 | **Provider layer.** Protocol, capabilities, normalized errors, retries, concurrency, router, fake adapter, Google GenAI adapter, OpenAI-compatible adapter, JSON provider config. Legacy `/enhance` routed through `ProviderRouter`. Safe client error messages (ADR-010, moved here from increment 3). **Done — see §7.** | add `src/forge/providers/*`, `config/providers.example.json`; change `legacy/enhance.py`, `api/*.py`, `app.py`, `settings.py`, root `app.py`, `requirements.txt` (pydantic), `.env.example` | Unit tests: error mapping per adapter (HTTP status/SDK exception → category), retry/backoff + `Retry-After`, no retry on non-retryable, timeout, unsupported capability, streaming failure mid-stream, contract tests run against fake + both real adapters with `httpx.MockTransport` / stubbed SDK |
 | 3 | **Remove fake metrics + logging.** ADR-009 (implemented as a null-value deprecation); UI JSON-export fix; **Done — see §7.** JSON structured logging and `X-Request-ID` (moved here from increment 1, which was kept to a pure restructure); `CHANGELOG.md`; `docs/api.md` update. | add `src/forge/logging.py`; change `api/legacy.py`, `src/forge/templates/index.html`, tests, docs | Tests assert fields absent; JSON export contains the prompt; every response has `X-Request-ID`; logs contain no prompt text or secrets by default |
 | 4 | **Database layer.** **Done — see §7** (no `forge db` CLI: the standard `alembic` CLI plus `forge.db.migrate` helpers covered every need). Settings → engine (pool, SSL, connect timeout, pool mode), session scope with explicit transactions, models, first Alembic migration, repositories, `/ready`, `forge db upgrade/current`. Docker Compose `db` service. | add `alembic.ini`, `src/forge/db/**`, `src/forge/cli.py`; change `docker-compose.yml`, `.env.example` | Unit: URL normalization, SSL/pool-mode options, missing-URL error. **Postgres:** `alembic upgrade head` on empty DB, `downgrade base` + upgrade again, `alembic check` (models == migrations), FK/unique/check constraints reject bad rows, `RESTRICT` prevents deleting runs with executions, data visible from a fresh engine (restart simulation) |
-| 5 | **Cache + budgets.** Cache key, memory + Postgres stores, router integration, `BudgetGuard`. | add `src/forge/infrastructure/{cache,budgets}.py`, `db/repositories/cache.py` | Unit: key differs when any of provider/model/params/system/messages/schema change; identical inputs → identical key; failures not cached; `cache_hit` flagged. Budget stops the N+1th call. Postgres: unique key under concurrent insert |
+| 5 | **Cache + budgets.** **Done — see §7** (code in `src/forge/infrastructure/`; SQL in the stores rather than a separate `db/repositories/cache.py`). Cache key, memory + Postgres stores, router integration, `BudgetGuard`. | add `src/forge/infrastructure/{cache,budgets}.py`, `db/repositories/cache.py` | Unit: key differs when any of provider/model/params/system/messages/schema change; identical inputs → identical key; failures not cached; `cache_hit` flagged. Budget stops the N+1th call. Postgres: unique key under concurrent insert |
 | 6 | **Pilot benchmark.** ~30 tasks, systems B0/B1/F-legacy, L0 checks, manifest hashing, runner, reports, persistence, `forge benchmark run`. | add `src/forge/benchmark/*`, `benchmarks/pilot-v0/{tasks.jsonl,README.md}` | Task-file schema validation; manifest hash stable across runs and changes when any input changes; fake-provider end-to-end run writes manifest + results + summary and DB rows; replay from cache flagged as cached |
 | 7 | **Real-provider verification** (needs your go-ahead, see §6). Single smoke request; then optionally the pilot on one real target model. | — | Recorded command output, model ID, usage; or marked **NOT RUN** |
 | 8 | **CI, docs, status.** Postgres service in CI, migrations check, mypy; required docs from spec §29 that Phase 0 touches; README corrected; feature-status updated. | change `.github/workflows/ci.yml`, `Dockerfile`, `README.md`, `docs/**` | CI config validated locally where possible (same commands run locally) |
@@ -536,3 +536,98 @@ contracts (docs-drift tests); Step 4 schema (migration uses `op.f()` for all 27 
 
 Ephemeral PostgreSQL servers and review images/containers were removed. The project server
 still holds only `forge, postgres, template0, template1`; no destructive migration ran.
+
+### Increment 5 — response cache and per-run budgets (completed 2026-10-13, uncommitted)
+
+Base: local commit `eb126f0`. Owner decisions taken before coding (ADR-018, ADR-019): every
+provider attempt counts against `max_model_calls`; token budgets reserve then reconcile;
+cache is opt-in for run executions only with a 30-day default TTL; cache store failures fail
+open, budget reservation fails closed.
+
+**What changed**
+
+- `src/forge/infrastructure/cache.py`: canonical key (`CACHE_KEY_VERSION`), `CachePolicy`,
+  `MemoryCacheStore`, `PostgresCacheStore` (first valid writer wins, DB-clock expiry,
+  `purge_expired`, fail-open), `postgres_cache_policy`.
+- `src/forge/infrastructure/budgets.py`: `BudgetLimits` (strict, `max_model_calls`
+  required), `check_plan`/`RunPlan`/`BudgetEstimate`, token estimate, `MemoryRunBudget`,
+  `PostgresRunBudget` (single conditional `UPDATE` reservation), error types with stable
+  codes (`budget_exceeded`, `run_not_active`, `budget_confirmation_required`,
+  `invalid_budget`).
+- Provider contract: `GenerationResult.cache_hit`; `ProviderAdapter.cache_identity()`
+  implemented by the Google, OpenAI-compatible and fake adapters.
+- `ProviderRouter.generate(..., budget=, cache=)` and `stream(..., budget=)`; both optional,
+  so `/enhance` is unchanged.
+- `Settings.cache_ttl_seconds` (`FORGE_CACHE_TTL_SECONDS`, validated).
+- `repositories.create_run` validates budgets and requires `max_model_calls`.
+- Models + Alembic `0002_cache_and_budgets` (`0001` untouched).
+- Docs: target architecture §5 (rewritten as implemented), ADR-007/008 status, ADR-018,
+  ADR-019, database guide (schema + 0002 upgrade/rollback), `docs/api.md` (one sentence:
+  `/enhance` never cached or budgeted), `.env.example`, `CHANGELOG.md`.
+
+**Tests added (123)**: `tests/infrastructure/test_cache_key.py` (51),
+`test_router_cache.py` (13), `test_budgets.py` (38), `tests/db/test_cache_and_budgets.py`
+(21). Existing tests updated: migration head `0001` → `0002` (3 assertions) and the
+`test_models.py` run fixture now passes `budget_limits` (required).
+
+**Verification (all actually run, 2026-10-13)**
+
+| Check | Result |
+|---|---|
+| Full suite, DB tests required (ephemeral `postgres:17`, 127.0.0.1:55433), external network + port 5432 blocked | PASS — 528 passed, 1 skipped (gunicorn loader, Windows); 0 blocked attempts (re-run after the local DB upgrade: same) |
+| Same in a clean venv | PASS — 528 passed, 1 skipped |
+| Without `TEST_DATABASE_URL` | PASS — 466 passed, 63 skipped with reason |
+| Mutation check (7 injected Step 5 regressions: reservation ignoring the call limit, expired entries served, valid entries overwritten, namespace dropped from key, cache hits charged, stream reservations never settled, failures cached) | 7/7 caught; source restored byte-identical |
+| Alembic: `0001` → `0002` with existing data, repeat upgrade, `alembic check`, catalog == models incl. CHECKs, downgrade to `0001` (data kept) and back, full base↔head round trip | PASS (tests) |
+| CI reproduction (`postgres:17` on 5433; Python 3.10/3.11/3.12; workflow commands verbatim) | PASS — `0002 (head)`, 0 repeat upgrades, check clean, 528 passed, 1 skipped (UI test: no Node) each |
+| ruff (0.3.5 and 0.17.0) | `ruff check .` (the CI lint step) PASS repo-wide; `ruff format --check` PASS for all 19 changed/new Step 5 Python files. Repo-wide format check is not clean: 3 pre-existing files untouched by Step 5 (`scripts/verify_environment.py`, `tests/conftest.py`, `tests/test_app.py`, identical to `eb126f0`) would be reformatted; CI does not run a format check |
+| mypy 2.4.0 | PASS — no issues in 31 source files (one variable-reuse type error found and fixed) |
+| Docker image (unchanged Dockerfile), Gunicorn against a throwaway DB at `0002` | PASS — `/health` 200, `/` 200, `/ready` 200 `ok`, `alembic current` `0002 (head)` |
+| Persistent local `forge` DB (owner-approved upgrade, 2026-10-13) | PASS — target positively identified before connecting (127.0.0.1:5433, db `forge`, PostgreSQL 17.11, same `system_identifier` as container `forge-db-1`), at `0001` with the expected schema and 0 rows in every table; `alembic upgrade head` ran `0001 -> 0002` only; `alembic current` `0002 (head)`; repeat upgrade ran 0 migrations; `alembic check` clean; live catalog == ORM `create_all` (53 columns, 31 constraints incl. CHECK definitions, 11 indexes); row counts unchanged (all 0); real HTTP `/ready` 200 `{"database": "ok"}`, `/health` 200, `/` 200. No downgrade, reset or drop |
+| Real providers, hosted databases | NOT RUN |
+
+**Limitations**
+
+- No single-flight: concurrent misses for the same key each call the provider (each charged).
+- A crash between reservation and settlement leaves tokens reserved (conservative); no
+  automatic reconciliation until the job system (Phase 2).
+- Token estimates use a chars/4 heuristic; there is no tokenizer and no cost estimation
+  (no pricing configuration; costs are never fabricated).
+- Budget errors have stable codes but no HTTP mapping yet (no run endpoint exists).
+- Expired cache rows are only removed by an explicit `purge_expired()` call.
+- `RunPlan`/`check_plan` are not yet called by anything: the runner arrives in increment 6.
+- Repeated samples of an identical request share one cache entry; the runner must put the
+  sample index in the cache namespace when samples must be independent (increment 6).
+- Outstanding token reservations count against the budget, so with parallel workers a token
+  budget can be declared exhausted although actual usage would have fit (conservative).
+
+### Increment 5 — acceptance audit (2026-10-13, uncommitted)
+
+Read-only review of the actual Step 5 diff against spec §19, ADR-018 and ADR-019, then fixes
+with regression tests for the defects found. Each new database test was shown to fail on the
+pre-audit code (the source was restored byte-identical afterwards).
+
+| # | Severity | Finding | Fix |
+|---|---|---|---|
+| 1 | Medium | `router.generate` stored *any* returned result, including empty text (e.g. a Gemini prompt block with no candidates) and abnormal finish reasons (`SAFETY`, `RECITATION`, `content_filter`, …), replaying them for the TTL as hits — contrary to "only complete, successful results" | `cache.is_cacheable` (non-empty text and finish reason `stop`/`length`/`max_tokens` or none); others are returned but not stored (`cache.not_stored`). 13 tests |
+| 2 | Low | `PostgresCacheStore.get` parsed rows outside its fail-open handler: a malformed entry raised `KeyError` out of `router.generate` instead of being a miss | `CachedResponse.from_json` validates types; invalid entries are a logged miss (`cache.invalid_entry`). 5 tests |
+| 3 | Low | `PostgresRunBudget.reserve`: when the conditional `UPDATE` failed, the locked fallback assumed `tokens` without re-checking, so a settlement committed in between could get a run that still had budget marked `budget_exceeded` (permanent) | Re-check both limits under `FOR UPDATE`; reserve if it fits. 2 tests |
+| 4 | Coverage | No test asserted that cache logs and stored rows exclude prompts, responses, namespace values and the full key | 2 tests (router logs; PostgreSQL row) |
+| 5 | Docs | Stale `router.py` layout comment; "token counts are labelled" overstated (`runs.tokens_used` mixes provider and estimated counts); sampling, concurrency-dependent token exhaustion, cache hits on inactive runs and Memory/Postgres error-code difference undocumented | Target architecture §2/§5, ADR-018/019, CHANGELOG, database guide |
+
+**Verification**
+
+| Check | Result |
+|---|---|
+| Full suite, DB tests required, network + port-5432 guard (disposable PostgreSQL **18.6** cluster created with `initdb` in the scratch directory on 127.0.0.1:55433; Docker Desktop failed to start on the host) | PASS — 550 passed, 1 skipped (gunicorn loader, Windows); 0 blocked attempts |
+| Without a database | PASS — 480 passed, 71 skipped with reason |
+| New tests against pre-audit code | 6 of 6 defect tests fail (5 malformed-entry, 1 lock re-check) and the router storage tests fail 8 of 8; control test passes |
+| `alembic upgrade 0001:0002 --sql` (offline) | Additive only: 1 CREATE TABLE, 1 CREATE INDEX, 4 ADD COLUMN, 3 ADD CONSTRAINT, version stamp |
+| Disposable DB via CLI: empty → `0001` → `0002`; current; repeat; check | PASS — `0002 (head)`, 0 repeat migrations, no new operations |
+| Real app over loopback HTTP (Werkzeug), disposable DB | empty / `0001`: `/ready` 503 `migrations_pending`; head: `/ready` 200 `ok`, `/health` 200, `/` 200 |
+| ruff 0.3.5 and 0.17.0: `check .`; `format --check` on the 19 Step 5 Python files | PASS |
+| mypy 2.4.0 (`src/forge --ignore-missing-imports --check-untyped-defs`) | PASS — no issues in 31 source files |
+| Docker image / Gunicorn | NOT RUN — Docker Desktop failed to start on the host |
+| Persistent local `forge` DB (in `forge-db-1`) | NOT RE-VERIFIED in the audit (Docker down); last verified `0002 (head)`, `alembic check` clean, catalog == ORM earlier on 2026-10-13. The audit changed no schema or model, so no further migration is needed |
+| PostgreSQL 17 (CI version) after the audit fixes | NOT RUN — previous PostgreSQL 17 runs predate the fixes |
+| GitHub Actions, real providers, hosted databases | NOT RUN |

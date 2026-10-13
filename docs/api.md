@@ -95,6 +95,8 @@ When not ready, `status` is `"not_ready"`. `/` and `/health` do not depend on th
 
 Rewrites a raw prompt using the FORGE 1.x enhancement instructions, via the configured
 default model. Supports Server-Sent Events (SSE) streaming and a single JSON response.
+Every request is a fresh model call: `/enhance` never uses the response cache and is not
+subject to run budgets (both apply to benchmark/evaluation runs only).
 
 - **URL**: `/enhance`
 - **Method**: `POST`

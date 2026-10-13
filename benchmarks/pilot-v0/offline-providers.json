@@ -1,0 +1,19 @@
+{
+  "default_model": "offline-target",
+  "providers": {
+    "offline-rewriter": {
+      "type": "fake",
+      "fake_response": "OFFLINE FIXTURE: synthetic rewritten prompt, not produced by a model.",
+      "retry": {"max_attempts": 1}
+    },
+    "offline-target": {
+      "type": "fake",
+      "fake_response": "OFFLINE FIXTURE: synthetic target output, not produced by a model.",
+      "retry": {"max_attempts": 1}
+    }
+  },
+  "models": {
+    "offline-rewriter": {"provider": "offline-rewriter", "model": "fixture-rewriter"},
+    "offline-target": {"provider": "offline-target", "model": "fixture-target"}
+  }
+}

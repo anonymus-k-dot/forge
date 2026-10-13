@@ -28,7 +28,7 @@ Each is a separately reviewable diff.
 | 3 | **Remove fake metrics + logging.** ADR-009 (implemented as a null-value deprecation); UI JSON-export fix; **Done — see §7.** JSON structured logging and `X-Request-ID` (moved here from increment 1, which was kept to a pure restructure); `CHANGELOG.md`; `docs/api.md` update. | add `src/forge/logging.py`; change `api/legacy.py`, `src/forge/templates/index.html`, tests, docs | Tests assert fields absent; JSON export contains the prompt; every response has `X-Request-ID`; logs contain no prompt text or secrets by default |
 | 4 | **Database layer.** **Done — see §7** (no `forge db` CLI: the standard `alembic` CLI plus `forge.db.migrate` helpers covered every need). Settings → engine (pool, SSL, connect timeout, pool mode), session scope with explicit transactions, models, first Alembic migration, repositories, `/ready`, `forge db upgrade/current`. Docker Compose `db` service. | add `alembic.ini`, `src/forge/db/**`, `src/forge/cli.py`; change `docker-compose.yml`, `.env.example` | Unit: URL normalization, SSL/pool-mode options, missing-URL error. **Postgres:** `alembic upgrade head` on empty DB, `downgrade base` + upgrade again, `alembic check` (models == migrations), FK/unique/check constraints reject bad rows, `RESTRICT` prevents deleting runs with executions, data visible from a fresh engine (restart simulation) |
 | 5 | **Cache + budgets.** **Done — see §7** (code in `src/forge/infrastructure/`; SQL in the stores rather than a separate `db/repositories/cache.py`). Cache key, memory + Postgres stores, router integration, `BudgetGuard`. | add `src/forge/infrastructure/{cache,budgets}.py`, `db/repositories/cache.py` | Unit: key differs when any of provider/model/params/system/messages/schema change; identical inputs → identical key; failures not cached; `cache_hit` flagged. Budget stops the N+1th call. Postgres: unique key under concurrent insert |
-| 6 | **Pilot benchmark.** ~30 tasks, systems B0/B1/F-legacy, L0 checks, manifest hashing, runner, reports, persistence, `forge benchmark run`. | add `src/forge/benchmark/*`, `benchmarks/pilot-v0/{tasks.jsonl,README.md}` | Task-file schema validation; manifest hash stable across runs and changes when any input changes; fake-provider end-to-end run writes manifest + results + summary and DB rows; replay from cache flagged as cached |
+| 6 | **Pilot benchmark.** ~30 tasks, systems B0/B1/F-legacy, L0 checks, manifest hashing, runner, reports, persistence, `forge benchmark run`. **Implemented — see §7** (module names differ: `dataset`, `conditions`, `manifest`, `records`, `verify`, `report`; no migration). | add `src/forge/benchmark/*`, `benchmarks/pilot-v0/{tasks.jsonl,README.md}` | Task-file schema validation; manifest hash stable across runs and changes when any input changes; fake-provider end-to-end run writes manifest + results + summary and DB rows; replay from cache flagged as cached |
 | 7 | **Real-provider verification** (needs your go-ahead, see §6). Single smoke request; then optionally the pilot on one real target model. | — | Recorded command output, model ID, usage; or marked **NOT RUN** |
 | 8 | **CI, docs, status.** Postgres service in CI, migrations check, mypy; required docs from spec §29 that Phase 0 touches; README corrected; feature-status updated. | change `.github/workflows/ci.yml`, `Dockerfile`, `README.md`, `docs/**` | CI config validated locally where possible (same commands run locally) |
 
@@ -82,7 +82,12 @@ No paid services, no vendor DB SDKs, no Redis/Celery.
 1. **Local PostgreSQL.** *Update 2026-10-12: Docker Desktop is now running (confirmed by the owner and by a successful image build in Step 2).* Start Docker Desktop (then `docker compose up -d db`), or point
    `TEST_DATABASE_URL` at another Postgres (e.g. a Neon dev branch).
 2. **Real provider calls.** Permission to use keys in `.env` for (a) one smoke request and
-   (b) the ~30-task pilot (~30 × 3 systems ≈ 150 calls on a free tier).
+   (b) the ~30-task pilot: 30 tasks × 3 conditions = 90 condition results. On the normal
+   path B0 needs one target call per task and B1 and F-legacy one rewrite plus one target
+   call each — 5 provider attempts per task, 150 for 30 tasks, if every call succeeds on
+   its first attempt and caching is disabled. Retries add attempts (up to
+   `retry.max_attempts` per call, 450 at the default of 3); cache hits remove them.
+   Attempts are not the same as billable requests, which depend on the provider.
    Which provider: Groq (open-weight models via OpenAI-compatible API), Gemini (legacy
    default), or local Ollama.
 3. **ADR-009**: confirm removal of `confidence` / `score` from `/enhance`.
@@ -537,7 +542,7 @@ contracts (docs-drift tests); Step 4 schema (migration uses `op.f()` for all 27 
 Ephemeral PostgreSQL servers and review images/containers were removed. The project server
 still holds only `forge, postgres, template0, template1`; no destructive migration ran.
 
-### Increment 5 — response cache and per-run budgets (completed 2026-10-13, uncommitted)
+### Increment 5 — response cache and per-run budgets (completed 2026-10-13, committed `d101e71`)
 
 Base: local commit `eb126f0`. Owner decisions taken before coding (ADR-018, ADR-019): every
 provider attempt counts against `max_model_calls`; token budgets reserve then reconcile;
@@ -601,7 +606,7 @@ open, budget reservation fails closed.
 - Outstanding token reservations count against the budget, so with parallel workers a token
   budget can be declared exhausted although actual usage would have fit (conservative).
 
-### Increment 5 — acceptance audit (2026-10-13, uncommitted)
+### Increment 5 — acceptance audit (2026-10-13, committed `d101e71`)
 
 Read-only review of the actual Step 5 diff against spec §19, ADR-018 and ADR-019, then fixes
 with regression tests for the defects found. Each new database test was shown to fail on the
@@ -631,3 +636,86 @@ pre-audit code (the source was restored byte-identical afterwards).
 | Persistent local `forge` DB (in `forge-db-1`) | NOT RE-VERIFIED in the audit (Docker down); last verified `0002 (head)`, `alembic check` clean, catalog == ORM earlier on 2026-10-13. The audit changed no schema or model, so no further migration is needed |
 | PostgreSQL 17 (CI version) after the audit fixes | NOT RUN — previous PostgreSQL 17 runs predate the fixes |
 | GitHub Actions, real providers, hosted databases | NOT RUN |
+
+### Increment 6 — pilot benchmark (implemented 2026-10-13, uncommitted)
+
+Base: local commit `d101e71`. Protocol: [`docs/benchmark/pilot-protocol.md`](../benchmark/pilot-protocol.md);
+decisions: ADR-020. No real model calls, no hosted database, no migration.
+
+**What changed**
+
+- `src/forge/benchmark/`: `dataset.py` (strict task schema; every check tied to a verbatim
+  prompt phrase; task/dataset hashes), `checks.py` (L0 rules, `forge.l0` v1),
+  `conditions.py` (B0, B1 generic rewrite, F-legacy via `forge.legacy.enhance`),
+  `manifest.py`, `records.py` (record schema, aggregates with denominators), `runner.py`
+  (router + Step 5 budget/cache; files + optional PostgreSQL; explicit failure semantics),
+  `verify.py` (integrity, recomputation), `report.py`.
+- `src/forge/cli.py`, `src/forge/__main__.py`; `pyproject.toml` `[project.scripts] forge`.
+- `benchmarks/pilot-v0/`: `dataset.json`, `tasks.jsonl` (30 tasks, 50 checks),
+  `offline-providers.json` (fake providers only), `README.md`.
+- `.gitignore`: `benchmark-runs/` (default output directory).
+- Docs: protocol, ADR-020, target architecture §2/§7, database guide note, feature status,
+  CHANGELOG.
+
+Deviations from the plan row: module names (`dataset`, `conditions`, `manifest`,
+`records`, `verify`, `report` instead of `tasks`, `systems`, `manifests`, `reporting`);
+F-legacy uses non-streaming generation and records failures (both written into every
+manifest); no schema change was needed (existing `runs`/`executions`/`evaluations` hold
+the manifest, every call and every evaluation).
+
+**Tests added (124)**: `tests/benchmark/` — dataset 28, checks 38, conditions 8, runner 21,
+verify 17, CLI 6; `tests/db/test_benchmark_db.py` 6 (PostgreSQL).
+
+**Verification (all actually run, 2026-10-13)**
+
+| Check | Result |
+|---|---|
+| Full suite, DB tests required, network + port-5432 guard, disposable **PostgreSQL 18.6** cluster (`initdb` in the scratch directory, 127.0.0.1:55433; identity checked first; removed afterwards) | PASS — 674 passed, 1 skipped (gunicorn loader, Windows); 0 blocked attempts; no test databases left |
+| Without a database | PASS — 598 passed, 77 skipped with reason |
+| Mutation check (10 injected regressions: incomplete run marked completed, evaluation recomputation skipped, fixture labelled as measurement, condition dropped from cache namespace, not-evaluated checks hidden from denominators, empty output passing upper bounds, cancellation ignored, requirement-in-prompt rule removed, B0 prompt normalized, cache hits counted as fresh calls) | 10/10 caught; sources restored byte-identical |
+| Offline pilot via the CLI (fake providers): `run` then `verify --dataset` | completed, 90 records, valid and complete, evaluations recomputed — **synthetic** (identical fixture text for every condition) |
+| ruff 0.3.5 and 0.17.0: `check .`; `format --check` on the 20 changed/new Python files | PASS |
+| mypy 2.4.0 (`src/forge --ignore-missing-imports --check-untyped-defs`) | PASS — 42 source files |
+| Pilot on a real model; PostgreSQL 17 / Docker / Gunicorn after Step 6; GitHub Actions | NOT RUN (no authorization for real calls; Docker unavailable) |
+
+**Limitations**
+
+- Results are INCONCLUSIVE by design; L0 checks do not measure quality, and upper-bound
+  checks pass for any short answer. No judge, rubric, human or semantic scoring; no cost.
+- Offline fixture outputs are identical for all conditions; they validate the harness only.
+- Sequential execution; runs cannot be resumed (a stopped run is kept for audit and a new
+  run is started). Cancellation takes effect between task × condition pairs.
+- One sample per task; the cache namespace includes `sample_index` for future sampling.
+- F-legacy's transport differs from `/enhance` (non-streaming); its request and cleanup do
+  not.
+
+### Increment 6 — acceptance fixes (2026-10-13, uncommitted)
+
+Fixes for the seven findings of the Step 6 acceptance review. Production `/enhance`, the
+legacy enhancer, providers, cache and budget code are unchanged.
+
+| # | Finding | Fix |
+|---|---|---|
+| 1 | 0.1.0: six tasks fully passed by "ok"; several more by trivially structured answers | New dataset `benchmarks/pilot-v1` (`forge-pilot` 1.0.0; `pilot-v0` preserved byte for byte): 16 tasks revised (version 2) with prompt-grounded minimum/content requirements; test that no task is fully passed by a fixed list of trivial answers; optional `limited_reason` (excluded from "all checks passed" and paired counts, reported with its reason; none needed in 1.0.0; omitted from task hashes when unset, so 0.1.0 hashes are unchanged) |
+| 2 | F-legacy cleanup described as what `/enhance` users get | Protocol, ADR-020, module docs and the manifest (`matches`, `user_facing_path`) now state that F-legacy matches `stream: false` only; the web UI streams uncleaned output. Tests tie F-legacy's cleanup to the JSON path and show the streaming path differs |
+| 3 | "Fresh calls" counted executions, not attempts | Per-execution `attempts` from a budget-reservation meter (retries included; cache hits and refusals before dispatch 0) and `budget_tokens` (provider-reported vs estimated); summary separates condition results, executions, provider attempts, cache hits, refusals and token bases; run-level recorded vs budget-counted attempts; format-1 accounting reported as unavailable |
+| 4 | `summary.md` could state a stale status | Summary written after the database step with the same status; rewritten if a later step downgrades the run; `summary.json` carries the status; `verify` checks both summaries against `run.json` |
+| 5 | Double failure could leave `run.json` saying `completed` | Finalization order `run.json`=`finalizing` → database → summary → `run.json` terminal status; database corrected to `failed` after a late file failure; `consistent: false` and a log event when a correction fails; `verify --database` cross-checks the run row. No cross-store atomicity (documented) |
+| 6 | Plan arithmetic "~30 × 3 systems ≈ 150 calls" | Corrected in §6 (90 condition results; 5 attempts per task on the normal path; 150 total; retries and cache; attempts ≠ billable requests) |
+| 7 | Cache-hit execution rows kept original token counts as provider usage | Cache hits: `usage.source = "cache"` with no counts and the original usage in `replayed_usage`; database rows store no token counts (`usage_source = 'unknown'`, `cache_hit = true`) |
+
+Record format 2 and summary format 2 (`summary_version`); format-1 runs are verified with the
+frozen v1 aggregation (`forge.benchmark.legacy_formats`). The historical offline run made
+with 0.1.0 still verifies as valid and complete against `pilot-v0` (its files unchanged) and
+is rejected against `pilot-v1`.
+
+**Verification (all actually run, 2026-10-13)**
+
+| Check | Result |
+|---|---|
+| Full suite, DB tests required, network + port-5432 guard, disposable **PostgreSQL 18.6** cluster (fresh `initdb` in the scratch directory, 127.0.0.1:55433, identity checked, removed afterwards) | PASS — 722 passed, 1 skipped (gunicorn loader, Windows); 0 blocked attempts; no test databases left |
+| Without a database | PASS — 641 passed, 82 skipped with reason |
+| Benchmark verification tests for `pilot-v0` and `pilot-v1` (offline runs, format-1 compatibility, tampering) | PASS |
+| Mutation check (16 injected regressions, including the 7 new: cache-hit usage counted, retries not counted, limited tasks counted, `completed` written before finalization, stale summary not corrected, `finalizing` accepted, database status ignored) | 16/16 caught; sources restored byte-identical |
+| ruff 0.3.5 and 0.17.0 (`check .`, `format --check` on the 24 changed/new Python files); mypy 2.4.0 (43 files) | PASS |
+| Real providers, PostgreSQL 17, Docker/Gunicorn, GitHub Actions | NOT RUN |

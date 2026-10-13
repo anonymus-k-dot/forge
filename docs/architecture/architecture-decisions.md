@@ -242,3 +242,50 @@ changes that are not payload changes require bumping `CACHE_KEY_VERSION`. Concur
 identical misses each call the provider and are each charged. Identical requests share one
 entry, so callers needing independent repeated samples must add the sample index to the
 namespace (the runner's responsibility, increment 6).
+
+## ADR-020 — Pilot benchmark design (Step 6)
+
+**Context.** Spec §18 asks for a ~30-task pilot comparing a raw baseline, a generic rewrite
+and FORGE, reproducible from a command and never over-interpreted. The repository's FORGE
+behaviour is `forge.legacy.enhance`; Step 5 provides budgets and a cache.
+**Decision.**
+- Conditions B0 / B1 / F-legacy. F-legacy reuses `build_request` and `clean_output`
+  unchanged, which matches the `/enhance` JSON path (`stream: false`) only. The web UI uses
+  `stream: true`, which returns raw output without `clean_output`; the benchmark does not
+  reproduce that path. F-legacy also calls `router.generate` (non-streaming) so budget and
+  cache apply to all conditions, and records failures as failures (the route would pass
+  `"Error: ..."` text on). All three differences are written into every manifest
+  (`matches`, `user_facing_path`, `transport`, `on_failure`). B1 is a benchmark-owned
+  template with the same parameters as F-legacy.
+- Every check names a verbatim phrase of its task's prompt (enforced at load), so all
+  conditions receive every requirement they are scored on. Datasets are versioned and never
+  rewritten in place: `pilot-v0` (0.1.0) is kept; `pilot-v1` (1.0.0) revises 16 tasks so no
+  task is fully passed by a trivial answer such as "ok" (enforced by a test); a task that
+  cannot meet this without subjective grading is marked `limited_reason` and excluded, with
+  its reason, from "all checks passed" metrics.
+- L0 deterministic checks only; interpretation is the constant `INCONCLUSIVE`, enforced by
+  `verify`; fake-provider runs are labelled `offline_fixture` / SYNTHETIC.
+- Persistence reuses `runs` / `executions` / `evaluations` (no migration: the existing
+  columns hold the manifest, each call and each derived evaluation). Files (`manifest.json`,
+  `run.json`, `results.jsonl`, summaries) are the portable record; a run is `completed` only
+  if both stores succeeded, and `verify` re-derives completeness from the files (and,
+  with `--database`, cross-checks the run row). Finalization writes `run.json` →
+  `finalizing`, then the database status, then the summary, then `run.json` → terminal
+  status; `completed` is never written before every earlier step succeeded. There is no
+  atomicity across the two stores: if a late correction fails the run is reported
+  inconsistent, and only the database can be left saying `completed`.
+- Accounting distinguishes condition results, executions, provider attempts (budget
+  reservations, counted per execution; retries included; cache hits and refusals before
+  dispatch excluded), cache hits, and provider-reported versus estimated budget tokens.
+  Cache hits carry no new usage (`source: cache`; original usage kept as `replayed_usage`;
+  database rows store no token counts). Attempts are not billing records. Record and
+  summary formats are versioned; format-1 runs are verified with the frozen v1
+  aggregation.
+- Cache namespace includes a cache scope (default: run ID), condition, task, role and sample
+  index; replay across runs needs an explicit shared scope and is flagged `cache_hit`.
+- Real providers are refused unless `--allow-real-providers` is passed (increment 7 needs
+  owner approval).
+**Consequences.** Offline runs prove the harness but say nothing about FORGE's value. Runs are
+not resumable; an interrupted run is kept for audit and a new run is started. Outputs are
+stored twice (files and `executions.output_text`) when the database is used — accepted for a
+30-task pilot to keep a portable audit record.

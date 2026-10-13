@@ -10,6 +10,9 @@ readme = "README.md"
 requires-python = ">=3.10"
 license = { text = "MIT" }
 
+[project.scripts]
+forge = "forge.cli:main"
+
 [tool.setuptools.dynamic]
 version = { attr = "forge.__version__" }
 # requirements.txt stays the single dependency list so `pip install -r requirements.txt`

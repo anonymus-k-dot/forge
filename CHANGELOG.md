@@ -3,7 +3,27 @@
 All notable changes to FORGE. Dates are ISO 8601. Entries under **Unreleased** are not yet
 released.
 
-## Unreleased — FORGE 2.0 Phase 0 Step 5
+## Unreleased — FORGE 2.0 Phase 0 Step 6
+
+### Added
+
+- Pilot benchmark (`forge.benchmark`, protocol `forge-pilot` v1): 30-task versioned datasets
+  `benchmarks/pilot-v1` (`forge-pilot` 1.0.0, current) and `benchmarks/pilot-v0` (0.1.0,
+  kept for verifying earlier runs; six of its tasks can be fully passed by the answer "ok"),
+  conditions B0 (raw), B1 (generic rewrite) and F-legacy (FORGE 1.x enhancement as on the
+  `/enhance` `stream: false` path — not the streamed output the web UI shows), deterministic
+  L0 checks, hashed manifests,
+  `results.jsonl`/`summary.json`/`summary.md`, optional PostgreSQL persistence in the
+  existing `runs`/`executions`/`evaluations` tables, and run verification. Results are always
+  labelled INCONCLUSIVE; fake-provider runs are labelled synthetic. Accounting reports
+  condition results, executions, provider attempts (retries included), cache hits and
+  provider-reported versus estimated tokens separately. No real model has been benchmarked.
+  See `docs/benchmark/pilot-protocol.md`.
+- `forge` command (`forge benchmark validate-dataset | run | verify`, also
+  `python -m forge`). `run` refuses non-fake providers unless `--allow-real-providers` is
+  given.
+
+## FORGE 2.0 Phase 0 Step 5 (local commit d101e71)
 
 ### Added
 

@@ -4,7 +4,7 @@ Legend: **Implemented** (code exists) · **Tested-fake** (automated tests with f
 providers pass) · **Tested-real** (verified against a real provider/database) ·
 **Benchmarked** · **Not started** · **NOT RUN** (designed but never executed).
 
-Last updated: 2026-10-13 — increments 1–4 committed locally (`eb126f0`); increment 5 done, uncommitted.
+Last updated: 2026-10-13 — increments 1–4 (`eb126f0`) and 5 (`d101e71`) committed locally; increment 6 implemented, acceptance fixes applied, validated offline, uncommitted.
 Details and evidence: [phase-0-plan.md §7](phase-0-plan.md#7-progress-log).
 
 ## Legacy (FORGE 1.x) compatibility
@@ -48,11 +48,32 @@ Details and evidence: [phase-0-plan.md §7](phase-0-plan.md#7-progress-log).
 | 3. Fake-metric deprecation, JSON export fix, structured logging, request IDs | **Done** |
 | 4. PostgreSQL + Alembic | **Done** — Tested-real against local PostgreSQL 17 (Docker); hosted DBs not connected; local dev DB reconciled to the corrected `0001` (23/23 constraint names match) |
 | 5. Cache + budgets | **Done, uncommitted; acceptance audit done (3 defects fixed)** — Tested-real on PostgreSQL 17 (ephemeral) before the audit and PostgreSQL 18 (disposable cluster) after it; persistent local DB upgraded to `0002` (owner-approved, verified before the audit); Docker/Gunicorn not re-run after the audit; not yet used by a runner (increment 6) |
-| 6. Pilot benchmark (~30 tasks) | Not started — real run **NOT RUN** |
+| 6. Pilot benchmark (~30 tasks) | **Implemented, uncommitted** — Tested-fake (offline) and Tested-real on PostgreSQL 18.6 (disposable); benchmark against a real model **NOT RUN**; results INCONCLUSIVE by protocol |
 | 7. Real-provider verification | Not started — needs your permission to use keys |
 | 8. CI with PostgreSQL, docs, README | Not started |
 
 Phase 0 acceptance: **not met** (increments 6–8 outstanding).
+
+## Pilot benchmark (increment 6)
+
+| Item | Status |
+|---|---|
+| Protocol `forge-pilot` v1 (docs/benchmark/pilot-protocol.md) | Implemented |
+| Dataset `benchmarks/pilot-v1` (`forge-pilot` 1.0.0: 30 tasks, 67 checks; no task fully passed by a trivial answer) | Prepared, validated (tests) |
+| Dataset `benchmarks/pilot-v0` (0.1.0, 50 checks; preserved byte for byte for earlier runs; 6 tasks fully passed by "ok") | Kept, verifiable |
+| Conditions B0 / B1 / F-legacy (same task input; B1 independent of FORGE) | Implemented, Tested-fake |
+| L0 deterministic checks (evaluator `forge.l0` v1) | Implemented, Tested (rule-by-rule) |
+| Manifest / results / summary files, canonical hashes, `verify` | Implemented, Tested-fake (tampering and fabrication detected) |
+| Honest partial runs (budget, cancellation, failures, persistence errors) | Tested-fake; budget, cancellation, cache and DB-failure paths Tested-real (PostgreSQL 18.6) |
+| PostgreSQL persistence (existing `runs`/`executions`/`evaluations`, no migration) | Tested-real (PostgreSQL 18.6, disposable cluster) |
+| Cache isolation per run scope / condition / task / role; flagged replay | Tested-fake (memory store) and Tested-real (PostgreSQL) |
+| `forge benchmark` CLI; real providers refused by default | Implemented, Tested |
+| Accounting: condition results, executions, provider attempts (per execution, retries included), cache hits, provider-reported vs estimated tokens | Implemented, Tested-fake; cache-hit token handling Tested-real |
+| Finalization order (`finalizing` → database → summary → `run.json`), failure and double-failure handling, `verify --database` | Implemented, Tested-fake and Tested-real (PostgreSQL 18.6); no cross-store atomicity |
+| F-legacy vs web-UI streaming path (UI output is not cleaned; benchmark matches `stream: false`) | Documented in manifest and protocol, Tested |
+| Offline pilot (fake providers) | Run — **synthetic**, validates the harness only |
+| Pilot on a real model | **NOT RUN** (increment 7, needs approval) |
+| LLM judge, rubric, human or semantic scoring; cost estimation | Not implemented (out of scope) |
 
 ## Cache and budgets (increment 5)
 

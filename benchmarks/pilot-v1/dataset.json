@@ -1,0 +1,6 @@
+{
+  "id": "forge-pilot",
+  "version": "1.0.0",
+  "description": "FORGE 2.0 Phase 0 pilot, revision of 0.1.0 (benchmarks/pilot-v0, kept unchanged). Same 30 task IDs, categories, specification levels and splits; 16 tasks revised (version 2) so that each states a checkable content or minimum requirement and no task can be fully passed by a trivial answer such as 'ok'. Deterministic L0 checks only; for harness validation and diagnostics, not evidence of prompt quality.",
+  "tasks_file": "tasks.jsonl"
+}

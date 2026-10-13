@@ -106,6 +106,12 @@ Revision `0002` also adds budget counters to `runs`: `model_calls_used`, `tokens
 `budget_limits->>'max_model_calls'`) and `ck_runs_budget_limits_object`. Accounting rules:
 target architecture §5.2, ADR-018.
 
+The pilot benchmark (increment 6) writes to these tables without schema changes: one `runs`
+row per benchmark run (manifest, `manifest_hash`, status, budget), one `executions` row per
+model call (`system` = condition B0/B1/F-legacy, `role` = `generator` for rewrites or
+`target`), and one `evaluations` row (`forge.l0` / `1`) per evaluated target output. See
+`docs/benchmark/pilot-protocol.md` §7.
+
 History is never cascade-deleted. A privacy deletion path (removing user content while
 keeping anonymised aggregates) is not implemented yet.
 

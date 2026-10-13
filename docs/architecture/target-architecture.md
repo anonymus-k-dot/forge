@@ -47,8 +47,8 @@ src/forge/
   settings.py               # single source of configuration   (Phase 0)
   errors.py                 # ForgeError hierarchy + HTTP error envelope (Phase 0)
   logging.py                # JSON logging, request IDs        (Phase 0)
-  cli.py                    # `forge` command — not created yet; planned with the benchmark
-                            # runner (increment 6). Migrations use the `alembic` CLI.
+  cli.py                    # `forge benchmark validate-dataset|run|verify` (increment 6);
+  __main__.py               # `python -m forge`. Migrations use the `alembic` CLI.
   api/
     health.py               # /health, /ready                  (Phase 0)
     legacy.py               # /, /enhance                      (Phase 0)
@@ -73,14 +73,16 @@ src/forge/
     migrate.py              # Alembic helpers without alembic.ini
     repositories.py         # workspace/run helpers (create_run validates budgets)
     migrations/             # Alembic env + versions (0001_initial_schema)
-  benchmark/
-    tasks.py                # task file schema + loading + hashing
-    systems.py              # B0 raw, B1 generic rewrite, F-current (legacy FORGE)
-    checks.py               # L0 deterministic checks used by the pilot
-    runner.py               # executes a manifest, persists results
-    manifests.py            # manifest building + canonical hashing
-    reporting.py            # JSON + Markdown reports
-benchmarks/pilot-v0/        # version-controlled task set (~30 tasks)
+  benchmark/                # (increment 6) protocol: docs/benchmark/pilot-protocol.md
+    dataset.py              # task schema, loading, validation, task/dataset hashes
+    conditions.py           # B0 raw, B1 generic rewrite, F-legacy (forge.legacy.enhance)
+    checks.py               # L0 deterministic checks (evaluator forge.l0 v1)
+    manifest.py             # manifest building + canonical hashing
+    records.py              # results.jsonl record schema + aggregate metrics
+    runner.py               # executes a run via ProviderRouter; files + PostgreSQL
+    verify.py               # integrity verification of a run directory
+    report.py               # summary.md
+benchmarks/pilot-v0/        # version-controlled task set (30 tasks) + offline fake providers
 tests/
   unit/  integration/  (postgres-marked tests require TEST_DATABASE_URL)
 ```
@@ -105,7 +107,7 @@ Nothing else reads `os.environ`.
 
 The web app starts without `DATABASE_URL` (legacy enhancement needs no database);
 `/ready` then reports `database: not_configured` with HTTP 503. Commands that require a
-database (`alembic` via `env.py`; later `forge benchmark run`) fail with a `ConfigurationError`
+database (`alembic` via `env.py`; `forge benchmark run --database`) fail with a `ConfigurationError`
 naming the missing variable. No database I/O happens at import time.
 
 ## 4. Provider layer — implemented in Phase 0 Step 2
@@ -328,20 +330,31 @@ DB trigger enforcing immutability), `test_suites`, `test_cases`, `suite_revision
 (Phase 2), `intent_specs` (Phase 3), `optimization_sessions`, `change_records` (Phase 4),
 `experiments` (Phase 6). Phase 0 runs reference prompts by content hash inside the manifest.
 
-## 7. Benchmark (Phase 0 pilot)
+## 7. Benchmark (Phase 0 pilot) — implemented in increment 6
 
-- Tasks: `benchmarks/pilot-v0/tasks.jsonl`, ~30 tasks, each with `id`, `category`,
-  `spec_level` (well / partial / vague), `split` (dev / heldout), `prompt`, and L0
-  deterministic `checks`.
-- Systems: **B0** raw prompt → target; **B1** generic single-shot rewrite → target;
-  **F-legacy** current FORGE enhancement → target. Each system's prompt transformation is
-  recorded as its own execution.
-- Evaluation in Phase 0 is **L0 deterministic checks only** (format/constraint adherence),
-  versioned, stored separately from raw outputs. It does not measure overall quality and the
-  report says so. Statistics are counts with paired win/tie/loss; suites this small are
-  labeled **INCONCLUSIVE**.
-- Output: `manifest.json` (hash-addressed), `results.jsonl` (per case/system),
-  `summary.md`, and rows in PostgreSQL. A run with the fake provider is part of CI.
+Full protocol: [`docs/benchmark/pilot-protocol.md`](../benchmark/pilot-protocol.md).
+
+- Tasks: `benchmarks/pilot-v1/tasks.jsonl` (`forge-pilot` 1.0.0; `pilot-v0` 0.1.0 kept for
+  earlier runs), 30 tasks with `id`, `version`, `category`, `spec_level` (well / partial /
+  vague), `split` (dev / heldout), `prompt`, L0 `checks` (each tied to a verbatim phrase of
+  its prompt), optional `notes` and `limited_reason`.
+- Conditions: **B0** raw prompt → target; **B1** generic single-shot rewrite → target;
+  **F-legacy** `forge.legacy.enhance` request + cleaner → target, matching `/enhance` with
+  `stream: false` (the web UI streams uncleaned output, which is not reproduced; calls are
+  non-streaming; failures recorded, not passed on as text). Each rewrite and target call is
+  its own execution with its provider attempts counted.
+- Evaluation is **L0 deterministic checks only** (`forge.l0` v1), stored separately from raw
+  outputs. Aggregates are counts with explicit denominators and paired check counts; every
+  result is labelled **INCONCLUSIVE**, and fake-provider runs **SYNTHETIC**.
+- Output: `manifest.json` (hash-addressed), `run.json`, `results.jsonl` (per task ×
+  condition), `summary.json`, `summary.md`; with `--database`, rows in the existing `runs`,
+  `executions` and `evaluations` tables (no migration). `forge benchmark verify` checks a run
+  directory's integrity and recomputes evaluations (`--database` also checks the run row).
+  Finalization commits `run.json` last and never marks a run `completed` before the database
+  and summary steps succeeded; there is no cross-store atomicity. The fake-provider pilot
+  runs in the test suite (CI).
+- Budget and cache come from §5: every run declares `max_model_calls`; the cache namespace
+  includes cache scope (default: the run ID), condition, task, role and sample index.
 
 ## 8. HTTP conventions
 

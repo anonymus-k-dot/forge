@@ -75,3 +75,6 @@ Thumbs.db
 logs/
 gunicorn_access.log
 gunicorn_error.log
+
+# Benchmark run output (default --output-dir)
+benchmark-runs/

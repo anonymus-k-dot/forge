@@ -1,0 +1,6 @@
+{
+  "id": "forge-pilot",
+  "version": "0.1.0",
+  "description": "FORGE 2.0 Phase 0 pilot: 30 hand-written tasks across 8 categories and 3 specification levels, each with deterministic L0 checks derived from requirements stated in its own prompt. For harness validation and a first diagnostic look only; not evidence of general prompt quality.",
+  "tasks_file": "tasks.jsonl"
+}

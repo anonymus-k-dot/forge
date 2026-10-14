@@ -25,7 +25,7 @@
             "gold-dim": "#9d8058",
             platinum: "#e5e7eb",
             "on-surface": "#f4f4f5",
-            "on-surface-muted": "#71717a",
+            "on-surface-muted": "#8e8e98",
           },
           fontFamily: {
             headline: ["Playfair Display", "serif"],
@@ -164,8 +164,8 @@
       --accent-error: #ef4444;
       --focus-ring: rgba(197, 168, 128, 0.25);
 
-      /* ── Text ── */
-      --label: #71717a;
+      /* ── Text ── (--label: >= 5.2:1 on every surface below; WCAG AA) */
+      --label: #8e8e98;
       --label-strong: #f4f4f5;
 
       /* ── Typography scale ── */
@@ -280,32 +280,6 @@
       border-bottom: 1px solid var(--hairline)
     }
 
-    .output-meta {
-      display: flex;
-      flex-wrap: wrap;
-      gap: .5rem;
-      padding: 0 1.5rem 1rem;
-      border-bottom: 1px solid var(--hairline)
-    }
-
-    .meta-pill {
-      border: 1px solid var(--hairline-strong);
-      border-radius: var(--radius-sm);
-      padding: .4rem .75rem;
-      color: #e2e8f0;
-      background: #131317;
-      font-family: 'Outfit', sans-serif;
-      font-size: var(--text-xs);
-      letter-spacing: .08em;
-      text-transform: uppercase;
-      transition: all var(--transition-fast)
-    }
-
-    .meta-pill:hover {
-      background: #1c1c24;
-      border-color: var(--accent)
-    }
-
     .output-body {
       flex: 1;
       overflow: auto;
@@ -325,109 +299,32 @@
       max-width: 22rem
     }
 
-    .output-brief-grid {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 1rem;
-      margin-bottom: 1.25rem
-    }
-
-    .output-brief {
-      border: 1px solid var(--hairline);
-      border-radius: var(--radius-sm);
-      background: #131317;
-      padding: 1.15rem;
-      transition: border-color var(--transition-base)
-    }
-
-    .output-brief:hover {
-      border-color: var(--accent)
-    }
-
-    .output-brief dt {
-      margin-bottom: .45rem;
-      color: var(--accent);
-      font-family: 'Outfit', sans-serif;
-      font-size: var(--text-xs);
-      letter-spacing: .15em;
-      text-transform: uppercase;
-      font-weight: 500
-    }
-
-    .output-brief dd {
-      color: #ffffff;
-      font-size: 1rem;
-      line-height: 1.6
-    }
-
-    .output-section {
-      border: 1px solid var(--hairline);
-      border-left: 3px solid var(--accent);
-      border-radius: var(--radius-sm);
-      background: #0d0d10;
-      padding: 1.25rem 1.5rem;
-      margin-bottom: 1.2rem;
-      transition: border-color var(--transition-base)
-    }
-
-    .output-section:hover {
-      border-color: var(--accent-secondary)
-    }
-
-    .output-section h3 {
-      margin: 0 0 1rem;
-      color: #ffffff;
-      font-family: 'Playfair Display', serif;
-      font-size: 1.25rem;
-      font-weight: 500;
-      line-height: 1.3
-    }
-
-    .output-section p {
-      margin: .65rem 0 0;
-      color: #a1a1aa;
+    /* Model output is shown literally (textContent), exactly as it is copied. */
+    .output-text {
+      margin: 0;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+      tab-size: 4;
+      font-family: 'Inter', sans-serif;
       font-size: .95rem;
       line-height: 1.75;
-      font-weight: 300
+      font-weight: 300;
+      color: #e4e4e7
     }
 
-    .output-section ul,
-    .output-section ol {
-      margin: .8rem 0 0 1.2rem;
-      padding: 0;
-      color: #d4d4d8;
-      font-size: .95rem;
-      line-height: 1.7;
-      font-weight: 300
+    .output-notice {
+      margin: 0 0 1rem;
+      padding: .6rem .9rem;
+      border: 1px solid var(--hairline-strong);
+      border-left: 3px solid var(--accent-warning);
+      border-radius: var(--radius-sm);
+      background: #131317;
+      color: #fbbf24;
+      font-size: var(--text-sm)
     }
 
-    .output-section li {
-      padding-left: .25rem;
-      margin: .35rem 0
-    }
-
-    .output-section .definition-row {
-      display: grid;
-      grid-template-columns: minmax(7rem, .4fr) 1fr;
-      gap: 1rem;
-      border-top: 1px solid var(--hairline);
-      padding-top: .75rem;
-      margin-top: .75rem
-    }
-
-    .definition-row strong {
-      color: var(--accent);
-      font-family: 'Outfit', sans-serif;
-      font-size: var(--text-xs);
-      letter-spacing: .12em;
-      text-transform: uppercase;
-      font-weight: 600
-    }
-
-    .definition-row span {
-      color: #ffffff;
-      line-height: 1.65;
-      font-weight: 300
+    .output-loading .skeleton-line {
+      margin-top: .8rem
     }
 
     .skeleton-line {
@@ -678,25 +575,32 @@
       color: var(--accent-error) !important
     }
 
-    /* Shortcuts Modal */
+    /* Shortcuts Modal: a native <dialog> opened with showModal(), so the browser makes the
+       rest of the page inert (keyboard and assistive technology) and handles Escape.
+       Closed dialogs are display: none (browser default). */
     .shortcuts-modal {
       position: fixed;
       inset: 0;
-      z-index: var(--z-modal);
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      width: 100%;
+      height: 100%;
+      max-width: none;
+      max-height: none;
+      margin: 0;
+      padding: 0;
+      border: 0;
+      overflow: auto;
+      color: inherit;
       background: rgba(6, 6, 8, 0.85);
       backdrop-filter: blur(16px);
       -webkit-backdrop-filter: blur(16px);
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity var(--transition-slow);
     }
 
-    .shortcuts-modal.open {
-      opacity: 1;
-      pointer-events: auto
+    .shortcuts-modal[open] {
+      display: flex
+    }
+
+    .shortcuts-modal::backdrop {
+      background: transparent
     }
 
     .shortcuts-panel {
@@ -708,13 +612,10 @@
       padding: var(--space-8);
       max-width: 430px;
       width: 90%;
+      /* Centred by auto margins, not align-items: center, so a viewport shorter than the
+         panel (small screens, 400% zoom) scrolls it instead of clipping its top. */
+      margin: auto;
       box-shadow: 0 30px 70px rgba(0, 0, 0, 0.9), 0 0 40px rgba(197, 168, 128, 0.05);
-      transform: scale(.95) translateY(10px);
-      transition: transform var(--transition-slow);
-    }
-
-    .shortcuts-modal.open .shortcuts-panel {
-      transform: scale(1) translateY(0)
     }
 
     .shortcuts-header {
@@ -813,18 +714,31 @@
       border-radius: var(--radius-sm);
       box-shadow: 0 20px 40px rgba(0, 0, 0, 0.8);
       min-width: 160px;
-      opacity: 0;
-      visibility: hidden;
-      transform: translateY(-8px) scale(0.98);
       transform-origin: top right;
-      transition: opacity 0.25s var(--ease-default), transform 0.25s var(--ease-default), visibility 0.25s;
       z-index: var(--z-dropdown);
     }
 
+    /* Closed menu: the hidden attribute (display: none). Showing it is immediate, so its
+       items can take focus and clicks at once; the fade-in is an animation, not a
+       visibility transition (which would delay focusability by a frame). */
+    .copy-dropdown-menu[hidden] {
+      display: none
+    }
+
     .copy-dropdown.open .copy-dropdown-menu {
-      opacity: 1;
-      visibility: visible;
-      transform: translateY(0) scale(1)
+      animation: menu-in 0.25s var(--ease-default)
+    }
+
+    @keyframes menu-in {
+      from {
+        opacity: 0;
+        transform: translateY(-8px) scale(0.98)
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0) scale(1)
+      }
     }
 
     .copy-dropdown-item {
@@ -846,38 +760,6 @@
     .copy-dropdown-item:hover {
       background: #131317;
       color: var(--accent)
-    }
-
-    /* Auto-save Indicator */
-    .autosave-indicator {
-      display: flex;
-      align-items: center;
-      gap: .4rem;
-      font-family: 'Outfit', sans-serif;
-      font-size: var(--text-xs);
-      letter-spacing: .08em;
-      text-transform: uppercase;
-      color: var(--label)
-    }
-
-    .autosave-dot {
-      width: 4px;
-      height: 4px;
-      border-radius: 50%;
-      background: currentColor;
-      animation: pulse-glow 2s infinite
-    }
-
-    @keyframes pulse-glow {
-
-      0%,
-      100% {
-        opacity: 1
-      }
-
-      50% {
-        opacity: .3
-      }
     }
 
     /* Premium Enhance Button Styles */
@@ -926,25 +808,6 @@
       box-shadow: 0 2px 6px rgba(0, 0, 0, 0.5) !important;
     }
 
-    /* Confidence colors */
-    #confidence-chip.confidence-high {
-      color: #ffffff !important;
-      border-color: var(--accent) !important;
-      background: rgba(197, 168, 128, 0.1) !important;
-    }
-
-    #confidence-chip.confidence-medium {
-      color: #ffffff !important;
-      border-color: #f59e0b !important;
-      background: rgba(245, 158, 11, 0.1) !important;
-    }
-
-    #confidence-chip.confidence-low {
-      color: #ffffff !important;
-      border-color: #ef4444 !important;
-      background: rgba(239, 68, 68, 0.1) !important;
-    }
-
     /* Card hover lighting & cursor tracking elements */
     .surface-card,
     .output-shell {
@@ -983,37 +846,8 @@
       box-shadow: 0 0 8px rgba(197, 168, 128, 0.5);
     }
 
+    /* Decorative ring that trails the native cursor (the native cursor stays visible). */
     @media (pointer: fine) {
-
-      html,
-      body,
-      a,
-      button,
-      input,
-      textarea,
-      select,
-      [role="button"],
-      .example-chip,
-      .copy-dropdown-item,
-      .shortcuts-close,
-      kbd {
-        cursor: none !important;
-      }
-
-      #custom-cursor-dot {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 6px;
-        height: 6px;
-        background-color: var(--accent);
-        border-radius: 50%;
-        pointer-events: none;
-        z-index: 10000;
-        transition: width 0.2s var(--ease-default), height 0.2s var(--ease-default), background-color 0.2s var(--ease-default), opacity 0.2s var(--ease-default);
-        opacity: 0;
-      }
-
       #custom-cursor-ring {
         position: fixed;
         top: 0;
@@ -1035,24 +869,184 @@
         background-color: rgba(197, 168, 128, 0.05);
       }
 
-      body.cursor-hovering #custom-cursor-dot {
-        width: 8px;
-        height: 8px;
-        background-color: #ffffff;
-        box-shadow: 0 0 10px rgba(255, 255, 255, 0.8);
-      }
-
       body.cursor-clicking #custom-cursor-ring {
         width: 20px;
         height: 20px;
         border-color: #ffffff;
         background-color: rgba(255, 255, 255, 0.15);
       }
+    }
 
-      body.cursor-clicking #custom-cursor-dot {
-        width: 4px;
-        height: 4px;
-        background-color: var(--accent);
+    /* ── States, errors, controls (Phase A) ── */
+    .visually-hidden {
+      position: absolute !important;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0
+    }
+
+    #raw-input::placeholder {
+      color: var(--label);
+      opacity: 1
+    }
+
+    .btn-spinner {
+      display: inline-block;
+      width: 14px;
+      height: 14px;
+      border: 2px solid rgba(197, 168, 128, 0.25);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin .8s linear infinite
+    }
+
+    .btn-spinner[hidden],
+    .enhance-btn [hidden] {
+      display: none !important
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg)
+      }
+    }
+
+    .enhance-btn:disabled {
+      cursor: progress;
+      opacity: .85;
+      transform: none
+    }
+
+    .stop-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: .5rem;
+      padding: .85rem 1.25rem;
+      border: 1px solid var(--hairline-strong);
+      border-radius: var(--radius-md);
+      background: #131317;
+      color: #f4f4f5;
+      font-family: 'Outfit', sans-serif;
+      font-size: .72rem;
+      font-weight: 600;
+      letter-spacing: .18em;
+      text-transform: uppercase;
+      transition: border-color var(--transition-fast), background var(--transition-fast)
+    }
+
+    .stop-btn:hover {
+      border-color: var(--accent-error);
+      background: rgba(239, 68, 68, 0.08)
+    }
+
+    .stop-btn[hidden] {
+      display: none
+    }
+
+    .copy-btn:disabled {
+      opacity: .45;
+      cursor: not-allowed
+    }
+
+    .char-counter-warn {
+      color: #fbbf24 !important
+    }
+
+    .char-counter-error {
+      color: #f87171 !important
+    }
+
+    .output-shell[data-state="loading"] {
+      border-color: var(--accent)
+    }
+
+    .output-shell[data-state="error"] {
+      border-color: rgba(239, 68, 68, 0.6)
+    }
+
+    .error-state {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: .75rem;
+      padding: 1.25rem 1.5rem;
+      border: 1px solid rgba(239, 68, 68, 0.35);
+      border-left: 3px solid var(--accent-error);
+      border-radius: var(--radius-sm);
+      background: rgba(26, 15, 15, 0.6)
+    }
+
+    .error-state-icon {
+      font-size: 28px;
+      color: var(--accent-error)
+    }
+
+    .error-state-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.25rem;
+      color: #ffffff
+    }
+
+    .error-state-desc {
+      color: #e4e4e7;
+      font-size: .95rem;
+      line-height: 1.6
+    }
+
+    .error-retry-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: .5rem;
+      margin-top: .25rem;
+      padding: .6rem 1rem;
+      border: 1px solid var(--accent);
+      border-radius: var(--radius-md);
+      background: #060608;
+      color: var(--accent);
+      font-family: 'Outfit', sans-serif;
+      font-size: .72rem;
+      font-weight: 600;
+      letter-spacing: .18em;
+      text-transform: uppercase;
+      transition: border-color var(--transition-fast), color var(--transition-fast)
+    }
+
+    .error-retry-btn:hover {
+      border-color: #ffffff;
+      color: #ffffff
+    }
+
+    .nav-shortcuts-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: .5rem;
+      background: none;
+      border: 0;
+      padding: .25rem;
+      color: var(--label);
+      font-family: 'Outfit', sans-serif;
+      font-size: .75rem;
+      letter-spacing: .1em;
+      text-transform: uppercase
+    }
+
+    .nav-shortcuts-btn:hover {
+      color: #ffffff
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *,
+      *::before,
+      *::after {
+        animation-duration: .01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: .01ms !important;
+        scroll-behavior: auto !important
       }
     }
 
@@ -1064,11 +1058,15 @@
         max-height: none
       }
 
-      .output-brief-grid {
-        grid-template-columns: 1fr
-      }
     }
   </style>
+  <noscript>
+    <style>
+      body {
+        opacity: 1
+      }
+    </style>
+  </noscript>
 </head>
 
 <body class="bg-surface text-on-surface min-h-screen flex flex-col font-body">
@@ -1085,9 +1083,10 @@
       <span class="h-3 w-px bg-border-strong"></span>
       <span class="font-display text-[0.75rem] tracking-[0.2em] uppercase text-on-surface-muted">Prompt Engine</span>
       <span class="h-3 w-px bg-border-strong hidden sm:inline"></span>
-      <kbd class="shortcut-key hidden sm:inline-flex" style="opacity:.6">?</kbd>
-      <span class="font-display text-[0.75rem] tracking-[0.1em] uppercase text-on-surface-muted hidden sm:inline"
-        style="opacity:.6">Shortcuts</span>
+      <button type="button" id="shortcuts-trigger" class="nav-shortcuts-btn hidden sm:inline-flex"
+        aria-haspopup="dialog" aria-controls="shortcuts-modal" aria-expanded="false">
+        <kbd class="shortcut-key" aria-hidden="true">?</kbd><span>Shortcuts</span>
+      </button>
     </div>
   </nav>
 
@@ -1120,15 +1119,13 @@
             <div class="flex items-center gap-3">
               <span id="char-counter"
                 class="font-display text-[0.7rem] tracking-[0.18em] uppercase text-on-surface-muted">0 chars</span>
-              <span id="autosave-indicator" class="autosave-indicator" aria-live="polite"><span
-                  class="autosave-dot"></span><span>Saved</span></span>
               <button type="button" id="clear-input"
                 class="btn-ghost font-display text-[0.7rem] tracking-[0.18em] uppercase text-on-surface-muted hover:text-gold">Clear</button>
             </div>
           </div>
           <div class="input-wrapper relative">
             <textarea id="raw-input"
-              class="w-full bg-transparent border-0 outline-none ring-0 text-xl md:text-2xl font-light leading-relaxed p-0 min-h-[220px] resize-none placeholder:text-white/20 text-white focus:outline-none focus:ring-0"
+              class="w-full bg-transparent border-0 outline-none ring-0 text-xl md:text-2xl font-light leading-relaxed p-0 min-h-[220px] resize-none text-white focus:outline-none focus:ring-0"
               placeholder="Enter the skeletal prompt here..." aria-label="Raw prompt input"></textarea>
             <div class="focus-ring absolute bottom-0 left-0 right-0"></div>
           </div>
@@ -1146,55 +1143,62 @@
         </article>
         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <p id="enhance-status" class="font-display text-[0.7rem] tracking-[0.15em] uppercase text-on-surface-muted">
-            Press <kbd class="shortcut-key inline-block ml-1 mr-1" id="mod-key-label">⌘</kbd><kbd
-              class="shortcut-key inline-block">Enter</kbd> or click to enhance</p>
-          <button
-            class="enhance-btn inline-flex items-center gap-3 px-6 md:px-8 py-3.5 rounded font-display tracking-[0.22em] text-[0.72rem] font-semibold uppercase">
-            <span>Enhance Prompt</span>
-            <span class="btn-spinner" style="display:none"></span>
-            <span class="material-symbols-outlined text-[18px] opacity-80 font-light">arrow_forward</span>
-          </button>
+            Enhance a prompt</p>
+          <div class="flex items-center gap-3">
+            <button type="button" id="stop-btn" class="stop-btn" hidden>
+              <span class="material-symbols-outlined text-[16px]" aria-hidden="true">stop_circle</span>
+              <span>Stop</span>
+            </button>
+            <button type="button" id="enhance-btn"
+              class="enhance-btn inline-flex items-center gap-3 px-6 md:px-8 py-3.5 rounded font-display tracking-[0.22em] text-[0.72rem] font-semibold uppercase">
+              <span id="enhance-label">Enhance Prompt</span>
+              <span id="enhance-spinner" class="btn-spinner" aria-hidden="true" hidden></span>
+              <span id="enhance-arrow" class="material-symbols-outlined text-[18px] opacity-80 font-light"
+                aria-hidden="true">arrow_forward</span>
+            </button>
+          </div>
         </div>
       </div>
 
       <!-- Output Section -->
       <div class="md:col-span-7 relative">
-        <div class="output-shell animate-fade stagger-4">
+        <div id="output-shell" class="output-shell animate-fade stagger-4" data-state="idle">
           <div class="output-head">
             <div class="flex flex-col gap-2">
               <div class="flex items-center gap-3">
                 <span class="field-label">Architected Output</span>
                 <span class="h-px flex-1 bg-border"></span>
               </div>
-              <p class="text-[0.875rem] leading-relaxed text-on-surface-muted font-light">A structured preview for long
-                prompts, grouped into readable sections.</p>
+              <p class="text-[0.875rem] leading-relaxed text-on-surface-muted font-light">The enhanced prompt,
+                shown exactly as it will be copied.</p>
             </div>
-            <div class="copy-dropdown">
-              <button
+            <div id="copy-dropdown" class="copy-dropdown">
+              <button type="button" id="copy-btn" aria-haspopup="menu" aria-expanded="false" aria-controls="copy-menu"
+                disabled
                 class="copy-btn btn-ghost text-on-surface-muted hover:text-gold font-display text-[0.7rem] tracking-[0.18em] uppercase flex items-center gap-2 border border-border hover:border-gold rounded px-4 py-2">
-                <span class="material-symbols-outlined text-[14px]">content_copy</span>
-                <span class="copy-label">Copy</span>
-                <span class="material-symbols-outlined text-[14px] opacity-60">expand_more</span>
+                <span id="copy-icon" class="material-symbols-outlined text-[14px]" aria-hidden="true">content_copy</span>
+                <span id="copy-label">Copy</span>
+                <span class="material-symbols-outlined text-[14px] opacity-60" aria-hidden="true">expand_more</span>
               </button>
-              <div class="copy-dropdown-menu" role="menu">
-                <button class="copy-dropdown-item" data-format="text" role="menuitem">
-                  <span class="material-symbols-outlined text-[16px]">description</span>
-                  <span>Plain Text</span>
+              <div id="copy-menu" class="copy-dropdown-menu" role="menu" aria-labelledby="copy-btn" hidden>
+                <button type="button" id="copy-text" class="copy-dropdown-item" data-format="text" role="menuitem"
+                  tabindex="-1">
+                  <span class="material-symbols-outlined text-[16px]" aria-hidden="true">description</span>
+                  <span>Copy text</span>
                 </button>
-                <button class="copy-dropdown-item" data-format="markdown" role="menuitem">
-                  <span class="material-symbols-outlined text-[16px]">code</span>
-                  <span>Markdown</span>
-                </button>
-                <button class="copy-dropdown-item" data-format="json" role="menuitem">
-                  <span class="material-symbols-outlined text-[16px]">data_object</span>
-                  <span>JSON</span>
+                <button type="button" id="copy-json" class="copy-dropdown-item" data-format="json" role="menuitem"
+                  tabindex="-1">
+                  <span class="material-symbols-outlined text-[16px]" aria-hidden="true">data_object</span>
+                  <span>Copy as JSON</span>
                 </button>
               </div>
             </div>
           </div>
-          <div id="output" class="output-body output-empty">
+          <div id="output" class="output-body output-empty" role="region" aria-label="Enhanced prompt"
+            aria-busy="false">
             <div class="empty-state">
-              <div class="empty-state-icon material-symbols-outlined mb-4 text-[32px] opacity-50 text-gold">auto_awesome
+              <div class="empty-state-icon material-symbols-outlined mb-4 text-[32px] opacity-50 text-gold"
+                aria-hidden="true">auto_awesome
               </div>
               <p class="empty-state-title">Ready to Forge</p>
               <p class="empty-state-desc">Enter a raw prompt and press Enhance to generate a structured, architectured
@@ -1217,519 +1221,546 @@
     class="bg-transparent flex flex-col md:flex-row justify-between items-center w-full px-8 md:px-12 py-6 gap-4 border-t border-border">
     <div class="flex flex-col gap-2">
       <div class="text-sm font-semibold uppercase tracking-[0.15em] text-gold">FORGE</div>
-      <div class="font-display text-[0.7rem] uppercase tracking-widest text-on-surface-muted">© 2024 THE SILENT
-        MONOLITH. ALL RIGHTS RESERVED.</div>
+      <div class="font-display text-[0.7rem] uppercase tracking-widest text-on-surface-muted">© <span
+          id="footer-year">2026</span> FORGE</div>
     </div>
   </footer>
 
-  <!-- ═══════════════════════════════════════════
-     Enhance / Copy logic  (moved to end of body)
-═══════════════════════════════════════════ -->
-  <script>
-    const btn = document.querySelector(".enhance-btn");
-    const ta = document.getElementById("raw-input");
-    const out = document.getElementById("output");
-    const copy = document.querySelector(".copy-btn");
-    const copyLabel = document.querySelector(".copy-label");
-    const charCounter = document.getElementById("char-counter");
-    const clearBtn = document.getElementById("clear-input");
-    const enhanceStatus = document.getElementById("enhance-status");
-    const exampleChips = document.querySelectorAll(".example-chip");
-    const outputShell = document.querySelector(".output-shell");
-    const btnSpinner = btn.querySelector(".btn-spinner");
-    const btnArrow = btn.querySelector(".material-symbols-outlined");
-    const MIN_CHARS = 10;
-    const MAX_CHARS = 2000;
-    let latestOutput = "";
-    let latestOutputData = null;
+  <!-- Enhance flow, output, copy menu and shortcuts dialog -->
+  <script data-forge="app">
+    /* FORGE legacy UI: enhancement flow, output, copy menu, shortcuts dialog.
+       Model output is untrusted text: it is only ever assigned with textContent, so what is
+       displayed is exactly what is copied. Nothing on this page is built from HTML strings.
+       Runs after the whole document is parsed: some elements it uses (status region, toasts,
+       shortcuts dialog) come after this script in the page. */
+    function forgeApp() {
+      "use strict";
 
-    /* ── Platform-aware shortcut labels ── */
-    const isMac = /Mac|iPod|iPhone|iPad/.test(navigator.platform);
-    const modLabel = isMac ? "\u2318" : "Ctrl";
-    const modKeyEl = document.getElementById("mod-key-label");
-    const modalModEl = document.getElementById("modal-mod-key");
-    const modalCopyModEl = document.getElementById("modal-copy-mod-key");
-    if (modKeyEl) modKeyEl.textContent = modLabel;
-    if (modalModEl) modalModEl.textContent = modLabel;
-    if (modalCopyModEl) modalCopyModEl.textContent = modLabel;
+      const $ = (id) => document.getElementById(id);
+      const btn = $("enhance-btn");
+      const btnLabel = $("enhance-label");
+      const btnSpinner = $("enhance-spinner");
+      const btnArrow = $("enhance-arrow");
+      const stopBtn = $("stop-btn");
+      const ta = $("raw-input");
+      const out = $("output");
+      const outputShell = $("output-shell");
+      const charCounter = $("char-counter");
+      const clearBtn = $("clear-input");
+      const enhanceStatus = $("enhance-status");
+      const srStatus = $("sr-status");
+      const copyDropdown = $("copy-dropdown");
+      const copyBtn = $("copy-btn");
+      const copyIcon = $("copy-icon");
+      const copyLabel = $("copy-label");
+      const copyMenu = $("copy-menu");
+      const copyItems = [$("copy-text"), $("copy-json")];
+      const modal = $("shortcuts-modal");
+      const modalClose = $("shortcuts-close");
+      const shortcutsTrigger = $("shortcuts-trigger");
+      const MIN_CHARS = 10;
+      const MAX_CHARS = 2000;
 
-    /* ── Toast System ── */
-    function showToast(message, type = "info") {
-      const container = document.getElementById("toast-container");
-      const icons = { success: "check_circle", error: "error", warning: "warning", info: "info" };
-      const toast = document.createElement("div");
-      toast.className = `toast toast-${type}`;
+      let state = "idle"; // idle | loading | success | stopped | error
+      let latestOutput = ""; // exactly the text shown in the output panel
+      let latestPartial = false;
+      let activeRequest = null; // at most one request at a time
+      let lastFocusBeforeDialog = null;
 
-      const iconSpan = document.createElement("span");
-      iconSpan.className = "material-symbols-outlined toast-icon";
-      iconSpan.textContent = icons[type] || icons.info;
+      /* ── Platform-aware hints ── */
+      const media = (query) =>
+        typeof window.matchMedia === "function" && window.matchMedia(query).matches;
+      const isTouch = media("(hover: none) and (pointer: coarse)");
+      const platform =
+        (navigator.userAgentData && navigator.userAgentData.platform) || navigator.platform || "";
+      const isMac = /Mac|iPhone|iPad|iPod/i.test(platform);
+      const modLabel = isMac ? "⌘" : "Ctrl";
+      const modalModKey = $("modal-mod-key");
+      if (modalModKey) modalModKey.textContent = modLabel;
+      const footerYear = $("footer-year");
+      if (footerYear) footerYear.textContent = String(new Date().getFullYear());
 
-      const msgSpan = document.createElement("span");
-      msgSpan.className = "toast-message";
-      msgSpan.textContent = message;
+      function el(tag, className, text) {
+        const node = document.createElement(tag);
+        if (className) node.className = className;
+        if (text !== undefined) node.textContent = text;
+        return node;
+      }
 
-      toast.append(iconSpan, msgSpan);
-      container.appendChild(toast);
+      function icon(name, className) {
+        const span = el("span", `material-symbols-outlined${className ? ` ${className}` : ""}`, name);
+        span.setAttribute("aria-hidden", "true");
+        return span;
+      }
 
-      setTimeout(() => {
-        toast.classList.add("removing");
-        setTimeout(() => toast.remove(), 300);
-      }, 3000);
-    }
+      /* ── Announcements (one polite live region; toasts are visual only) ── */
+      function announce(message) {
+        srStatus.textContent = "";
+        srStatus.textContent = message;
+      }
 
-    /* ── Loading State ── */
-    function setEnhancing(isEnhancing) {
-      btn.disabled = isEnhancing;
-      btn.classList.toggle("loading", isEnhancing);
-      outputShell.classList.toggle("loading", isEnhancing);
-      btn.querySelector("span:first-child").textContent = isEnhancing ? "Forging..." : "Enhance Prompt";
-      btnSpinner.style.display = isEnhancing ? "inline-block" : "none";
-      btnArrow.style.display = isEnhancing ? "none" : "";
-      enhanceStatus.textContent = isEnhancing ? "Forging prompt..." : `Press ${modLabel}+Enter or click to enhance`;
-    }
+      function showToast(message, type = "info") {
+        const container = $("toast-container");
+        const icons = { success: "check_circle", error: "error", warning: "warning", info: "info" };
+        const toast = el("div", `toast toast-${type}`);
+        toast.append(icon(icons[type] || icons.info, "toast-icon"), el("span", "toast-message", message));
+        container.appendChild(toast);
+        setTimeout(() => {
+          toast.classList.add("removing");
+          setTimeout(() => toast.remove(), 300);
+        }, 3000);
+      }
 
-    /* ── Input Validation ── */
-    function updateCharCount() {
-      const n = ta.value.length;
-      charCounter.textContent = n === 1 ? "1 char" : `${n}/${MAX_CHARS} chars`;
-      charCounter.classList.remove("char-counter-warn", "char-counter-error", "char-counter-ok");
-      if (n > 0 && n < MIN_CHARS) charCounter.classList.add("char-counter-warn");
-      else if (n > MAX_CHARS) charCounter.classList.add("char-counter-error");
-      else if (n >= MIN_CHARS) charCounter.classList.add("char-counter-ok");
-    }
+      /* ── Status line ── */
+      function idleHint() {
+        if (isTouch) return [el("span", "", "Tap Enhance Prompt to enhance")];
+        return [
+          el("span", "", "Press "),
+          el("kbd", "shortcut-key inline-block ml-1 mr-1", modLabel),
+          el("kbd", "shortcut-key inline-block mr-1", "Enter"),
+          el("span", "", " or click Enhance Prompt"),
+        ];
+      }
 
-    function validateInput() {
-      const len = ta.value.trim().length;
-      if (len === 0) { enhanceStatus.textContent = "Enter a prompt first"; return false; }
-      if (len < MIN_CHARS) { showToast(`Please enter at least ${MIN_CHARS} characters for better results.`, "warning"); return false; }
-      if (ta.value.length > MAX_CHARS) { showToast(`Input exceeds ${MAX_CHARS} characters. Please shorten your prompt.`, "error"); return false; }
-      return true;
-    }
+      function setStatus(text) {
+        enhanceStatus.replaceChildren(...(text === null ? idleHint() : [el("span", "", text)]));
+      }
 
-    ta.addEventListener("input", updateCharCount);
+      const STATUS_TEXT = {
+        loading: "Forging prompt...",
+        success: "Enhanced prompt ready",
+        stopped: "Stopped",
+        error: "Enhancement failed",
+      };
 
-    clearBtn.addEventListener("click", () => {
-      ta.value = "";
-      updateCharCount();
-      ta.focus();
-    });
+      function setState(next) {
+        state = next;
+        const busy = next === "loading";
+        outputShell.setAttribute("data-state", next);
+        out.setAttribute("aria-busy", busy ? "true" : "false");
+        btn.disabled = busy;
+        btnLabel.textContent = busy ? "Forging..." : "Enhance Prompt";
+        btnSpinner.hidden = !busy;
+        btnArrow.hidden = busy;
+        if (!busy && document.activeElement === stopBtn) btn.focus();
+        stopBtn.hidden = !busy;
+        if (busy) closeCopyMenu(false);
+        copyBtn.disabled = busy || !latestOutput;
+        setStatus(next === "idle" ? null : STATUS_TEXT[next]);
+      }
 
-    exampleChips.forEach((chip) => {
-      chip.addEventListener("click", () => {
-        ta.value = chip.dataset.example;
+      /* ── Input ── */
+      function updateCharCount() {
+        const n = ta.value.length;
+        charCounter.textContent = `${n}/${MAX_CHARS} chars`;
+        charCounter.classList.remove("char-counter-warn", "char-counter-error", "char-counter-ok");
+        if (n > MAX_CHARS) charCounter.classList.add("char-counter-error");
+        else if (n > 0 && n < MIN_CHARS) charCounter.classList.add("char-counter-warn");
+        else if (n >= MIN_CHARS) charCounter.classList.add("char-counter-ok");
+      }
+
+      function validateInput() {
+        const len = ta.value.trim().length;
+        let problem = null;
+        if (len === 0) problem = "Enter a prompt first.";
+        else if (len < MIN_CHARS) problem = `Please enter at least ${MIN_CHARS} characters.`;
+        else if (ta.value.length > MAX_CHARS)
+          problem = `The prompt is longer than ${MAX_CHARS} characters. Please shorten it.`;
+        if (!problem) return true;
+        setStatus(problem);
+        announce(problem);
+        showToast(problem, "warning");
+        ta.focus();
+        return false;
+      }
+
+      ta.addEventListener("input", updateCharCount);
+      ta.addEventListener("keydown", (e) => {
+        if ((e.metaKey || e.ctrlKey) && e.key === "Enter") {
+          e.preventDefault();
+          startEnhance();
+        }
+      });
+      clearBtn.addEventListener("click", () => {
+        ta.value = "";
         updateCharCount();
         ta.focus();
-        ta.setSelectionRange(ta.value.length, ta.value.length);
       });
-    });
-
-    ta.addEventListener("keydown", (e) => {
-      if ((e.metaKey || e.ctrlKey) && e.key === "Enter") {
-        e.preventDefault();
-        btn.click();
-      }
-    });
-
-    updateCharCount();
-
-    function setMeta() {}
-
-    function renderLoading() {
-      latestOutput = "";
-      out.className = "output-body";
-      out.replaceChildren();
-
-      const section = document.createElement("article");
-      section.className = "output-section";
-
-      const heading = document.createElement("div");
-      heading.className = "skeleton-line";
-      heading.style.width = "38%";
-      heading.style.marginBottom = "1.3rem";
-      section.appendChild(heading);
-
-      [92, 78, 86, 64, 72].forEach((width) => {
-        const line = document.createElement("div");
-        line.className = "skeleton-line";
-        line.style.width = `${width}%`;
-        line.style.marginTop = ".8rem";
-        section.appendChild(line);
-      });
-
-      out.appendChild(section);
-    }
-
-    function renderMessage(title, message) {
-      latestOutput = "";
-      latestOutputData = null;
-      out.className = "output-body output-empty";
-      out.replaceChildren();
-
-      const empty = document.createElement("div");
-      empty.className = "empty-state";
-      const h = document.createElement("p");
-      h.className = "serif-display text-xl leading-relaxed text-[#f0f1f5]";
-      h.textContent = title;
-      const p = document.createElement("p");
-      p.className = "text-sm leading-relaxed mt-3 text-[#9ca3af]";
-      p.textContent = message;
-      empty.append(h, p);
-      out.appendChild(empty);
-    }
-
-    /* ── Error State with Retry ── */
-    function renderError(rawMessage) {
-      latestOutput = "";
-      latestOutputData = null;
-      out.className = "output-body";
-      out.replaceChildren();
-
-      const errorMessages = {
-        'rate_limit': 'Enhancement limit reached. Please wait a moment and try again.',
-        'Failed to fetch': 'Connection failed. Please check your internet connection.',
-        'NetworkError': 'Connection failed. Please check your internet connection.',
-        'timeout': 'Request timed out. Please try again.',
-        '500': 'Service temporarily unavailable. Please try again later.',
-        '503': 'Service temporarily unavailable. Please try again later.',
-      };
-      let friendlyMsg = 'Something went wrong. Please try again.';
-      for (const [key, msg] of Object.entries(errorMessages)) {
-        if (rawMessage && rawMessage.includes(key)) { friendlyMsg = msg; break; }
-      }
-
-      const errDiv = document.createElement("div");
-      errDiv.className = "error-state";
-      errDiv.innerHTML = `
-      <span class="material-symbols-outlined error-state-icon">error_outline</span>
-      <p class="error-state-title">Enhancement Failed</p>
-      <p class="error-state-desc">${friendlyMsg}</p>
-      <button class="error-retry-btn" id="error-retry">
-        <span class="material-symbols-outlined" style="font-size:16px">refresh</span>
-        <span>Try Again</span>
-      </button>
-    `;
-      out.appendChild(errDiv);
-      document.getElementById("error-retry").addEventListener("click", () => btn.click());
-      showToast("Enhancement failed", "error");
-    }
-
-    function titleCase(value) {
-      return value
-        .toLowerCase()
-        .replace(/\b[a-z]/g, (char) => char.toUpperCase())
-        .replace(/\bAi\b/g, "AI")
-        .replace(/\bApi\b/g, "API")
-        .replace(/\bPrd\b/g, "PRD");
-    }
-
-    function formatInlineMarkdown(text) {
-      if (!text) return "";
-      let html = text
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;");
-
-      // Convert **bold** to <strong>
-      html = html.replace(/(\*\*|__)(.*?)\1/g, '<strong class="font-semibold text-white">$2</strong>');
-      // Convert *italic* to <em>
-      html = html.replace(/(\*|_)(.*?)\1/g, '<em class="italic text-zinc-300">$2</em>');
-      // Convert `code` to <code>
-      html = html.replace(/`(.*?)`/g, '<code class="bg-[#191920] text-gold px-1.5 py-0.5 rounded text-xs font-mono">$1</code>');
-      // Clean any unclosed or leftover ** asterisks
-      html = html.replace(/\*\*/g, '');
-
-      return html;
-    }
-
-    function extractHeading(line) {
-      const unbolded = line.replace(/^\*\*\s*/, "").replace(/\s*\*\*$/, "").trim();
-
-      const markdown = unbolded.match(/^#{1,6}\s+(.+)$/);
-      if (markdown) return markdown[1].replace(/:$/, "").replace(/\*\*/g, "").trim();
-
-      const numbered = unbolded.match(/^(\d+(?:\.\d+)*[.)]?)\s+(.+)$/);
-      if (numbered) {
-        const label = numbered[1].replace(/[.)]$/, ".");
-        const text = numbered[2].replace(/:$/, "").replace(/\*\*/g, "").trim();
-        const letters = text.replace(/[^A-Za-z]/g, "");
-        if (letters && letters === letters.toUpperCase()) return `${label} ${titleCase(text)}`;
-        if (line.startsWith("**") || line.endsWith("**")) return `${label} ${text}`;
-        return null;
-      }
-
-      const clean = unbolded.replace(/:$/, "").replace(/\*\*/g, "").trim();
-      const letters = clean.replace(/[^A-Za-z]/g, "");
-      if (line.endsWith(":") && clean.length <= 72) return clean;
-      if (clean.length <= 72 && letters.length > 3 && letters === letters.toUpperCase()) return titleCase(clean);
-      return null;
-    }
-
-    function appendParagraph(section, text) {
-      const p = document.createElement("p");
-      p.innerHTML = formatInlineMarkdown(text);
-      section.appendChild(p);
-    }
-
-    function appendDefinition(section, key, value) {
-      const row = document.createElement("div");
-      row.className = "definition-row";
-      const strong = document.createElement("strong");
-      strong.innerHTML = formatInlineMarkdown(key);
-      const span = document.createElement("span");
-      span.innerHTML = formatInlineMarkdown(value);
-      row.append(strong, span);
-      section.appendChild(row);
-    }
-
-    function createSection(fragment, title) {
-      const section = document.createElement("article");
-      section.className = "output-section";
-      if (title) {
-        const h = document.createElement("h3");
-        h.innerHTML = formatInlineMarkdown(title);
-        section.appendChild(h);
-      }
-      fragment.appendChild(section);
-      return section;
-    }
-
-    function createBriefGrid(fragment) {
-      let grid = fragment.querySelector?.(".output-brief-grid");
-      if (grid) return grid;
-      grid = document.createElement("dl");
-      grid.className = "output-brief-grid";
-      fragment.appendChild(grid);
-      return grid;
-    }
-
-    function appendBrief(fragment, key, value) {
-      const grid = createBriefGrid(fragment);
-      const item = document.createElement("div");
-      item.className = "output-brief";
-      const dt = document.createElement("dt");
-      dt.innerHTML = formatInlineMarkdown(key);
-      const dd = document.createElement("dd");
-      dd.innerHTML = formatInlineMarkdown(value);
-      item.append(dt, dd);
-      grid.appendChild(item);
-    }
-
-    function renderOutput(text, data) {
-      latestOutput = text;
-      latestOutputData = data || null;
-      out.className = "output-body";
-      out.replaceChildren();
-
-      const fragment = document.createDocumentFragment();
-      const lines = text.replace(/\r\n/g, "\n").split("\n");
-      let section = null;
-      let list = null;
-      let paragraph = [];
-
-      function ensureSection() {
-        if (!section) section = createSection(fragment, null);
-        return section;
-      }
-
-      function flushParagraph() {
-        if (!paragraph.length) return;
-        appendParagraph(ensureSection(), paragraph.join(" "));
-        paragraph = [];
-      }
-
-      function clearList() {
-        list = null;
-      }
-
-      lines.forEach((rawLine) => {
-        const line = rawLine.trim();
-        if (!line) {
-          flushParagraph();
-          clearList();
-          return;
-        }
-
-        const heading = extractHeading(line);
-        if (heading) {
-          flushParagraph();
-          clearList();
-          section = createSection(fragment, heading);
-          return;
-        }
-
-        const keyValue = line.match(/^([A-Za-z][A-Za-z /_-]{1,28}):\s+(.+)$/);
-        if (keyValue) {
-          flushParagraph();
-          clearList();
-          const key = keyValue[1].trim();
-          const value = keyValue[2].trim();
-          appendDefinition(ensureSection(), key, value);
-          return;
-        }
-
-        const bullet = line.match(/^[-*\u2022]\s+(.+)$/);
-        const numbered = line.match(/^\d+[\.)]\s+(.+)$/);
-        if (bullet || numbered) {
-          flushParagraph();
-          const ordered = Boolean(numbered);
-          if (!list || (ordered && list.tagName !== "OL") || (!ordered && list.tagName !== "UL")) {
-            list = document.createElement(ordered ? "ol" : "ul");
-            ensureSection().appendChild(list);
-          }
-          const li = document.createElement("li");
-          const itemText = (bullet || numbered)[1].trim();
-          li.innerHTML = formatInlineMarkdown(itemText);
-          list.appendChild(li);
-          return;
-        }
-
-        clearList();
-        paragraph.push(line);
-      });
-
-      flushParagraph();
-      if (!fragment.childNodes.length) renderMessage("No output returned", "Try a more specific raw prompt.");
-      else out.appendChild(fragment);
-    }
-
-    btn.addEventListener("click", async () => {
-      const p = ta.value;
-      if (!validateInput()) return;
-      setEnhancing(true);
-      renderLoading();
-      try {
-        const r = await fetch("/enhance", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ prompt: p, stream: true })
+      document.querySelectorAll(".example-chip").forEach((chip) => {
+        chip.addEventListener("click", () => {
+          ta.value = chip.dataset.example;
+          updateCharCount();
+          ta.focus();
+          ta.setSelectionRange(ta.value.length, ta.value.length);
         });
-        if (!r.ok) {
-          const d = await r.json().catch(() => ({}));
-          throw new Error(d.error || `Request failed with status ${r.status}`);
+      });
+
+      /* ── Output rendering (literal text only) ── */
+      function setOutput(nodes, text, partial, centered) {
+        latestOutput = text;
+        latestPartial = partial;
+        out.className = centered ? "output-body output-empty" : "output-body";
+        out.replaceChildren(...nodes);
+      }
+
+      function renderText(text, notice) {
+        const nodes = [];
+        if (notice) nodes.push(el("p", "output-notice", notice));
+        const pre = el("pre", "output-text", text);
+        pre.id = "output-text";
+        nodes.push(pre);
+        setOutput(nodes, text, Boolean(notice), false);
+        return pre;
+      }
+
+      function renderMessage(title, message) {
+        const box = el("div", "empty-state");
+        box.append(el("p", "empty-state-title", title), el("p", "empty-state-desc", message));
+        setOutput([box], "", false, true);
+      }
+
+      function renderLoading() {
+        const box = el("div", "output-loading");
+        box.setAttribute("aria-hidden", "true");
+        [38, 92, 78, 86, 64, 72].forEach((width) => {
+          const line = el("div", "skeleton-line");
+          line.style.width = `${width}%`;
+          box.appendChild(line);
+        });
+        setOutput([box], "", false, false);
+      }
+
+      function renderError(message) {
+        const box = el("div", "error-state");
+        const desc = el("p", "error-state-desc", message);
+        desc.id = "error-message";
+        const retry = el("button", "error-retry-btn");
+        retry.type = "button";
+        retry.id = "error-retry";
+        retry.append(icon("refresh"), el("span", "", "Try again"));
+        retry.addEventListener("click", () => startEnhance());
+        box.append(
+          icon("error_outline", "error-state-icon"),
+          el("p", "error-state-title", "Enhancement failed"),
+          desc,
+          retry,
+        );
+        setOutput([box], "", false, false);
+      }
+
+      /* ── Enhancement request ── */
+      function userError(message) {
+        const error = new Error(message);
+        error.userMessage = message;
+        return error;
+      }
+
+      function describeError(error) {
+        if (error && error.userMessage) return error.userMessage; // safe text from the server
+        if (error && error.name === "TypeError")
+          return "Could not reach the FORGE server. Check your connection and try again.";
+        return "The enhancement service did not respond as expected. Please try again.";
+      }
+
+      function parseFrame(line) {
+        const trimmed = line.trim();
+        if (!trimmed.startsWith("data:")) return null;
+        try {
+          return JSON.parse(trimmed.slice(5).trim());
+        } catch {
+          return null;
         }
+      }
 
-        const reader = r.body.getReader();
-        const decoder = new TextDecoder();
-        let fullText = "";
-        let buffer = "";
-        let renderScheduled = false;
+      function finish(request, outcome, detail) {
+        if (request.finished) return;
+        request.finished = true;
+        if (activeRequest === request) activeRequest = null;
+        if (outcome === "success") {
+          renderText(detail, null);
+          setState("success");
+          announce("Enhancement complete. The enhanced prompt is in the output panel.");
+          showToast("Prompt enhanced", "success");
+        } else if (outcome === "stopped") {
+          if (detail) {
+            renderText(detail, "Stopped. Partial output; it may be incomplete.");
+            announce("Enhancement stopped. The partial output was kept.");
+          } else {
+            renderMessage("Stopped", "No output was received before you stopped. Your prompt is unchanged.");
+            announce("Enhancement stopped before any output was received.");
+          }
+          setState("stopped");
+        } else {
+          renderError(detail);
+          setState("error");
+          announce(`Enhancement failed. ${detail}`);
+          showToast("Enhancement failed", "error");
+        }
+      }
 
-        const scheduleFrameRender = () => {
-          if (!renderScheduled) {
-            renderScheduled = true;
-            requestAnimationFrame(() => {
-              renderScheduled = false;
-              renderOutput(fullText);
-            });
+      async function startEnhance() {
+        if (activeRequest) return; // never two concurrent requests
+        if (!validateInput()) return;
+        const request = { controller: new AbortController(), text: "", finished: false };
+        activeRequest = request;
+        const prompt = ta.value;
+        renderLoading();
+        setState("loading");
+        announce("Enhancing prompt.");
+
+        let pre = null;
+        let paintQueued = false;
+        const paint = () => {
+          paintQueued = false;
+          if (request.finished) return; // no updates after stop, error or completion
+          if (!pre) pre = renderText("", null);
+          const atBottom = out.scrollHeight - out.scrollTop - out.clientHeight < 24;
+          pre.textContent = request.text; // not copyable until the request finishes
+          if (atBottom) out.scrollTop = out.scrollHeight;
+        };
+        const queuePaint = () => {
+          if (!paintQueued) {
+            paintQueued = true;
+            requestAnimationFrame(paint);
           }
         };
 
-        while (true) {
-          const { done, value } = await reader.read();
-          if (done) break;
-          buffer += decoder.decode(value, { stream: true });
-          const lines = buffer.split("\n");
-          buffer = lines.pop(); // keep trailing incomplete line
-
-          for (const line of lines) {
-            const trimmed = line.trim();
-            if (trimmed.startsWith("data: ")) {
-              try {
-                const payload = JSON.parse(trimmed.substring(6));
-                if (payload.error) throw new Error(payload.error);
-                if (payload.chunk) {
-                  fullText += payload.chunk;
-                  scheduleFrameRender();
-                }
-              } catch (err) {
-                if (err.message && !err.message.includes("Unexpected end of JSON")) {
-                  throw err;
-                }
-              }
-            }
+        try {
+          const response = await fetch("/enhance", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ prompt, stream: true }),
+            signal: request.controller.signal,
+          });
+          if (!response.ok) {
+            const data = await response.json().catch(() => ({}));
+            throw userError(
+              typeof data.error === "string" && data.error
+                ? data.error
+                : `The server returned HTTP ${response.status}. Please try again.`,
+            );
           }
+          if (!response.body) throw userError("This browser cannot read streamed responses.");
+
+          const reader = response.body.getReader();
+          const decoder = new TextDecoder();
+          let buffer = "";
+          let sawDone = false;
+          const handle = (line) => {
+            const payload = parseFrame(line);
+            if (!payload) return;
+            if (typeof payload.error === "string") throw userError(payload.error);
+            if (typeof payload.chunk === "string" && payload.chunk) {
+              request.text += payload.chunk;
+              queuePaint();
+            }
+            if (payload.done === true) sawDone = true;
+          };
+          for (;;) {
+            const { done, value } = await reader.read();
+            if (request.finished) return;
+            if (done) break;
+            buffer += decoder.decode(value, { stream: true });
+            const lines = buffer.split("\n");
+            buffer = lines.pop();
+            lines.forEach(handle);
+          }
+          buffer += decoder.decode();
+          if (buffer) handle(buffer);
+          if (!sawDone)
+            throw userError("The connection closed before the enhanced prompt was complete. Please try again.");
+          const text = request.text.trim();
+          if (!text) throw userError("The model returned no text. Try a more specific prompt.");
+          finish(request, "success", text);
+        } catch (error) {
+          if (request.finished) return; // already stopped by the user
+          if (request.controller.signal.aborted) finish(request, "stopped", request.text.trim());
+          else finish(request, "error", describeError(error));
         }
-        if (fullText.trim()) {
-          renderOutput(fullText.trim());
-          showToast("Prompt enhanced successfully!", "success");
-        } else {
-          throw new Error("No output returned from enhancement service.");
+      }
+
+      function stopEnhance() {
+        const request = activeRequest;
+        if (!request) return;
+        finish(request, "stopped", request.text.trim()); // the UI stops updating now
+        request.controller.abort(); // closes the connection; the server releases the stream
+      }
+
+      btn.addEventListener("click", () => startEnhance());
+      stopBtn.addEventListener("click", stopEnhance);
+
+      /* ── Copy menu ── */
+      function copyPayload(format) {
+        if (format !== "json") return latestOutput;
+        const doc = { enhanced_prompt: latestOutput };
+        if (latestPartial) doc.partial = true;
+        return JSON.stringify(doc, null, 2);
+      }
+
+      function doCopy(text) {
+        if (!text) return;
+        if (!navigator.clipboard || typeof navigator.clipboard.writeText !== "function") {
+          // The Clipboard API exists only on HTTPS or localhost pages.
+          const message = "Copy is unavailable on this connection. Select the text and copy it manually.";
+          showToast(message, "error");
+          announce(message);
+          return;
         }
-      } catch (e) {
-        renderError(e.message || "The enhancement service did not respond.");
-        console.error(e);
-      } finally {
-        setEnhancing(false);
+        navigator.clipboard.writeText(text).then(
+          () => {
+            copyLabel.textContent = "Copied";
+            copyIcon.textContent = "check";
+            showToast("Copied to clipboard", "success");
+            announce("Copied to clipboard.");
+            setTimeout(() => {
+              copyLabel.textContent = "Copy";
+              copyIcon.textContent = "content_copy";
+            }, 1400);
+          },
+          () => {
+            showToast("Failed to copy to clipboard", "error");
+            announce("Failed to copy to clipboard.");
+          },
+        );
       }
-    });
 
-    /* ── Copy with dropdown format support ── */
-    function getOutputAsMarkdown() {
-      if (!latestOutput) return "";
-      return latestOutput;
-    }
+      const menuOpen = () => copyDropdown.classList.contains("open");
 
-    function getOutputAsJSON() {
-      if (latestOutputData) {
-        return JSON.stringify(latestOutputData, null, 2);
+      function openCopyMenu(index) {
+        if (copyBtn.disabled) return;
+        copyMenu.hidden = false;
+        copyDropdown.classList.add("open");
+        copyBtn.setAttribute("aria-expanded", "true");
+        copyItems[(index + copyItems.length) % copyItems.length].focus();
       }
-      return JSON.stringify({ enhanced_prompt: latestOutput }, null, 2);
-    }
 
-    function doCopy(text) {
-      if (!text.trim()) return;
-      navigator.clipboard.writeText(text).then(() => {
-        copyLabel.textContent = "Copied";
-        copy.querySelector(".material-symbols-outlined").textContent = "check";
-        showToast("Copied to clipboard!", "success");
-        setTimeout(() => {
-          copyLabel.textContent = "Copy";
-          copy.querySelector(".material-symbols-outlined").textContent = "content_copy";
-        }, 1400);
-      }).catch(err => {
-        console.error(err);
-        showToast("Failed to copy to clipboard", "error");
-      });
-    }
+      function closeCopyMenu(returnFocus) {
+        if (!menuOpen()) return;
+        copyMenu.hidden = true;
+        copyDropdown.classList.remove("open");
+        copyBtn.setAttribute("aria-expanded", "false");
+        if (returnFocus) copyBtn.focus();
+      }
 
-    copy.addEventListener("click", (e) => {
-      // Toggle dropdown instead of direct copy
-      const dropdown = copy.closest(".copy-dropdown");
-      if (dropdown) {
+      copyBtn.addEventListener("click", (e) => {
         e.stopPropagation();
-        dropdown.classList.toggle("open");
-      }
-    });
-
-    // Copy format dropdown items
-    document.querySelectorAll(".copy-dropdown-item").forEach(item => {
-      item.addEventListener("click", (e) => {
-        e.stopPropagation();
-        const format = item.dataset.format;
-        let text = latestOutput;
-        if (format === "json") text = getOutputAsJSON();
-        else if (format === "markdown") text = getOutputAsMarkdown();
-        doCopy(text);
-        copy.closest(".copy-dropdown").classList.remove("open");
+        if (menuOpen()) closeCopyMenu(false);
+        else openCopyMenu(0);
       });
-    });
+      copyBtn.addEventListener("keydown", (e) => {
+        if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+          e.preventDefault();
+          openCopyMenu(e.key === "ArrowDown" ? 0 : -1);
+        }
+      });
+      copyMenu.addEventListener("keydown", (e) => {
+        const current = copyItems.indexOf(document.activeElement);
+        const moves = { ArrowDown: current + 1, ArrowUp: current - 1, Home: 0, End: -1 };
+        if (e.key in moves) {
+          e.preventDefault();
+          copyItems[(moves[e.key] + copyItems.length) % copyItems.length].focus();
+        } else if (e.key === "Escape") {
+          e.preventDefault();
+          e.stopPropagation();
+          closeCopyMenu(true);
+        } else if (e.key === "Tab") {
+          closeCopyMenu(false);
+        }
+      });
+      copyItems.forEach((item) => {
+        item.addEventListener("click", (e) => {
+          e.stopPropagation();
+          doCopy(copyPayload(item.dataset.format));
+          closeCopyMenu(true);
+        });
+      });
+      document.addEventListener("click", (e) => {
+        if (!copyDropdown.contains(e.target)) closeCopyMenu(false);
+      });
 
-    // Close dropdown on outside click
-    document.addEventListener("click", () => {
-      document.querySelectorAll(".copy-dropdown.open").forEach(d => d.classList.remove("open"));
-    });
+      /* ── Keyboard shortcuts dialog (native <dialog>, modal) ──
+         showModal() makes everything outside the dialog inert, so the background cannot be
+         reached by keyboard or assistive technology, and Escape closes it ("cancel"). The
+         "close" event handles every way of closing: button, Escape, backdrop click. */
+      const dialogOpen = () => modal.hasAttribute("open");
+
+      function openShortcuts() {
+        if (dialogOpen()) return;
+        lastFocusBeforeDialog = document.activeElement;
+        if (typeof modal.showModal === "function") modal.showModal();
+        else modal.setAttribute("open", ""); // very old browsers: non-modal fallback
+        if (shortcutsTrigger) shortcutsTrigger.setAttribute("aria-expanded", "true");
+        modalClose.focus();
+      }
+
+      function onShortcutsClosed() {
+        if (shortcutsTrigger) shortcutsTrigger.setAttribute("aria-expanded", "false");
+        const back =
+          lastFocusBeforeDialog && lastFocusBeforeDialog !== document.body
+            ? lastFocusBeforeDialog
+            : shortcutsTrigger;
+        lastFocusBeforeDialog = null;
+        if (back && typeof back.focus === "function") back.focus();
+      }
+
+      function closeShortcuts() {
+        if (!dialogOpen()) return;
+        if (typeof modal.close === "function") modal.close(); // fires "close"
+        else {
+          modal.removeAttribute("open");
+          onShortcutsClosed();
+        }
+      }
+
+      if (shortcutsTrigger) shortcutsTrigger.addEventListener("click", openShortcuts);
+      modalClose.addEventListener("click", closeShortcuts);
+      modal.addEventListener("close", onShortcutsClosed);
+      modal.addEventListener("click", (e) => {
+        if (e.target === modal) closeShortcuts(); // click on the backdrop area
+      });
+
+      /* ── Global shortcuts (never Ctrl/Cmd+C, never clearing the prompt) ── */
+      document.addEventListener("keydown", (e) => {
+        if (dialogOpen()) return;
+        if (e.key === "Escape") {
+          closeCopyMenu(menuOpen() && copyDropdown.contains(document.activeElement));
+          return;
+        }
+        const target = e.target;
+        const typing =
+          target &&
+          (target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.isContentEditable);
+        if (typing || e.metaKey || e.ctrlKey || e.altKey) return;
+        if (e.key === "?") {
+          e.preventDefault();
+          openShortcuts();
+        } else if (e.key === "/") {
+          e.preventDefault();
+          ta.focus();
+        }
+      });
+
+      updateCharCount();
+      setState("idle");
+    }
+
+    if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", forgeApp);
+    else forgeApp();
   </script>
 
+  <!-- Status announcements for assistive technology (toasts are visual only) -->
+  <p id="sr-status" class="visually-hidden" role="status" aria-live="polite"></p>
+
   <!-- Toast Container -->
-  <div id="toast-container" class="toast-container" aria-live="polite"></div>
+  <div id="toast-container" class="toast-container" aria-hidden="true"></div>
 
   <!-- Keyboard Shortcuts Modal -->
-  <div id="shortcuts-modal" class="shortcuts-modal" role="dialog" aria-modal="true" aria-labelledby="shortcuts-title">
+  <dialog id="shortcuts-modal" class="shortcuts-modal" aria-labelledby="shortcuts-title">
     <div class="shortcuts-panel">
       <div class="shortcuts-header">
         <h2 id="shortcuts-title" class="shortcuts-title">Keyboard Shortcuts</h2>
-        <button id="shortcuts-close" class="shortcuts-close" aria-label="Close shortcuts">
-          <span class="material-symbols-outlined">close</span>
+        <button type="button" id="shortcuts-close" class="shortcuts-close" aria-label="Close shortcuts">
+          <span class="material-symbols-outlined" aria-hidden="true">close</span>
         </button>
       </div>
       <div class="shortcuts-list">
@@ -1737,10 +1768,6 @@
           <span class="shortcut-desc">Enhance Prompt</span>
           <div class="shortcut-keys"><kbd class="shortcut-key" id="modal-mod-key">⌘</kbd><kbd
               class="shortcut-key">Enter</kbd></div>
-        </div>
-        <div class="shortcut-row">
-          <span class="shortcut-desc">Clear Input</span>
-          <div class="shortcut-keys"><kbd class="shortcut-key">Esc</kbd></div>
         </div>
         <div class="shortcut-row">
           <span class="shortcut-desc">Show Shortcuts</span>
@@ -1751,13 +1778,12 @@
           <div class="shortcut-keys"><kbd class="shortcut-key">/</kbd></div>
         </div>
         <div class="shortcut-row">
-          <span class="shortcut-desc">Copy Output</span>
-          <div class="shortcut-keys"><kbd class="shortcut-key" id="modal-copy-mod-key">⌘</kbd><kbd
-              class="shortcut-key">C</kbd></div>
+          <span class="shortcut-desc">Close dialog or menu</span>
+          <div class="shortcut-keys"><kbd class="shortcut-key">Esc</kbd></div>
         </div>
       </div>
     </div>
-  </div>
+  </dialog>
 
   <!-- ═══════════════════════════════════════════════
      SplashCursor — pure WebGL fluid simulation
@@ -2413,7 +2439,8 @@
       });
 
     })();
-  </script><!-- Keyboard Shortcuts, Custom Cursor, Scroll Progress, and Card Hover Glows -->
+  </script>
+  <!-- Visual polish: page reveal, scroll progress, card glow, cursor ring (decorative only) -->
   <script>
     (function initUXPolishes() {
       // 1. Page Reveal
@@ -2422,6 +2449,7 @@
       // 2. Scroll Progress Bar
       const progress = document.createElement("div");
       progress.id = "scroll-progress";
+      progress.setAttribute("aria-hidden", "true");
       document.body.appendChild(progress);
       window.addEventListener("scroll", () => {
         const winScroll = document.body.scrollTop || document.documentElement.scrollTop;
@@ -2433,63 +2461,38 @@
       // 3. Card Mouse Glow Tracking
       const updateGlow = (e, card) => {
         const rect = card.getBoundingClientRect();
-        const x = e.clientX - rect.left;
-        const y = e.clientY - rect.top;
-        card.style.setProperty("--mouse-x", `${x}px`);
-        card.style.setProperty("--mouse-y", `${y}px`);
+        card.style.setProperty("--mouse-x", `${e.clientX - rect.left}px`);
+        card.style.setProperty("--mouse-y", `${e.clientY - rect.top}px`);
       };
       document.querySelectorAll(".surface-card, .output-shell").forEach((card) => {
         card.addEventListener("mousemove", (e) => updateGlow(e, card));
       });
 
-      // 4. Custom Interactive Cursor
-      if (window.matchMedia("(pointer: fine)").matches) {
-        const dot = document.createElement("div");
-        dot.id = "custom-cursor-dot";
+      // 4. Cursor ring: a decorative ring that trails the native cursor (which stays
+      //    visible). Off for touch devices and when reduced motion is requested.
+      const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      if (window.matchMedia("(pointer: fine)").matches && !reducedMotion) {
         const ring = document.createElement("div");
         ring.id = "custom-cursor-ring";
-        document.body.appendChild(dot);
+        ring.setAttribute("aria-hidden", "true");
         document.body.appendChild(ring);
 
         let mouseX = -100, mouseY = -100;
         let ringX = -100, ringY = -100;
-        let cursorVisible = false;
 
         window.addEventListener("mousemove", (e) => {
-          if (!cursorVisible) {
-            dot.style.opacity = "1";
-            ring.style.opacity = "1";
-            cursorVisible = true;
-          }
+          ring.style.opacity = "1";
           mouseX = e.clientX;
           mouseY = e.clientY;
-          dot.style.transform = `translate3d(${mouseX}px, ${mouseY}px, 0) translate(-50%, -50%)`;
-
-          const target = e.target;
-          const isInteractive = target.closest("a, button, input, textarea, select, [role='button'], .example-chip, .copy-dropdown-item, .shortcuts-close, kbd");
-          if (isInteractive) {
-            document.body.classList.add("cursor-hovering");
-          } else {
-            document.body.classList.remove("cursor-hovering");
-          }
+          const interactive = e.target.closest(
+            "a, button, input, textarea, select, [role='button'], [role='menuitem'], .example-chip"
+          );
+          document.body.classList.toggle("cursor-hovering", Boolean(interactive));
         });
-
-        window.addEventListener("mousedown", () => {
-          document.body.classList.add("cursor-clicking");
-        });
-        window.addEventListener("mouseup", () => {
-          document.body.classList.remove("cursor-clicking");
-        });
-        document.addEventListener("mouseleave", () => {
-          dot.style.opacity = "0";
-          ring.style.opacity = "0";
-          cursorVisible = false;
-        });
-        document.addEventListener("mouseenter", () => {
-          dot.style.opacity = "1";
-          ring.style.opacity = "1";
-          cursorVisible = true;
-        });
+        window.addEventListener("mousedown", () => document.body.classList.add("cursor-clicking"));
+        window.addEventListener("mouseup", () => document.body.classList.remove("cursor-clicking"));
+        document.addEventListener("mouseleave", () => { ring.style.opacity = "0"; });
+        document.addEventListener("mouseenter", () => { ring.style.opacity = "1"; });
 
         function animateRing() {
           const damping = 0.15;
@@ -2505,77 +2508,6 @@
         }
         requestAnimationFrame(animateRing);
       }
-
-      // 5. Navbar Shortcuts Trigger & Modal Control
-      const modal = document.getElementById("shortcuts-modal");
-      const modalClose = document.getElementById("shortcuts-close");
-      const kbd = document.querySelector("nav kbd.shortcut-key");
-      if (kbd) {
-        const label = kbd.nextElementSibling;
-        const wrapper = document.createElement("div");
-        wrapper.className = "nav-shortcuts-btn hidden sm:inline-flex items-center gap-2 cursor-pointer";
-        wrapper.style.opacity = "0.7";
-        wrapper.style.transition = "opacity var(--transition-fast)";
-        kbd.parentNode.insertBefore(wrapper, kbd);
-        wrapper.appendChild(kbd);
-        wrapper.appendChild(label);
-        kbd.classList.remove("hidden");
-        label.classList.remove("hidden");
-
-        wrapper.addEventListener("click", () => {
-          modal.classList.add("open");
-        });
-      }
-
-      if (modalClose) {
-        modalClose.addEventListener("click", () => {
-          modal.classList.remove("open");
-        });
-      }
-      if (modal) {
-        modal.addEventListener("click", (e) => {
-          if (e.target === modal) {
-            modal.classList.remove("open");
-          }
-        });
-      }
-
-      // 6. Keyboard Shortcuts
-      const ta = document.getElementById("raw-input");
-      if (ta) {
-        ta.addEventListener("keydown", (e) => {
-          if (e.key === "Escape") {
-            ta.value = "";
-            if (typeof updateCharCount === "function") updateCharCount();
-            if (typeof showToast === "function") showToast("Input cleared", "info");
-          }
-        });
-      }
-
-      window.addEventListener("keydown", (e) => {
-        // Ignore global keyboard shortcuts when typing in inputs/textareas
-        const active = document.activeElement;
-        if (active && (active.tagName === "INPUT" || active.tagName === "TEXTAREA")) {
-          return;
-        }
-        if (e.key === "?") {
-          e.preventDefault();
-          if (modal) modal.classList.toggle("open");
-        }
-        if (e.key === "Escape") {
-          if (modal) modal.classList.remove("open");
-        }
-        if (e.key === "/") {
-          e.preventDefault();
-          if (ta) ta.focus();
-        }
-        if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "c") {
-          if (typeof latestOutput !== "undefined" && latestOutput) {
-            e.preventDefault();
-            if (typeof doCopy === "function") doCopy(latestOutput);
-          }
-        }
-      });
     })();
   </script>
 

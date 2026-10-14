@@ -18,7 +18,7 @@ Details and evidence: [phase-0-plan.md §7](phase-0-plan.md#7-progress-log).
 | `/enhance` type-invalid input (non-object body, non-string `prompt`) | **Fixed in review:** `400` JSON (was `500` HTML since FORGE 1.x) | `tests/test_enhance_providers.py::TestInputValidation` |
 | CI matrix (Py 3.10/3.11/3.12) | Reproduced in Docker: 318 passed, 1 skipped each | phase-0-plan §7 cumulative review |
 | `GET /health` | Implemented, Tested-fake; works without credentials | `tests/test_package.py`; Docker run |
-| `GET /` legacy UI | Implemented; template changed only to fix the JSON export | template diff vs HEAD: +2/−5 lines |
+| `GET /` legacy UI | Implemented; Phase A usability/accessibility fixes (literal output, no Ctrl+C/Escape hijacks, backend error messages, Stop/cancel, explicit states, accessible dialog and copy menu, AA contrast, native cursor); layout and branding unchanged | `tests/test_legacy_ui.py` + `tests/frontend/` (Node, real template script, fake DOM, Flask stream replay); one-off headless Chrome 155 check (28/28 behaviour checks plus dialog layout at 320×256, 375×812, 1280×900; fake provider; external CSS/fonts blocked, so Tailwind/font styling not verified) |
 | UI "Copy as JSON" | **Fixed**: exports `{"enhanced_prompt": ...}` | `tests/test_legacy_ui.py` (Node; fails on the original template); one-off real-browser check |
 | `X-Request-ID` header | Implemented, Tested; verified under real Gunicorn | `tests/test_observability.py`; Docker run |
 | Structured JSON logs (no prompts/outputs/secrets) | Implemented, Tested; verified under real Gunicorn | `tests/test_observability.py`; Docker logs |

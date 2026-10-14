@@ -3,6 +3,61 @@
 All notable changes to FORGE. Dates are ISO 8601. Entries under **Unreleased** are not yet
 released.
 
+## Unreleased — Legacy web UI usability and accessibility fixes (Phase A)
+
+The existing page at `/` (`src/forge/templates/index.html`) keeps its layout, dark theme,
+champagne accent, WebGL background, wordmark and hover effects. The backend and the
+`/enhance` stream protocol are unchanged.
+
+### Fixed
+
+- The enhanced prompt is shown as literal text, exactly as it is copied. Previously the page
+  reformatted model output (underscores became italics, `**`, code fences and paths were
+  altered, headings were re-capitalised), so the displayed text differed from the copied
+  text.
+- Ctrl/⌘+C is no longer intercepted: copying a selected part of the output works.
+- Escape no longer deletes the prompt.
+- Errors show the server's own safe message (unavailable, server error, credentials,
+  concurrency limit, missing configuration, …) instead of "Something went wrong"; the error
+  panel, retry button, button spinner and character-counter warnings are now styled.
+- The native cursor (including the text I-beam) is visible again; the decorative ring now
+  trails it and is off when reduced motion is requested.
+- Text contrast meets WCAG AA (muted text 5.2:1 or more on every surface).
+- The shortcuts dialog is a native `<dialog>` opened with `showModal()`: opened by a button
+  or `?`, focus moves in and back to the trigger, the page behind it is inert (keyboard and
+  assistive technology), and Escape, the close button or a backdrop click closes it. The
+  Copy menu exposes its expanded state, supports arrow keys, Home/End and Escape, is
+  disabled until there is output, and is shown with the `hidden` attribute so its first
+  item can take focus as soon as it opens. On short viewports (small phones, 400% zoom) the
+  dialog scrolls instead of cutting off its title and close button.
+- Status changes (enhancing, complete, stopped, failed, copied) are announced through a
+  polite live region. Decorative icons are hidden from screen readers.
+- The removed "Saved" indicator never saved anything; the footer no longer shows "© 2024 THE
+  SILENT MONOLITH"; touch devices are no longer told to press ⌘/Ctrl+Enter.
+- Where the browser offers no Clipboard API (plain-HTTP pages other than localhost), Copy
+  says so and suggests copying the selected text manually, instead of throwing.
+
+### Added
+
+- A Stop button while generating: it aborts the request (the server already releases the
+  provider stream when the client disconnects), keeps the partial output with a clear
+  "Stopped" state, and allows a clean new request. One request at a time.
+- Explicit idle, loading, success, stopped and error states (`data-state` on the output).
+- Copy menu: "Copy text" and "Copy as JSON" (the identical "Plain Text"/"Markdown" options
+  were merged). JSON of stopped output includes `"partial": true`.
+
+### Tests
+
+- `tests/frontend/`: a fake DOM (`fake_dom.mjs`) that runs the template's real script, a
+  behaviour suite (`legacy_ui_behavior.test.mjs`, Node's built-in test runner) and a replay
+  harness that feeds real Flask `/enhance` streams (fake provider) into the UI. The fake DOM
+  runs the script while the page is still being parsed, as a browser does.
+  `tests/test_legacy_ui.py` runs them and checks contrast and removed behaviours.
+- Checked once in headless Chrome 155 against the real Flask app with a fake provider
+  (isolated: no `.env`, all hosts except 127.0.0.1 blocked, so Tailwind and fonts did not
+  load): 28/28 behavioural checks passed, plus the shortcuts dialog at 320×256, 375×812
+  and 1280×900. Visual styling that depends on Tailwind and the web fonts was not verified.
+
 ## Unreleased — FORGE 2.0 Phase 0 Step 7 (design; no live run)
 
 ### Added

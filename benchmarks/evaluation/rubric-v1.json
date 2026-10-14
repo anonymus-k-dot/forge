@@ -1,0 +1,56 @@
+{
+  "rubric_id": "forge-step7-answer-quality",
+  "version": "1.0.0",
+  "applies_to": "target-model answers exported by `forge benchmark export-blind`",
+  "general_rules": [
+    "Judge each answer only against the original task prompt shown with it and the rater note for that task. The condition that produced the answer is hidden; do not try to infer it.",
+    "Rate every answer on its own merits (absolute scale), even when answers to the same task are shown together.",
+    "Length, headings, formatting and polished wording earn nothing by themselves. They count only where the task explicitly asks for them; then they belong to instruction_adherence.",
+    "Content that was not asked for is neutral unless it is wrong, contradicts the task, or breaks an explicit constraint.",
+    "A confident tone does not make an answer correct. Check facts against the task's own material and the rater note.",
+    "A refusal, an answer to a different question, or a request for clarification instead of an answer scores task_success 0, unless the task is genuinely impossible as stated.",
+    "Rate in the order given in items.jsonl (tasks and answers are pre-shuffled). Do not revise a rating after seeing later answers, except to correct an obvious slip; note any such change."
+  ],
+  "dimensions": {
+    "task_success": {
+      "primary": true,
+      "scale": [0, 1, 2, 3],
+      "question": "Does the answer accomplish what the task asks?",
+      "anchors": {
+        "0": "Does not accomplish the task: wrong, off-topic, refused, or so incomplete or incorrect that the requester could not use it.",
+        "1": "Attempts the task but has a major error or omission (an incorrect key fact or result, or a central part of the request missing); would need substantial correction.",
+        "2": "Accomplishes the task with only minor problems (a small inaccuracy that does not change the outcome, a minor omission, or a small constraint slip); usable with light editing.",
+        "3": "Fully accomplishes the task: correct, complete for what was asked, and within the stated constraints; nothing material to fix."
+      }
+    },
+    "instruction_adherence": {
+      "scale": [0, 1, 2],
+      "question": "Does the answer follow the explicit constraints stated in the prompt (format, length, required elements, prohibitions)?",
+      "anchors": {
+        "0": "Violates at least one explicit constraint in a way that matters.",
+        "1": "A minor slip on an explicit constraint (e.g. slightly over a length limit).",
+        "2": "Follows every explicit constraint (or the prompt states none)."
+      }
+    },
+    "factual_error": {
+      "type": "boolean",
+      "definition": "true if the answer states at least one thing that is false given the task's own material or well-established knowledge (wrong numbers, wrong facts, code that does not do what is claimed)."
+    },
+    "unsupported_claim": {
+      "type": "boolean",
+      "definition": "true if the answer invents specifics not given and not inferable (names, numbers, sources, features), or uses outside information where the task says to use only the provided material."
+    }
+  },
+  "missing_or_failed_outputs": "Answers that do not exist are not shown to raters. An empty answer, an empty rewrite, or a provider rejection of the condition's own request scores task_success 0 automatically (condition failure). Infrastructure failures (rate limits, timeouts, provider outages, configuration or authentication errors, runs stopped early) are excluded and reported; if more than 10% of tasks are excluded the run is invalid and is repeated in full, never partially.",
+  "disagreements": "With two or more raters: if task_success scores differ by at most 1 point the mean is used; a difference of 2 or more points requires adjudication (discussion or a third rater), recorded as a rating with \"adjudicated\": true. instruction_adherence uses the same rule; a factual_error or unsupported_claim flag raised by any rater stands unless adjudicated.",
+  "rating_record": {
+    "item_id": "from items.jsonl",
+    "rater_id": "stable pseudonym, e.g. r1",
+    "task_success": "0-3",
+    "instruction_adherence": "0-2",
+    "factual_error": "true/false",
+    "unsupported_claim": "true/false",
+    "adjudicated": "false unless resolving a disagreement",
+    "notes": "optional free text"
+  }
+}

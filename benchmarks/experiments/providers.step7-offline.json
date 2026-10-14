@@ -1,0 +1,15 @@
+{
+  "default_model": "step7-target",
+  "providers": {
+    "fixture": {
+      "type": "fake",
+      "fake_response": "OFFLINE FIXTURE: synthetic output, not produced by a model.",
+      "max_concurrency": 1,
+      "retry": { "max_attempts": 2 }
+    }
+  },
+  "models": {
+    "step7-rewriter": { "provider": "fixture", "model": "fixture-model" },
+    "step7-target": { "provider": "fixture", "model": "fixture-model" }
+  }
+}

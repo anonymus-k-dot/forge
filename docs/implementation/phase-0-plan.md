@@ -29,7 +29,7 @@ Each is a separately reviewable diff.
 | 4 | **Database layer.** **Done — see §7** (no `forge db` CLI: the standard `alembic` CLI plus `forge.db.migrate` helpers covered every need). Settings → engine (pool, SSL, connect timeout, pool mode), session scope with explicit transactions, models, first Alembic migration, repositories, `/ready`, `forge db upgrade/current`. Docker Compose `db` service. | add `alembic.ini`, `src/forge/db/**`, `src/forge/cli.py`; change `docker-compose.yml`, `.env.example` | Unit: URL normalization, SSL/pool-mode options, missing-URL error. **Postgres:** `alembic upgrade head` on empty DB, `downgrade base` + upgrade again, `alembic check` (models == migrations), FK/unique/check constraints reject bad rows, `RESTRICT` prevents deleting runs with executions, data visible from a fresh engine (restart simulation) |
 | 5 | **Cache + budgets.** **Done — see §7** (code in `src/forge/infrastructure/`; SQL in the stores rather than a separate `db/repositories/cache.py`). Cache key, memory + Postgres stores, router integration, `BudgetGuard`. | add `src/forge/infrastructure/{cache,budgets}.py`, `db/repositories/cache.py` | Unit: key differs when any of provider/model/params/system/messages/schema change; identical inputs → identical key; failures not cached; `cache_hit` flagged. Budget stops the N+1th call. Postgres: unique key under concurrent insert |
 | 6 | **Pilot benchmark.** ~30 tasks, systems B0/B1/F-legacy, L0 checks, manifest hashing, runner, reports, persistence, `forge benchmark run`. **Implemented — see §7** (module names differ: `dataset`, `conditions`, `manifest`, `records`, `verify`, `report`; no migration). | add `src/forge/benchmark/*`, `benchmarks/pilot-v0/{tasks.jsonl,README.md}` | Task-file schema validation; manifest hash stable across runs and changes when any input changes; fake-provider end-to-end run writes manifest + results + summary and DB rows; replay from cache flagged as cached |
-| 7 | **Real-provider verification** (needs your go-ahead, see §6). Single smoke request; then optionally the pilot on one real target model. | — | Recorded command output, model ID, usage; or marked **NOT RUN** |
+| 7 | **Real-provider verification** (needs your go-ahead, see §6). Single smoke request; then optionally the pilot on one real target model. **Designed and validated offline — see §7 and `docs/benchmark/step-7-experimental-protocol.md`; live calls NOT RUN.** | — | Recorded command output, model ID, usage; or marked **NOT RUN** |
 | 8 | **CI, docs, status.** Postgres service in CI, migrations check, mypy; required docs from spec §29 that Phase 0 touches; README corrected; feature-status updated. | change `.github/workflows/ci.yml`, `Dockerfile`, `README.md`, `docs/**` | CI config validated locally where possible (same commands run locally) |
 
 ## 3. Dependencies
@@ -719,3 +719,81 @@ is rejected against `pilot-v1`.
 | Mutation check (16 injected regressions, including the 7 new: cache-hit usage counted, retries not counted, limited tasks counted, `completed` written before finalization, stale summary not corrected, `finalizing` accepted, database status ignored) | 16/16 caught; sources restored byte-identical |
 | ruff 0.3.5 and 0.17.0 (`check .`, `format --check` on the 24 changed/new Python files); mypy 2.4.0 (43 files) | PASS |
 | Real providers, PostgreSQL 17, Docker/Gunicorn, GitHub Actions | NOT RUN |
+
+### Increment 7 — real-model pilot design (2026-10-13, uncommitted; no live run)
+
+Base: local commit `60cf680`. Scope per the owner's Step 7 brief: design, minimal
+infrastructure and offline validation only; no provider call of any kind.
+
+**What changed**
+
+- Protocol `docs/benchmark/step-7-experimental-protocol.md` (`forge-step7-pilot` 1.1.0):
+  research question, primary outcome (blinded human task success 0–3, F-legacy vs B0),
+  secondary outcomes, design controls, failure classification, rubric, statistical plan,
+  provider facts with public sources, budget and fail-closed gates, privacy, procedure and
+  decisions D1–D10.
+- `src/forge/benchmark/experiment.py` (config + offline plan), `blinding.py` (export,
+  ratings), `analysis.py` (paired analysis); CLI `plan`, `export-blind`, `analyze`;
+  runner `pace_seconds`; CLI output encoding and file-error handling.
+- `benchmarks/experiments/` (pilot and one-task smoke configs with
+  `live_execution_approved: false` and every owner check unset, offline rehearsal, provider
+  files), `benchmarks/evaluation/` (rubric, rater notes).
+- Tests: `tests/benchmark/test_step7.py` (75 after the review fixes).
+
+**Offline verification (2026-10-13)**: full suite without a database 668 passed, 82
+skipped (network and port-5432 guard: 0 attempts); ruff (both versions) and mypy (46
+files) pass; offline plan and fake-provider rehearsal as recorded in the protocol §9. No
+database test was needed (no database code changed). Smoke test, live pilot and human
+ratings: **NOT RUN**.
+
+**Review fixes (2026-10-14, uncommitted; no live run).** A final review found that an
+unknown price passed the cost check when the ceiling was 0, a missing token budget was not
+a failure, analysis compared profile names but not providers/models, and the key was
+written into the rater folder. Fixed: F1 fail-closed pricing (published price with source,
+date, model and tier; unknown never free; ceiling checked against the enforced token
+budget; nonzero Gemini prices refused because thought tokens are uncounted) with separate
+owner checks for tier/billing, rate limits, data use and thinking, enforced by
+`run --experiment` before credentials are read and re-checked by the runner; F2 token budget
+required for real providers; F3 experiment identity recorded in the manifest and checked by
+analysis together with dataset, conditions, profiles, providers, models and execution
+mapping; F4 key written outside the rater folder; F5 protocol 1.1.0 with cited provider
+facts. Offline fake-provider runs no longer load `.env`. Earlier test runs and rehearsals
+did load `.env` into process memory through the app factory and CLI settings (never printed
+or sent); the 2026-10-14 checks ran with a guard that blocks `.env` reads.
+
+**Offline verification (2026-10-14)**, with the network/port-5432 guard and the `.env` guard
+(0 network attempts, 0 `.env` reads): Step 7 tests 75 passed; benchmark tests 236 passed;
+full suite without a database 716 passed, 82 skipped; ruff 0.3.5 and 0.17.0 (check and
+format) and mypy (46 files) pass. Rehearsal: plan PASS → `run --experiment` completed (90
+records, experiment identity in the manifest) → verify valid and complete → export-blind
+(rater folder: `items.jsonl` and `rating-template.jsonl` only; key outside; key inside the
+folder refused) → analyze refused without `--allow-synthetic`, then SYNTHETIC,
+INCONCLUSIVE. Live and smoke configs: plan and run refused on exactly the owner checks; no
+run directory created. `pilot-v0`/`pilot-v1` hashes and the historical Step 6 run unchanged.
+Smoke test, live pilot and human ratings: **NOT RUN**.
+
+**Cost-integrity fix (2026-10-14, uncommitted; no live run).** The staged-diff audit found
+that a published price was resolved by model ID alone, so Gemini's zero price could be
+applied to another provider exposing the same model name, and owner confirmations covered
+only one provider. Fixed: prices are bound to the exact provider entry (name, type and, for
+OpenAI-compatible providers, endpoint URL) and model, compared exactly; duplicate
+provider/model prices are rejected; `accounts` holds one owner-confirmation entry per real
+provider and every real provider needs its own. The protocol (§7) now states that the token
+budget refuses the next call once exhausted but does not cap a call's provider-reported
+usage, so the total can exceed the limit by the final call's excess and cost figures are
+estimates, not hard caps. Budget implementation unchanged. Verification (guards: 0 network
+attempts, 0 `.env` reads): Step 7 tests 89 passed; benchmark tests 250 passed; full suite
+without a database 730 passed, 82 skipped; ruff 0.3.5/0.17.0 and mypy (46 files) pass;
+rehearsal and live/smoke refusals as above; datasets and the historical run unchanged.
+
+**Endpoint-identity fix (2026-10-14, uncommitted; no live run).** The runner gate now also
+compares each profile's endpoint (`base_url`, exactly as the providers config stores it)
+with the config's providers file and refuses a difference before any request; the
+manifest's experiment identity records each role's effective endpoint (no credentials,
+headers or query strings); analysis rejects a run whose recorded endpoints are missing or
+differ from the providers file. Tests use an in-process HTTP mock (`httpx.MockTransport`):
+matching endpoint accepted and recorded with no secret in artifacts, analysis output or
+logs; changed endpoint refused by the runner with zero requests; tampered or missing
+recorded endpoint and changed providers-file endpoint rejected by analysis (a host-case
+difference is not equated; one trailing `/` is removed by the providers config); URLs with
+credentials, a query or a fragment refused without echoing them.

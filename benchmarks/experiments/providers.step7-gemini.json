@@ -1,0 +1,22 @@
+{
+  "default_model": "step7-target",
+  "providers": {
+    "gemini": {
+      "type": "google_genai",
+      "api_key_env": "GEMINI_API_KEY",
+      "timeout_seconds": 120,
+      "max_concurrency": 1,
+      "acquire_timeout_seconds": 600,
+      "retry": {
+        "max_attempts": 2,
+        "base_delay_seconds": 2,
+        "max_delay_seconds": 30,
+        "max_retry_after_seconds": 60
+      }
+    }
+  },
+  "models": {
+    "step7-rewriter": { "provider": "gemini", "model": "gemma-4-31b-it" },
+    "step7-target": { "provider": "gemini", "model": "gemma-4-31b-it" }
+  }
+}

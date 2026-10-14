@@ -4,7 +4,7 @@ Legend: **Implemented** (code exists) · **Tested-fake** (automated tests with f
 providers pass) · **Tested-real** (verified against a real provider/database) ·
 **Benchmarked** · **Not started** · **NOT RUN** (designed but never executed).
 
-Last updated: 2026-10-13 — increments 1–4 (`eb126f0`) and 5 (`d101e71`) committed locally; increment 6 implemented, acceptance fixes applied, validated offline, uncommitted.
+Last updated: 2026-10-14 — increments 1–4 (`eb126f0`), 5 (`d101e71`) and 6 (`60cf680`) committed locally; increment 7 designed, review-fixed and validated offline (no live run), uncommitted.
 Details and evidence: [phase-0-plan.md §7](phase-0-plan.md#7-progress-log).
 
 ## Legacy (FORGE 1.x) compatibility
@@ -49,10 +49,27 @@ Details and evidence: [phase-0-plan.md §7](phase-0-plan.md#7-progress-log).
 | 4. PostgreSQL + Alembic | **Done** — Tested-real against local PostgreSQL 17 (Docker); hosted DBs not connected; local dev DB reconciled to the corrected `0001` (23/23 constraint names match) |
 | 5. Cache + budgets | **Done, uncommitted; acceptance audit done (3 defects fixed)** — Tested-real on PostgreSQL 17 (ephemeral) before the audit and PostgreSQL 18 (disposable cluster) after it; persistent local DB upgraded to `0002` (owner-approved, verified before the audit); Docker/Gunicorn not re-run after the audit; not yet used by a runner (increment 6) |
 | 6. Pilot benchmark (~30 tasks) | **Implemented, uncommitted** — Tested-fake (offline) and Tested-real on PostgreSQL 18.6 (disposable); benchmark against a real model **NOT RUN**; results INCONCLUSIVE by protocol |
-| 7. Real-provider verification | Not started — needs your permission to use keys |
+| 7. Real-provider verification | **Designed, validated offline, uncommitted** — protocol, experiment config, offline plan, blinded export and analysis; smoke test and pilot **NOT RUN** (need explicit approval) |
 | 8. CI with PostgreSQL, docs, README | Not started |
 
 Phase 0 acceptance: **not met** (increments 6–8 outstanding).
+
+## Real-model pilot design (increment 7)
+
+| Item | Status |
+|---|---|
+| Protocol `forge-step7-pilot` 1.1.0 (outcomes, design, rubric, analysis plan, provider facts with sources, budget, fail-closed gates) | Written; preregistered before any real output (1.1.0 revision also before any real output) |
+| Experiment config + `forge benchmark plan` (offline preflight; no adapter, router, socket, settings or `.env` access) | Implemented, Tested |
+| Fail-closed cost/token checks (unknown price fails; a price is bound to provider name, type, endpoint and model, with tier, source and date; cost at the token budget vs ceiling - an estimate, not a hard cap) and owner checks per real provider (tier/billing, rate limits, data use) plus thinking risk | Implemented, Tested |
+| Live execution gate (`run --experiment`; preflight before credentials; runner conformance check; experiment identity in manifest) | Implemented, Tested-fake; never exercised against a real provider |
+| Analysis identity checks (experiment, protocol, dataset, conditions, profiles, providers, models, recorded endpoints, execution mapping) | Implemented, Tested |
+| Pacing between model calls (`--pace-seconds`) | Implemented, Tested |
+| Blinded export for human rating (key outside the rater folder); ratings schema | Implemented, Tested |
+| Paired analysis (one task set, failure classification, bootstrap; synthetic runs refused) | Implemented, Tested-fake (offline rehearsal) |
+| Rubric and `pilot-v1` rater notes | Prepared (not yet used by raters) |
+| Account tier/billing status, rate limits, model access on the owner's key | **Not verified** (owner checks; FORGE never queries an account) |
+| One-task smoke test; 30-task live pilot; human ratings | **NOT RUN** — require owner approval |
+| LLM judge | Not implemented (would need separate authorization and calibration) |
 
 ## Pilot benchmark (increment 6)
 

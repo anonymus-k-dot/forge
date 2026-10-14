@@ -268,6 +268,9 @@ credentials.
   the budget guard refuses further calls for it. Ctrl-C while a task is executing finalizes
   the run as `cancelled` (exit code 130). Cancellation takes effect between tasks; a call
   already in flight completes.
+- Pacing (`--pace-seconds`, default 0): minimum seconds between the starts of
+  consecutive model calls, so a provider's per-minute limit does not turn into recorded
+  failures; recorded in `run.json` (`pace_seconds`). It does not change any request.
 
 ## 9. Running the pilot offline (safe)
 
@@ -284,8 +287,12 @@ against a different dataset version fails (task hashes differ).
 condition gets the same synthetic output: the numbers validate the harness, not FORGE. Add
 `--database` (with `DATABASE_URL` at the migration head) to persist to PostgreSQL.
 
-Providers of any other type are refused unless `--allow-real-providers` is given. Running
-the pilot against a real model is increment 7 and requires the owner's explicit approval.
+Providers of any other type are refused. Since increment 7 a real-provider run must be made
+from an experiment config (`forge benchmark run --experiment FILE --allow-real-providers`)
+whose offline preflight passes — published price, cost ceiling, token budget, the owner's
+account confirmations and explicit approval (see
+[`step-7-experimental-protocol.md`](step-7-experimental-protocol.md) §7). Running the pilot
+against a real model requires the owner's explicit approval.
 
 ## 10. Verification status
 

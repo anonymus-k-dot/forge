@@ -1,0 +1,74 @@
+{
+  "config_version": 1,
+  "experiment_id": "forge-step7-pilot-v1",
+  "protocol": "docs/benchmark/step-7-experimental-protocol.md",
+  "protocol_version": "1.1.0",
+  "dataset": {
+    "path": "benchmarks/pilot-v1",
+    "id": "forge-pilot",
+    "version": "1.0.0",
+    "sha256": "843226339e0d27417822e5ac0bf0b87ab8e54805165f98282af5d252baa578a2",
+    "splits": [
+      "dev",
+      "heldout"
+    ]
+  },
+  "providers_file": "benchmarks/experiments/providers.step7-gemini.json",
+  "target_profile": "step7-target",
+  "rewriter_profile": "step7-rewriter",
+  "conditions": [
+    "B0",
+    "B1",
+    "F-legacy"
+  ],
+  "samples_per_case": 1,
+  "cache": "disabled",
+  "execution_order": "protocol",
+  "pace_seconds": 5.0,
+  "budget": {
+    "max_model_calls": 300,
+    "max_estimated_tokens": 705000,
+    "confirm_above_model_calls": 150
+  },
+  "cost": {
+    "currency": "USD",
+    "ceiling": 0.0,
+    "prices": [
+      {
+        "provider": "gemini",
+        "provider_type": "google_genai",
+        "model": "gemma-4-31b-it",
+        "tier": "free",
+        "input_per_million_tokens": 0.0,
+        "output_per_million_tokens": 0.0,
+        "source_url": "https://ai.google.dev/gemini-api/docs/pricing",
+        "retrieved_on": "2026-10-14",
+        "source_note": "Gemini API pricing page (last updated 2026-10-13 UTC), Gemma 4: input and output 'Free of charge' on the Free Tier; Paid Tier 'Not available'. Published price only: it does not show that the owner's API project is on the free tier."
+      }
+    ]
+  },
+  "accounts": [
+    {
+      "provider": "gemini",
+      "tier": "free",
+      "tier_and_billing_status_confirmed": false,
+      "rate_limits_checked": false,
+      "data_use_terms_accepted": false,
+      "confirmed_by": null,
+      "confirmed_on": null
+    }
+  ],
+  "thinking": {
+    "control": "provider_default",
+    "accounting_risk_acknowledged": false
+  },
+  "evaluation": {
+    "rubric": "benchmarks/evaluation/rubric-v1.json",
+    "rater_notes": "benchmarks/evaluation/pilot-v1-rater-notes.jsonl",
+    "blinding_seed": 7301,
+    "bootstrap_seed": 7302,
+    "bootstrap_resamples": 10000,
+    "max_excluded_task_fraction": 0.1
+  },
+  "live_execution_approved": false
+}

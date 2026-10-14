@@ -36,6 +36,7 @@ from forge.benchmark import INTERPRETATION, PROTOCOL_ID, PROTOCOL_VERSION
 from forge.benchmark.checks import evaluate
 from forge.benchmark.conditions import CONDITION_IDS, Condition, get_conditions, target_request
 from forge.benchmark.dataset import SPLITS, Dataset, Task
+from forge.benchmark.experiment import ExperimentConfig, check_run_against_experiment
 from forge.benchmark.manifest import (
     build_manifest,
     manifest_bytes,
@@ -114,6 +115,14 @@ class RunOptions:
     cache_scope: str | None = None  # default: the run ID (no reuse across runs)
     cache_ttl_seconds: int = DEFAULT_TTL_SECONDS
     workspace_slug: str = "benchmarks"
+    # Minimum seconds between the starts of consecutive model calls (0 = no pacing). For
+    # rate-limited providers, so that rate limits do not turn into recorded failures.
+    pace_seconds: float = 0.0
+    # Step 7 live execution gate: when set, the run must match this experiment config and its
+    # offline preflight must pass (cost, token budget, account checks, approval) before
+    # anything is sent; the experiment's identity and the run's effective provider
+    # endpoints are recorded in the manifest. The CLI requires it for real providers.
+    experiment: ExperimentConfig | None = None
 
 
 @dataclass
@@ -307,6 +316,7 @@ class _State:
     records: list[ResultRecord] = field(default_factory=list)
     persistence: dict[str, str] = field(default_factory=dict)
     stop_reason: str | None = None
+    last_call_started: float | None = None
     failure: dict[str, str] | None = None
     consistent: bool = True
     summary: dict[str, Any] = field(default_factory=dict)
@@ -322,6 +332,7 @@ class BenchmarkRunner:
         should_stop: Callable[[], bool] = lambda: False,
         monotonic: Callable[[], float] = time.monotonic,
         now: Callable[[], datetime] = lambda: datetime.now(timezone.utc),
+        sleep: Callable[[float], None] = time.sleep,
     ) -> None:
         self._router = router
         self._database = database
@@ -330,6 +341,7 @@ class BenchmarkRunner:
         self._should_stop = should_stop
         self._monotonic = monotonic
         self._now = now
+        self._sleep = sleep
 
     # ── preparation ────────────────────────────────────────────────────────
 
@@ -356,6 +368,23 @@ class BenchmarkRunner:
                 "are not authorized by default; pass --allow-real-providers only with explicit "
                 "approval."
             )
+        if not 0 <= options.pace_seconds <= 600:
+            raise ConfigurationError("pace_seconds must be between 0 and 600.")
+        identity = None
+        if options.experiment is not None:
+            identity = check_run_against_experiment(
+                options.experiment,
+                dataset=options.dataset,
+                providers=self._router.config,
+                splits=options.splits,
+                task_ids=options.task_ids,
+                target_profile=options.target_profile,
+                rewriter_profile=options.rewriter_profile,
+                conditions=options.conditions,
+                budget_limits=options.budget_limits,
+                pace_seconds=options.pace_seconds,
+                cache=options.cache,
+            )
         if options.cache and self._database is None and self._cache_store is None:
             raise ConfigurationError("The response cache requires --database (PostgreSQL).")
         limits = BudgetLimits.parse(dict(options.budget_limits))
@@ -377,6 +406,8 @@ class BenchmarkRunner:
             target=target,
             rewriter=rewriter,
         )
+        if identity is not None:
+            manifest["experiment"] = identity
         return tasks, conditions, manifest
 
     # ── execution ──────────────────────────────────────────────────────────
@@ -610,6 +641,7 @@ class BenchmarkRunner:
                 },
             )
         meter = _AttemptMeter(state.budget)
+        self._pace(state)
         started = self._monotonic()
         base = {
             "role": role,
@@ -666,6 +698,14 @@ class BenchmarkRunner:
             ),
             result,
         )
+
+    def _pace(self, state: _State) -> None:
+        pace = state.options.pace_seconds
+        if pace > 0 and state.last_call_started is not None:
+            wait = pace - (self._monotonic() - state.last_call_started)
+            if wait > 0:
+                self._sleep(wait)
+        state.last_call_started = self._monotonic()
 
     def _elapsed_ms(self, started: float) -> int:
         return max(0, round((self._monotonic() - started) * 1000))
@@ -916,6 +956,7 @@ class BenchmarkRunner:
             # otherwise the pre-call estimate (see target architecture §5.2).
             "budget_usage": usage,
             "budget_usage_tokens_basis": "provider-reported where available, else estimated",
+            "pace_seconds": state.options.pace_seconds,
             "cache": {
                 "enabled": state.cache_store is not None,
                 "scope": state.cache_scope,

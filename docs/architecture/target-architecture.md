@@ -82,6 +82,9 @@ src/forge/
     runner.py               # executes a run via ProviderRouter; files + PostgreSQL
     verify.py               # integrity verification of a run directory
     report.py               # summary.md
+    experiment.py           # (increment 7) experiment config + offline plan/preflight
+    blinding.py             # (increment 7) blinded export for human rating, ratings schema
+    analysis.py             # (increment 7) paired analysis of a rated run
 benchmarks/pilot-v0/        # version-controlled task set (30 tasks) + offline fake providers
 tests/
   unit/  integration/  (postgres-marked tests require TEST_DATABASE_URL)

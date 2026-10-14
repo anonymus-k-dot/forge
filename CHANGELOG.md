@@ -3,7 +3,57 @@
 All notable changes to FORGE. Dates are ISO 8601. Entries under **Unreleased** are not yet
 released.
 
-## Unreleased — FORGE 2.0 Phase 0 Step 6
+## Unreleased — FORGE 2.0 Phase 0 Step 7 (design; no live run)
+
+### Added
+
+- Step 7 real-model pilot protocol (`docs/benchmark/step-7-experimental-protocol.md`,
+  `forge-step7-pilot` 1.1.0): preregistered primary outcome (blinded human task success,
+  F-legacy vs B0), secondary outcomes, rubric (`benchmarks/evaluation/rubric-v1.json`),
+  rater notes for `pilot-v1`, failure classification and a descriptive paired analysis plan.
+  Interpretation stays INCONCLUSIVE. No real model has been called. Provider facts (model
+  availability, published pricing, data-use terms, subscriptions, thinking mode) are cited
+  from public sources retrieved 2026-10-14; account tier, billing status and rate limits are
+  owner checks.
+- `forge benchmark plan` (offline plan and preflight from a versioned experiment config;
+  never builds a provider adapter or reads credentials). For real providers it fails closed:
+  a positive token budget is required; every provider/model pair needs a published price
+  bound to that exact provider entry (name, type, endpoint) and model, with tier, source URL
+  and retrieval date (a missing price is unknown, never free; a price is never applied to
+  another provider with the same model name; duplicates are rejected); the cost at the
+  token budget must not exceed the ceiling (an estimate: the budget stops the next call but
+  does not cap the final call's reported usage; a nonzero Gemini price is refused because
+  thought tokens are not counted); and the owner's tier/billing, rate-limit and data-use
+  confirmations for every real provider, the thinking-risk acknowledgement and
+  `live_execution_approved` are separate checks.
+- `forge benchmark export-blind` (seeded, label-free rater folder with only items and a
+  rating template; the key is written to a separate `--key` path that must lie outside the
+  rater folder and is never overwritten) and `forge benchmark analyze` (paired analysis on
+  one task set; refuses fake-provider runs unless `--allow-synthetic`, which labels the
+  report SYNTHETIC; refuses runs whose recorded experiment identity, dataset, conditions,
+  profiles, providers, models or execution mapping differ from the config).
+- Experiment configs `benchmarks/experiments/step7-pilot-v1.json` (proposed Gemini API
+  `gemma-4-31b-it` run) and `step7-smoke-v1.json` (one-task smoke test), both
+  `live_execution_approved: false` with every owner check unset, and an offline rehearsal
+  config.
+- `forge benchmark run --pace-seconds`: optional minimum interval between model calls
+  (default 0, unchanged behaviour), recorded in `run.json`.
+
+### Changed
+
+- **`forge benchmark run` refuses real providers unless `--experiment FILE` is given** (in
+  addition to `--allow-real-providers`). With `--experiment` the offline preflight runs
+  before `.env`, credentials or adapters are touched, every run setting comes from the
+  config (conflicting flags are refused), the runner re-checks the run against the config
+  (including each provider's endpoint, refused before any request if it differs), and the
+  manifest records the experiment ID, protocol, version, config hash and the effective
+  endpoint of each role (no credentials or query strings); analysis rejects a run whose
+  recorded endpoints differ from the config's providers file.
+- Offline fake-provider runs without `--database` no longer load `.env`.
+- The CLI no longer crashes when a console cannot encode report characters, and reports
+  unreadable input files as errors instead of tracebacks.
+
+## FORGE 2.0 Phase 0 Step 6 (local commit 60cf680)
 
 ### Added
 

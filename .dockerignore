@@ -7,6 +7,8 @@ __pycache__/
 .env
 .env.*
 .pytest_cache/
+.mypy_cache/
+.ruff_cache/
 .coverage
 htmlcov/
 tests/
@@ -17,3 +19,10 @@ docs/
 venv/
 .venv/
 *.log
+
+# Frontend: host dependencies and host builds stay out (the image builds web/dist).
+web/node_modules/
+web/dist/
+# Local env files at any depth (web/.env* would also feed the Vite build).
+**/.env
+**/.env.*

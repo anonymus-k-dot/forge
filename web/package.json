@@ -1,0 +1,27 @@
+{
+  "name": "forge-web",
+  "version": "0.1.0",
+  "private": true,
+  "description": "FORGE web frontend (React + TypeScript + Vite), served by Flask at /app/",
+  "type": "module",
+  "engines": {
+    "node": ">=22.18"
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "typecheck": "tsc --noEmit",
+    "test": "node --test \"tests/unit/*.test.mjs\"",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "react": "19.2.8",
+    "react-dom": "19.2.8"
+  },
+  "devDependencies": {
+    "@types/react": "19.2.18",
+    "@types/react-dom": "19.2.7",
+    "typescript": "6.0.3",
+    "vite": "8.2.2"
+  }
+}

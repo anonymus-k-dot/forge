@@ -103,6 +103,15 @@ http://localhost:5000
 gunicorn --bind 0.0.0.0:5000 --workers 2 --threads 4 --timeout 120 app:app
 ```
 
+### Web frontend (React, preview at `/app/`)
+The new interface lives in `web/` (Node.js 22.18+). Build it once and Flask serves it at
+http://localhost:5000/app/; the classic interface stays at `/`:
+```bash
+cd web && npm ci && npm run build
+```
+For development with hot reload, run `python app.py` and, in `web/`, `npm run dev`, then open
+http://127.0.0.1:5173/app/. Details, tests and the browser check: [web/README.md](../web/README.md).
+
 ---
 
 ## 6. Running Tests & Linting
@@ -116,6 +125,16 @@ pytest -v
 ```bash
 ruff check .
 ```
+
+### What CI runs
+`.github/workflows/ci.yml` has two jobs:
+- **Frontend** (Node 24.15.0, once): `npm ci`, `npm run typecheck`, `npm test` and
+  `npm run build` in `web/`, then `pytest tests/test_web_frontend.py` against that build
+  with `FORGE_REQUIRE_WEB_BUILD=1` (the build and Node checks fail instead of skipping).
+- **Lint & Unit Tests** (Python 3.10–3.12, unchanged): `ruff check .`, migrations against
+  a throwaway PostgreSQL, and the full `pytest` suite.
+
+The headless-Chrome check stays opt-in (`FORGE_BROWSER_TESTS=1`); CI does not run it.
 
 ---
 

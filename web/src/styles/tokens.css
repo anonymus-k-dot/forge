@@ -1,0 +1,47 @@
+/* Design tokens, carried over from the classic interface (src/forge/templates/index.html).
+   Contrast (WCAG AA): --label is at least 5.2:1 on every surface; see tests/test_web_frontend.py. */
+:root {
+  color-scheme: dark;
+
+  --surface-page: #060608;
+  --surface-card: #0d0d10;
+  --surface-elevated: #131317;
+  --surface-hover: #1c1c24;
+  --hairline: #1b1b20;
+  --hairline-strong: #2d2d34;
+
+  --accent: #c5a880; /* champagne */
+  --accent-dim: #9d8058;
+  --accent-soft: rgba(197, 168, 128, 0.25);
+  --white: #ffffff;
+  --text: #f4f4f5;
+  --text-output: #e4e4e7;
+  --label: #8e8e98;
+  --warning: #fbbf24;
+  --error: #f87171;
+  --error-strong: #ef4444;
+  --error-surface: #1a0f0f;
+
+  /* Local font stacks only: no web fonts are downloaded. Installed copies of the brand
+     faces (Inter, Outfit, Playfair Display) are used when present. */
+  --font-body: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, sans-serif;
+  --font-display: "Outfit", "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI",
+    Roboto, Arial, sans-serif;
+  --font-headline: "Playfair Display", "Iowan Old Style", "Palatino Linotype", Palatino,
+    "Book Antiqua", Georgia, serif;
+  --font-mono: ui-monospace, "Cascadia Code", "SF Mono", Menlo, Consolas, monospace;
+
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+
+  --ease: cubic-bezier(0.16, 1, 0.3, 1);
+  --fast: 150ms var(--ease);
+  --base: 250ms var(--ease);
+  --slow: 400ms var(--ease);
+
+  --z-header: 30;
+  --z-menu: 10;
+}

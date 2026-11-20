@@ -3,6 +3,80 @@
 All notable changes to FORGE. Dates are ISO 8601. Entries under **Unreleased** are not yet
 released.
 
+## Unreleased — React web frontend at `/app/` (Phase B)
+
+A new interface in `web/` (React 19, TypeScript, Vite 8), served by Flask at `/app/` beside
+the classic interface at `/`, which is unchanged. It uses the existing `POST /enhance`
+stream as is: no backend, provider, database or benchmark code changed for it.
+
+### Added
+
+- `web/`: prompt editor (10–2,000 characters counted as code points, live counter, clear
+  validation, Ctrl/⌘+Enter), output shown as literal text only (copied text = shown text),
+  Copy text / Copy as JSON (`{"enhanced_prompt"}`, plus `"partial": true` for incomplete
+  output), and explicit idle, loading, success, stopped and error states.
+- Streaming client: incremental SSE parsing (frames split anywhere, several per chunk,
+  CRLF/CR, UTF-8 split across chunks), safe messages for server errors, HTTP errors,
+  network failures, malformed frames, non-SSE responses, empty output and streams that end
+  without a completion frame. No automatic retries.
+- Stop cancels the browser request, keeps the partial output and ignores late data; a
+  failure after partial output keeps it, marked incomplete. The UI does not claim the
+  provider stopped generating.
+- Accessibility carried over from Phase A and extended: native modal `<dialog>` for
+  shortcuts (focus moves in, Tab wraps inside, Escape/close/backdrop close it, focus
+  returns), APG menu button for Copy (arrows, Home/End, Escape, Tab, closes when focus
+  leaves), one polite live region for every outcome, visible focus, AA contrast, reduced
+  motion, forced-colours support, usable at 200% and 400% zoom (no clipped dialog, no
+  horizontal scroll, header not sticky on short viewports), skip link.
+- Local CSS only: no Tailwind CDN, web fonts or icon font (installed brand fonts are used
+  when present; icons are inline SVG). The WebGL background of the classic page is replaced
+  by a static ambient gradient. A static shell and a `<noscript>` message show before
+  JavaScript runs or without it.
+- Flask: `src/forge/api/web.py` serves `web/dist` at `/app/` (`index.html` revalidated,
+  hashed assets cached for a year, CSP `script-src 'self'` and no inline scripts or styles,
+  `nosniff`). Without a build, `/app/` returns a 404 page with build instructions. No
+  other route changed.
+
+### Tests
+
+- `web/tests/unit` (Node's test runner on the TypeScript sources, no test framework): 42
+  tests. Mutation-checked: 11 deliberate defects (late updates applied, CRLF/CR handling,
+  per-chunk UTF-8 decoding, missing completion treated as success, duplicate requests,
+  abort reported as failure, HTTP errors ignored, JSON partial flag, limit off by one,
+  partial output dropped on failure) each fail the suite.
+- `tests/test_web_frontend.py`: Flask serving, headers, path traversal, missing build,
+  route table, legacy `/` and `/enhance` unchanged, source checks (no HTML rendering of
+  output, no external resources, no copy interception), contrast, the real build when
+  present, and an opt-in headless-Chrome run (`FORGE_BROWSER_TESTS=1`): 75/75 checks
+  against Flask with a scripted fake provider, nothing reachable but 127.0.0.1.
+
+### Fixed during verification
+
+- Lightning CSS (Vite 8's minifier) kept only `-webkit-backdrop-filter` when it preceded
+  `backdrop-filter`, so no blur in Chrome or Firefox; the standard property now comes last
+  and the build is checked for it.
+- Focus was lost when a request ended while the Stop button had focus; the copy menu could
+  reopen by itself after focus left it by keyboard; outcomes reached while the shortcuts
+  dialog was open went unannounced (the live region is inert behind a modal) and are now
+  announced when it closes.
+
+### Deployment and CI
+
+- `Dockerfile`: a `web` build stage (`node:24.15.0-slim`: `npm ci`, `npm test`,
+  `npm run build`); the runtime image (unchanged otherwise) receives only `web/dist`, at
+  `/app/web/dist`, so Docker deployments serve `/app/`. No Node or `node_modules` in it.
+- `.dockerignore`: excludes `web/node_modules`, `web/dist`, `.env` files at any depth and the
+  `.mypy_cache`/`.ruff_cache` tool caches (local build context: 100 MB → 0.85 MB).
+- CI: a `frontend` job (Node 24.15.0, npm cache keyed on the lockfile) runs `npm ci`,
+  type-check, unit tests, the production build, and `tests/test_web_frontend.py` with
+  `FORGE_REQUIRE_WEB_BUILD=1` (fails instead of skipping). The Python job is unchanged.
+- Tests check the Docker configuration statically (stages, copied path, Node version equal
+  to CI's, context exclusions) and the build (no source maps, no build settings, no inline
+  scripts or styles). Not yet exercised: building the image (no Docker engine was
+  available) and a CI run (nothing pushed).
+- Render: no repository configuration. A Docker-runtime service needs nothing more; a
+  native Python service needs the build command in `docs/deployment.md`.
+
 ## Unreleased — Legacy web UI usability and accessibility fixes (Phase A)
 
 The existing page at `/` (`src/forge/templates/index.html`) keeps its layout, dark theme,

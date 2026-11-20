@@ -14,6 +14,21 @@ The repository includes a production-optimized `Dockerfile` configured with a no
 docker build -t forge:latest .
 ```
 
+The build has two stages:
+
+1. **`web`** (`node:24.15.0-slim`): `npm ci` from `web/package-lock.json`, the frontend unit
+   tests (`npm test`) and the production build (`npm run build`, which type-checks first).
+   A failing test, type error or build error fails the image build. This stage needs
+   access to the npm registry.
+2. **Runtime** (`python:3.11-slim`, unchanged): the application as before, plus only the
+   build output, copied to `/app/web/dist`, where Flask serves the React interface at
+   `/app/`. Node and `node_modules` are not in the runtime image. The classic interface
+   stays at `/`, and the API routes, port (`$PORT`, default 10000), health check and
+   Gunicorn command are unchanged.
+
+`.dockerignore` keeps `.env` files (at any depth), `web/node_modules`, `web/dist` and local
+tool caches out of the build context; the image always builds the frontend itself.
+
 ### 1.2 Running the Container
 
 Run the container by passing your `GEMINI_API_KEY`:
@@ -101,7 +116,16 @@ server {
 
 ### Render / Railway / Fly.io
 
-1. **Build Command**: `pip install -r requirements.txt`
+The repository has no `render.yaml`; the service is configured in the platform dashboard.
+
+- **Docker runtime (builds the `Dockerfile`):** nothing else to configure; the image builds
+  and serves the React interface at `/app/`.
+- **Native Python runtime:** the frontend must be built during the platform build, which
+  then needs Node.js 22.18 or newer (24.15.0 is what CI and the image use):
+
+1. **Build Command**: `pip install -r requirements.txt && cd web && npm ci && npm run build`
+   (with only `pip install -r requirements.txt`, `/app/` answers 404 "not built"; `/` and
+   the API are unaffected)
 2. **Start Command**: `gunicorn --bind 0.0.0.0:$PORT --workers 2 --threads 4 --timeout 120 app:app`
 3. **Environment Variables**:
    - `GEMINI_API_KEY`: Set as a secret in your platform dashboard.

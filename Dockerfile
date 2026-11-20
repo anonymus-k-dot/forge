@@ -1,5 +1,19 @@
 # syntax=docker/dockerfile:1
 
+# Build the React frontend (web/). Only its output, web/dist, is copied into the
+# runtime image below: Node and node_modules never reach it. Node version as in CI.
+FROM node:24.15.0-slim AS web
+
+WORKDIR /web
+
+# Locked dependencies first, so this layer is reused until package*.json change.
+COPY web/package.json web/package-lock.json ./
+RUN npm ci --no-audit --no-fund
+
+# Unit tests, then the production build (`npm run build` type-checks first).
+COPY web/ ./
+RUN npm test && npm run build
+
 FROM python:3.11-slim AS base
 
 # Prevent Python from writing .pyc files
@@ -22,6 +36,10 @@ RUN pip install --no-cache-dir --upgrade pip && \
 
 # Copy application source code.
 COPY . .
+
+# Compiled frontend, where Flask serves /app/ from (src/forge/api/web.py: web/dist
+# under the application root).
+COPY --from=web /web/dist ./web/dist
 
 # Create a non-root user.
 RUN useradd -m -u 1000 forgeuser && \

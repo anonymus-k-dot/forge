@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from flask import Flask
 
-from forge.api import health, legacy
+from forge.api import health, legacy, web
 from forge.db.session import Database
 from forge.legacy.enhance import LegacyEnhancer
 from forge.logging import configure_logging, init_request_ids
@@ -46,4 +46,5 @@ def create_app(
     init_request_ids(app)
     app.register_blueprint(health.bp)
     app.register_blueprint(legacy.bp)
+    app.register_blueprint(web.bp)  # React frontend build at /app/
     return app

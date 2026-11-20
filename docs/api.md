@@ -38,6 +38,14 @@ Response bodies are unchanged; the ID is only in the header.
 - **Method**: `GET`
 - **Response**: `200 OK`, `text/html; charset=utf-8`
 
+The React frontend (preview) is served from its production build (`web/dist`):
+
+- **URL**: `/app/` (`/app` redirects with `308`); built files at `/app/<path>`
+- **Method**: `GET`
+- **Response**: `200 OK` with `Content-Security-Policy` (`script-src 'self'`) and
+  `X-Content-Type-Options: nosniff`; files under `/app/assets/` are cached for a year
+  (content-hashed names). Without a build: `404` HTML page with build instructions.
+
 ---
 
 ### 2. Health & Liveness Check
